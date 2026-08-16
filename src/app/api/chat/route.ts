@@ -52,6 +52,10 @@ function wantsProductSuggestion(message: string) {
     || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text);
 }
 
+function wantsSpecials(message: string) {
+  return /\b(?:this\s+week(?:'s|’s)?\s+specials?|weekly\s+specials?|sale\s+items?|special\s+offers?)\b/i.test(message);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const customerSession = readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
@@ -65,12 +69,19 @@ export async function POST(request: NextRequest) {
     }
 
     const { messages } = parsed.data;
-    const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
-    const knowledge = await knowledgeService.search(latestUserMessage, 3);
+    const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
+    const latestUserMessage = userMessages.at(-1) ?? "";
+    const conversationQuery = userMessages.join(" ");
+    const knowledge = await knowledgeService.search(conversationQuery, 3);
     const productService = new ShopifyProductService();
-    const recommendations = wantsProductSuggestion(latestUserMessage)
-      ? await productService.recommendProducts([...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], 2)
-      : [];
+    // Product intent can be established in an earlier turn, followed by
+    // ordinary pet details such as age or weight. Evaluate the whole user
+    // conversation so those follow-ups do not discard the catalogue context.
+    const recommendations = userMessages.some(wantsSpecials)
+      ? await productService.getSpecials(6)
+      : userMessages.some(wantsProductSuggestion)
+        ? await productService.recommendProducts([...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], 2)
+        : [];
 
     console.info("[chat] user message", { length: latestUserMessage.length });
     console.info("[chat] knowledge retrieved", knowledge.map((entry) => entry.id));

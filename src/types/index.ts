@@ -30,10 +30,12 @@ export interface PetProfile {
 
 export interface Product {
   id: string;
+  variantId?: string;
   title: string;
   description: string;
   ingredients: string[];
   price: number;
+  compareAtPrice?: number;
   currency: "NZD";
   image: string;
   url: string;

@@ -1,9 +1,15 @@
+"use client";
+
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ShoppingBag } from "lucide-react";
 import type { ProductRecommendation } from "@/types";
 
 export function ProductCard({ recommendation }: { recommendation: ProductRecommendation }) {
   const { product, reason } = recommendation;
+  const variantId = product.variantId?.split("/").pop();
+  let storeOrigin = "https://allgoodpetfood.co.nz";
+  try { storeOrigin = new URL(product.url).origin; } catch { /* fallback for local mock products */ }
+
   return (
     <article className="product-card">
       <div className="product-visual">
@@ -19,6 +25,12 @@ export function ProductCard({ recommendation }: { recommendation: ProductRecomme
           <a href={product.url} target="_blank" rel="noreferrer" className="button button-secondary" onClick={(event) => product.url.startsWith("#") && event.preventDefault()}>
             View product <ArrowUpRight size={15} />
           </a>
+          {variantId && <a
+            className="button button-dark"
+            href={`${storeOrigin}/cart/${variantId}:1`}
+          >
+            <ShoppingBag size={14} /> Add to cart
+          </a>}
         </div>
       </div>
     </article>

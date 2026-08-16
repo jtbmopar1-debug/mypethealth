@@ -11,7 +11,7 @@ import { apiConversationStore } from "@/services/conversations/api-conversation-
 import type { ChatMessage, Conversation, ProductRecommendation } from "@/types";
 
 const WELCOME = "I’m Buddy, All Good Petfood’s Pet Health and Shop Assistant. How can I help?";
-const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product"];
+const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product", "This week’s specials"];
 
 function id() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;

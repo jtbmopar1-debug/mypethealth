@@ -12,6 +12,11 @@ interface ShopifyProductNode {
   productType: string;
   tags: string[];
   availableForSale: boolean;
+  selectedOrFirstAvailableVariant: {
+    id: string;
+    availableForSale: boolean;
+    compareAtPrice: { amount: string; currencyCode: string } | null;
+  } | null;
   onlineStoreUrl: string | null;
   featuredImage: { url: string } | null;
   priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
@@ -48,6 +53,7 @@ const PRODUCTS_QUERY = `
         productType
         tags
         availableForSale
+        selectedOrFirstAvailableVariant { id availableForSale compareAtPrice { amount currencyCode } }
         onlineStoreUrl
         featuredImage { url }
         priceRange { minVariantPrice { amount currencyCode } }
@@ -65,6 +71,9 @@ const CREATE_STOREFRONT_TOKEN = `
   }
 `;
 
+let sharedAccessTokenCache: { token: string; expiresAt: number } | null = null;
+let sharedAdminTokenCache: { token: string; expiresAt: number } | null = null;
+
 function toProduct(node: ShopifyProductNode): Product {
   const tags = [...new Set([
     ...node.tags,
@@ -74,10 +83,14 @@ function toProduct(node: ShopifyProductNode): Product {
   const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
   return {
     id: node.id,
+    variantId: node.selectedOrFirstAvailableVariant?.id,
     title: node.title,
     description: node.description || `Available from All Good Petfood: ${node.title}.`,
     ingredients: [],
     price: Number(node.priceRange.minVariantPrice.amount) || 0,
+    compareAtPrice: node.selectedOrFirstAvailableVariant?.compareAtPrice
+      ? Number(node.selectedOrFirstAvailableVariant.compareAtPrice.amount) || undefined
+      : undefined,
     currency: node.priceRange.minVariantPrice.currencyCode === "NZD" ? "NZD" : "NZD",
     image: node.featuredImage?.url || "/brand/buddy-paw.png",
     url: node.onlineStoreUrl || `${storeUrl}/products/${node.handle}`,
@@ -89,8 +102,6 @@ function toProduct(node: ShopifyProductNode): Product {
 
 export class ShopifyProductService implements ProductService {
   private cache: { expiresAt: number; products: Product[] } | null = null;
-  private accessTokenCache: { token: string; expiresAt: number } | null = null;
-  private adminTokenCache: { token: string; expiresAt: number } | null = null;
 
   private configured() {
     return Boolean(serverConfig.shopifyStorefrontApiDomain && (
@@ -99,12 +110,12 @@ export class ShopifyProductService implements ProductService {
     ));
   }
 
-  private async getStorefrontAccessToken() {
+  async getStorefrontAccessToken() {
     if (serverConfig.shopifyStorefrontAccessToken) return serverConfig.shopifyStorefrontAccessToken;
     if (!serverConfig.shopifyAppClientId || !serverConfig.shopifyAppClientSecret || !serverConfig.shopifyStorefrontApiDomain) return null;
-    if (this.accessTokenCache && this.accessTokenCache.expiresAt > Date.now()) return this.accessTokenCache.token;
+    if (sharedAccessTokenCache && sharedAccessTokenCache.expiresAt > Date.now()) return sharedAccessTokenCache.token;
 
-    if (!this.adminTokenCache || this.adminTokenCache.expiresAt <= Date.now()) {
+    if (!sharedAdminTokenCache || sharedAdminTokenCache.expiresAt <= Date.now()) {
       const response = await fetch(`https://${serverConfig.shopifyStorefrontApiDomain}/admin/oauth/access_token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
@@ -118,12 +129,12 @@ export class ShopifyProductService implements ProductService {
       if (!response.ok) throw new Error(`Shopify credential exchange returned ${response.status}`);
       const result = await response.json() as AdminTokenResponse;
       if (!result.access_token) throw new Error("Shopify credential exchange returned no access token");
-      this.adminTokenCache = { token: result.access_token, expiresAt: Date.now() + Math.max((result.expires_in ?? 86400) - 300, 300) * 1000 };
+      sharedAdminTokenCache = { token: result.access_token, expiresAt: Date.now() + Math.max((result.expires_in ?? 86400) - 300, 300) * 1000 };
     }
 
     const response = await fetch(`https://${serverConfig.shopifyStorefrontApiDomain}/admin/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": this.adminTokenCache.token },
+      headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": sharedAdminTokenCache.token },
       body: JSON.stringify({ query: CREATE_STOREFRONT_TOKEN, variables: { input: { title: "My Pet Health Buddy" } } }),
       cache: "no-store",
     });
@@ -132,8 +143,8 @@ export class ShopifyProductService implements ProductService {
     const mutation = result.data?.storefrontAccessTokenCreate;
     const error = result.errors?.[0]?.message || mutation?.userErrors?.[0]?.message;
     if (error || !mutation?.storefrontAccessToken?.accessToken) throw new Error(error || "Shopify returned no Storefront access token");
-    this.accessTokenCache = { token: mutation.storefrontAccessToken.accessToken, expiresAt: Date.now() + 23 * 60 * 60 * 1000 };
-    return this.accessTokenCache.token;
+    sharedAccessTokenCache = { token: mutation.storefrontAccessToken.accessToken, expiresAt: Date.now() + 23 * 60 * 60 * 1000 };
+    return sharedAccessTokenCache.token;
   }
 
   private async fetchProducts(query?: string) {
@@ -197,5 +208,19 @@ export class ShopifyProductService implements ProductService {
           ? `Matches the ${normalizedTags.filter((tag) => product.tags.includes(tag)).join(" and ")} considerations we discussed.`
           : "Available from the All Good Petfood catalogue for comparison.",
       }));
+  }
+
+  async getSpecials(limit = 6): Promise<ProductRecommendation[]> {
+    const products = (await this.products()).filter((product) => product.availability === "in_stock");
+    const specials = products.filter((product) =>
+      (product.compareAtPrice !== undefined && product.compareAtPrice > product.price)
+      || product.tags.some((tag) => /^(sale|special|specials|on-sale|discount)/i.test(tag))
+    );
+    return specials.slice(0, limit).map((product) => ({
+      product,
+      reason: product.compareAtPrice && product.compareAtPrice > product.price
+        ? `On special now: was ${product.currency} ${product.compareAtPrice.toFixed(2)}.`
+        : "One of this week’s All Good Petfood specials.",
+    }));
   }
 }
