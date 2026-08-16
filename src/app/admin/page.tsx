@@ -7,7 +7,8 @@ import { isAdminEmail } from "@/services/admin-auth";
 import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 export default async function AdminPage() {
-  const session = readShopifySession(cookies().get(SHOPIFY_SESSION_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const session = readShopifySession(cookieStore.get(SHOPIFY_SESSION_COOKIE)?.value);
   if (!session?.email || !isAdminEmail(session.email)) redirect("/");
 
   const entries = await knowledgeService.listEnabled();
