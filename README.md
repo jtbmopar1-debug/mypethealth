@@ -12,8 +12,8 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Seven editable local knowledge entries with ranked keyword retrieval
 - Four illustrative mock products behind a replaceable service interface
 - Recommendation cards with price, view-product and future add-to-cart controls
-- OpenAI Responses API integration that stays entirely server-side
-- Fully functional local demo responder when no OpenAI key is configured
+- Gemini API integration that stays entirely server-side
+- Fully functional local demo responder when no Gemini key is configured
 - Email/password sign-up and sign-in through Supabase Auth
 - Account conversations saved across devices through Supabase with local guest fallback
 - Placeholder staff admin at `/admin`
@@ -26,7 +26,7 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Node.js 20.9 or newer
 - npm
 - A Supabase project for customer accounts and cross-device chat history
-- An OpenAI API key is optional
+- A Gemini API key is optional
 
 ## Install and run
 
@@ -39,14 +39,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). The admin preview is at [http://localhost:3000/admin](http://localhost:3000/admin).
 
-If `.env.local` already exists, edit it instead of copying over it. Without `OPENAI_API_KEY`, the website uses the deterministic local demo responder and all core flows still work.
+If `.env.local` already exists, edit it instead of copying over it. Without `GEMINI_API_KEY`, the website uses the deterministic local demo responder and all core flows still work.
 
 ## Environment variables
 
 | Variable | Purpose | Exposure |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | Enables live OpenAI responses | Server only |
-| `OPENAI_MODEL` | Selects the server-side response model | Server only |
+| `GEMINI_API_KEY` | Enables live Gemini responses | Server only |
+| `GEMINI_MODEL` | Selects the server-side Gemini model | Server only |
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Browser-safe project identifier |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key used with RLS | Browser-safe; never substitute a service-role key |
@@ -100,7 +100,7 @@ Browser website / future Shopify widget
           \     |      /
               v
    Server-only assistant service
-      OpenAI or local demo mode
+      Gemini or local demo mode
               |
               v
        Answer + known products
@@ -110,7 +110,7 @@ Key boundaries:
 
 - `src/components` — reusable customer chat interface and product cards
 - `src/app/api/chat` — validated backend-for-frontend endpoint
-- `src/ai` — editable system prompt, OpenAI adapter and local fallback
+- `src/ai` — editable system prompt, Gemini adapter and local fallback
 - `src/services/knowledge` — replaceable retrieval contract
 - `src/services/products` — replaceable catalogue contract
 - `src/services/conversations` — replaceable persistence contract
@@ -141,7 +141,7 @@ The standalone My Pet Health URL and Shopify widget will share the hosted backen
 Shopify customer → theme app extension widget → hosted /api/chat
                                              → My Pet Health knowledge
                                              → live Shopify products
-                                             → OpenAI
+                                             → Gemini
                                              → response + product cards
 ```
 
