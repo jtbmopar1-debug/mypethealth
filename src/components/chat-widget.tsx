@@ -2,7 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUp, Clock3, Menu, MessageCircleMore, Plus, ShieldCheck, X } from "lucide-react";
+import { ArrowUp, Clock3, Menu, MessageCircleMore, Plus, ShieldCheck, Trash2, X } from "lucide-react";
 import { ShopifyAccountControl, type ShopifyCustomer } from "./shopify-account-control";
 import { BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
@@ -15,6 +15,21 @@ const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should 
 
 function id() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function normalizeConversation(conversation: Conversation): Conversation {
+  return {
+    ...conversation,
+    id: isUuid(conversation.id) ? conversation.id : id(),
+    messages: conversation.messages.map((message) => ({
+      ...message,
+      id: isUuid(message.id) ? message.id : id(),
+    })),
+  };
 }
 
 function welcomeMessage(name = ""): ChatMessage {
@@ -69,16 +84,15 @@ export function ChatWidget() {
 
     async function loadHistory() {
       try {
-        const localConversations = await conversationStore.list();
+        const localConversations = (await conversationStore.list()).map(normalizeConversation);
         for (const item of localConversations) await apiConversationStore.save(item);
-        if (localConversations.length > 0) await conversationStore.clear();
         const items = await apiConversationStore.list();
         if (!cancelled) {
-          setHistory(items);
+          setHistory(items.length > 0 ? items : localConversations);
           setStorageNotice("");
         }
       } catch {
-        const localItems = await conversationStore.list();
+        const localItems = (await conversationStore.list()).map(normalizeConversation);
         if (!cancelled) {
           setHistory(localItems);
           setStorageNotice("Cloud chat saving needs the Supabase database setup to be completed.");
@@ -97,14 +111,44 @@ export function ChatWidget() {
   const hasCustomerMessage = useMemo(() => conversation.messages.some((message) => message.role === "user"), [conversation.messages]);
 
   async function persist(next: Conversation) {
+    const normalized = normalizeConversation(next);
+    // Keep the sidebar responsive even if the cloud request is slow or fails.
+    setHistory((current) => [normalized, ...current.filter((item) => item.id !== normalized.id)]
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
     try {
-      await apiConversationStore.save(next);
-      setHistory(await apiConversationStore.list());
+      await apiConversationStore.save(normalized);
+      const cloudItems = await apiConversationStore.list();
+      setHistory((current) => {
+        const merged = [normalized, ...cloudItems.filter((item) => item.id !== normalized.id)];
+        return merged.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      });
       setStorageNotice("");
     } catch {
-      await conversationStore.save(next);
+      await conversationStore.save(normalized);
       setHistory(await conversationStore.list());
       setStorageNotice("This chat is saved on this device until cloud saving is available.");
+    }
+    return normalized;
+  }
+
+  async function deleteConversation(idToDelete: string) {
+    if (!window.confirm("Delete this conversation?")) return;
+
+    try {
+      await apiConversationStore.remove(idToDelete);
+    } catch {
+      await conversationStore.remove(idToDelete);
+    }
+
+    const remaining = history.filter((item) => item.id !== idToDelete);
+    setHistory(remaining);
+
+    if (conversation.id === idToDelete) {
+      const fallback = remaining[0] ?? createConversation(shopifyCustomer?.firstName?.trim()
+        || shopifyCustomer?.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
+        || "");
+      setConversation(fallback);
+      setRecommendations({});
     }
   }
 
@@ -123,7 +167,8 @@ export function ChatWidget() {
     setConversation(nextConversation);
     setInput("");
     setIsLoading(true);
-    await persist(nextConversation);
+    const persistedConversation = await persist(nextConversation);
+    setConversation(persistedConversation);
 
     try {
       const response = await fetch("/api/chat", {
@@ -144,7 +189,8 @@ export function ChatWidget() {
       const completed = { ...nextConversation, updatedAt: new Date().toISOString(), messages: [...messages, assistantMessage] };
       setRecommendations((current) => ({ ...current, [assistantMessage.id]: data.products ?? [] }));
       setConversation(completed);
-      await persist(completed);
+      const persistedCompleted = await persist(completed);
+      setConversation(persistedCompleted);
     } catch {
       const errorMessage: ChatMessage = {
         id: id(),
@@ -154,7 +200,8 @@ export function ChatWidget() {
       };
       const failed = { ...nextConversation, messages: [...messages, errorMessage] };
       setConversation(failed);
-      await persist(failed);
+      const persistedFailed = await persist(failed);
+      setConversation(persistedFailed);
     } finally {
       setIsLoading(false);
       textareaRef.current?.focus();
@@ -227,9 +274,20 @@ export function ChatWidget() {
           ) : (
             <div className="history-list">
               {history.slice(0, 8).map((item) => (
-                <button key={item.id} className={item.id === conversation.id ? "active" : ""} onClick={() => openConversation(item)}>
-                  <span>{item.title}</span><small>{new Date(item.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</small>
-                </button>
+                <div key={item.id} className={`history-item ${item.id === conversation.id ? "active" : ""}`}>
+                  <button type="button" className="history-open" onClick={() => openConversation(item)}>
+                    <span>{item.title}</span>
+                    <small>{new Date(item.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</small>
+                  </button>
+                  <button
+                    type="button"
+                    className="history-delete"
+                    aria-label={`Delete ${item.title}`}
+                    onClick={() => void deleteConversation(item.id)}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               ))}
             </div>
           )}

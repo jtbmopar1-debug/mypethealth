@@ -50,10 +50,14 @@ button { color: inherit; }
 .empty-history { min-height: 130px; border: 1px dashed rgba(255,255,255,.15); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9aadd3; text-align: center; padding: 20px; }
 .empty-history p { max-width: 145px; margin: 10px 0 0; font-size: 12px; line-height: 1.6; }
 .history-list { display: grid; gap: 6px; }
-.history-list button { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; padding: 11px 12px; border: 0; border-radius: 10px; background: transparent; color: #ccd7ed; cursor: pointer; text-align: left; }
-.history-list button:hover, .history-list button.active { background: rgba(255,255,255,.1); color: white; }
-.history-list span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; font-size: 12px; }
-.history-list small { color: #879ac1; font-size: 9px; }
+.history-item { display: flex; align-items: center; gap: 6px; min-width: 0; border-radius: 10px; }
+.history-item.active { background: rgba(255,255,255,.1); }
+.history-open { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 11px 12px; border: 0; border-radius: 10px; background: transparent; color: #ccd7ed; cursor: pointer; text-align: left; }
+.history-item:hover .history-open, .history-item.active .history-open { color: white; }
+.history-open span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; font-size: 12px; }
+.history-open small { color: #879ac1; font-size: 9px; }
+.history-delete { display: grid; place-items: center; flex: 0 0 auto; width: 28px; height: 28px; border: 0; border-radius: 999px; background: transparent; color: #8ea2ca; cursor: pointer; }
+.history-delete:hover { background: rgba(255,255,255,.14); color: white; }
 .sidebar-note { margin-top: 20px; padding: 15px; border-radius: 13px; display: flex; gap: 10px; align-items: flex-start; background: rgba(153, 213, 207, .1); color: #cedaf0; font-size: 11px; line-height: 1.55; position: relative; z-index: 1; }
 .sidebar-note svg { flex: 0 0 auto; color: var(--brand-aqua); }
 .admin-link { color: var(--brand-aqua); font-size: 10px; text-decoration: none; padding: 16px 6px 0; position: relative; z-index: 1; }
@@ -186,6 +190,8 @@ button { color: inherit; }
   .day-divider { margin-bottom: 20px; }
   .message-stack { max-width: calc(100% - 40px); }
   .message-bubble { padding: 13px 14px; font-size: 12px; }
+  .history-open { padding: 10px 10px; }
+  .history-delete { width: 26px; height: 26px; }
   .product-card { grid-template-columns: 105px 1fr; }
   .product-visual { min-height: 185px; }
   .product-visual img { height: 118px; }

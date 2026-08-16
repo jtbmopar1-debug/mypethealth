@@ -3,11 +3,16 @@ import { z } from "zod";
 import { getServerSupabaseClient } from "@/services/supabase/server";
 import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
-const idSchema = z.string().min(1).max(100);
+// These values are primary keys in Supabase, so keep the API contract aligned
+// with the database instead of accepting IDs that will fail at upsert time.
+const idSchema = z.string().uuid();
 const messageSchema = z.object({
-  id: z.string().min(1).max(100),
+  id: idSchema,
   role: z.enum(["user", "assistant"]),
-  content: z.string().min(1).max(4000),
+  // User input is capped at 4,000 characters, but a generated assistant
+  // response can be longer. Keep the persisted shape aligned with the chat
+  // response limit instead of rejecting an otherwise valid conversation.
+  content: z.string().min(1).max(12000),
   createdAt: z.string().datetime(),
   productIds: z.array(z.string().max(200)).max(20).optional(),
 });
@@ -73,7 +78,10 @@ export async function PUT(request: NextRequest) {
   if (!session) return Response.json({ error: "Shopify sign-in required" }, { status: 401 });
 
   const parsed = z.object({ conversation: conversationSchema }).safeParse(await request.json());
-  if (!parsed.success) return Response.json({ error: "Invalid conversation" }, { status: 400 });
+  if (!parsed.success) {
+    console.warn("[conversations] invalid save payload", parsed.error.issues.map(({ path, code }) => ({ path, code })));
+    return Response.json({ error: "Invalid conversation" }, { status: 400 });
+  }
   const conversation = parsed.data.conversation;
   const { error } = await getServerSupabaseClient().from("shopify_conversations").upsert({
     id: conversation.id,
