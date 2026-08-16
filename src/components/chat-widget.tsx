@@ -200,7 +200,8 @@ export function ChatWidget() {
               <span className="eyebrow">All Good Petfood customer access</span>
               <h1>Sign in to chat with Buddy</h1>
               <p>My Pet Health is available to All Good Petfood customers. Sign in with your existing account, or create one securely through All Good Petfood.</p>
-              <a className="access-primary" href="/api/auth/shopify/start">Sign in or create account</a>
+              <a className="access-primary" href="/api/auth/shopify/start">Sign In</a>
+              <a className="access-secondary" href="https://allgoodpetfood.co.nz/account/register">Create Account</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz">Return to All Good Petfood</a>
               <small>My Pet Health never receives your Shopify password.</small>
             </>
@@ -240,6 +241,7 @@ export function ChatWidget() {
       <main className="chat-main">
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
+          <a className="header-back" href="https://allgoodpetfood.co.nz">Back to All Good Petfood</a>
           <BuddyLogo />
           <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> My Pet Health guide</small></span></div>
           <button className="header-new" onClick={startNewConversation}><Plus size={16} /> <span>New chat</span></button>

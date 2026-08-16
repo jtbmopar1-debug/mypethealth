@@ -60,6 +60,8 @@ button { color: inherit; }
 
 .chat-main { min-width: 0; height: 100dvh; display: grid; grid-template-rows: 77px minmax(0, 1fr) auto; background: var(--cream); }
 .chat-header { display: flex; align-items: center; padding: 0 34px; gap: 16px; background: rgba(255,255,255,.95); border-bottom: 1px solid var(--line); z-index: 10; }
+.header-back { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px; border: 1px solid #dce1e9; border-radius: 999px; color: var(--brand-navy); background: white; font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.header-back:hover { background: #f7f9fc; }
 .chat-header > .buddy-logo { display: flex; }
 .guide-status { display: flex; align-items: center; gap: 11px; }
 .status-avatar, .assistant-avatar { display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 50%; background: white; border: 1px solid #edf0e5; }
@@ -174,6 +176,7 @@ button { color: inherit; }
   .mobile-only { display: grid; }
   .chat-main { height: 100dvh; grid-template-rows: 66px minmax(0, 1fr) auto; }
   .chat-header { padding: 0 14px; gap: 10px; }
+  .header-back { display: none; }
   .chat-header > .buddy-logo .brand-logo-image { width: 78px; }
   .guide-status { display: none; }
   .header-new span { display: none; }
