@@ -32,18 +32,22 @@ export class MockProductService implements ProductService {
   }
 
   async recommendProducts(tags: string[], limit = 2): Promise<ProductRecommendation[]> {
-    return this.products()
+    const available = this.products().filter((product) => product.availability === "in_stock");
+    const ranked = available
       .filter((product) => product.availability === "in_stock")
       .map((product) => ({
         product,
         score: tags.reduce((score, tag) => score + (product.tags.includes(tag) ? 1 : 0), 0)
       }))
-      .filter(({ score }) => score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map(({ product }) => ({
+      .filter(({ score }) => tags.length === 0 || score > 0)
+      .slice(0, limit);
+
+    return ranked.map(({ product, score }) => ({
         product,
-        reason: `Matches the ${tags.filter((tag) => product.tags.includes(tag)).join(" and ")} considerations we discussed.`
+        reason: score > 0
+          ? `Matches the ${tags.filter((tag) => product.tags.includes(tag)).join(" and ")} considerations we discussed.`
+          : "Available from the All Good Petfood catalogue for comparison."
       }));
   }
 }

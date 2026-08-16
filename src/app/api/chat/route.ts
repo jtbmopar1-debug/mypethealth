@@ -43,7 +43,13 @@ function wantsProductSuggestion(message: string) {
     "food for",
   ];
 
-  return explicitPhrases.some((phrase) => text.includes(phrase));
+  if (explicitPhrases.some((phrase) => text.includes(phrase))) return true;
+
+  // Customers do not always use the words “recommendation” or “product”.
+  // Requests such as “suggest a better food” and “is there a better option?”
+  // are still explicit product-shopping intent.
+  return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
+    || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text);
 }
 
 export async function POST(request: NextRequest) {

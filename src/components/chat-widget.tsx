@@ -93,7 +93,17 @@ export function ChatWidget() {
 
     async function loadHistory() {
       try {
-        const localConversations = (await conversationStore.list()).map(normalizeConversation);
+        const rawLocalConversations = await conversationStore.list();
+        const localConversations = rawLocalConversations.map(normalizeConversation);
+
+        // Persist repaired IDs before migrating to Supabase. Otherwise an old
+        // local conversation gets a fresh random UUID on every remount and is
+        // inserted as a duplicate each time the user returns to the chat.
+        if (rawLocalConversations.length > 0) {
+          await conversationStore.clear();
+          for (const item of localConversations) await conversationStore.save(item);
+        }
+
         for (const item of localConversations) await apiConversationStore.save(item);
         const items = await apiConversationStore.list();
         if (!cancelled) {
