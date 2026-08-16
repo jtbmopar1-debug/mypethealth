@@ -15,6 +15,37 @@ const messageSchema = z.object({
 
 const bodySchema = z.object({ messages: z.array(messageSchema).min(1).max(40) });
 
+function wantsProductSuggestion(message: string) {
+  const text = message.toLowerCase();
+  const explicitPhrases = [
+    "product suggestion",
+    "product recommendations",
+    "recommend a product",
+    "recommend products",
+    "suggest a product",
+    "suggest products",
+    "help me choose a product",
+    "help me pick a product",
+    "what product should i",
+    "which product should i",
+    "what should i buy",
+    "what should i feed",
+    "what food should i buy",
+    "what food do you recommend",
+    "what would you recommend",
+    "show me products",
+    "show me some products",
+    "best product",
+    "best food",
+    "best dog food",
+    "best cat food",
+    "product for",
+    "food for",
+  ];
+
+  return explicitPhrases.some((phrase) => text.includes(phrase));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const customerSession = readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
@@ -30,8 +61,9 @@ export async function POST(request: NextRequest) {
     const { messages } = parsed.data;
     const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
     const knowledge = await knowledgeService.search(latestUserMessage, 3);
-    const productTags = [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))];
-    const recommendations = await productService.recommendProducts(productTags, 2);
+    const recommendations = wantsProductSuggestion(latestUserMessage)
+      ? await productService.recommendProducts([...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], 2)
+      : [];
 
     console.info("[chat] user message", { length: latestUserMessage.length });
     console.info("[chat] knowledge retrieved", knowledge.map((entry) => entry.id));

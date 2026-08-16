@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { ProductRecommendation } from "@/types";
 
 export function ProductCard({ recommendation }: { recommendation: ProductRecommendation }) {
@@ -19,9 +19,6 @@ export function ProductCard({ recommendation }: { recommendation: ProductRecomme
           <a href={product.url} target="_blank" rel="noreferrer" className="button button-secondary" onClick={(event) => product.url.startsWith("#") && event.preventDefault()}>
             View product <ArrowUpRight size={15} />
           </a>
-          <button className="button button-dark" type="button" title="Shopify cart connection coming later">
-            <ShoppingBag size={15} /> Add to cart
-          </button>
         </div>
       </div>
     </article>

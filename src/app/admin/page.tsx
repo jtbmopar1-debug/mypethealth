@@ -1,8 +1,15 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ArrowLeft, BookOpen, ChartNoAxesColumnIncreasing, MessagesSquare, SlidersHorizontal } from "lucide-react";
 import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
+import { isAdminEmail } from "@/services/admin-auth";
+import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 export default async function AdminPage() {
+  const session = readShopifySession(cookies().get(SHOPIFY_SESSION_COOKIE)?.value);
+  if (!session?.email || !isAdminEmail(session.email)) redirect("/");
+
   const entries = await knowledgeService.listEnabled();
   const categories = new Set(entries.map((entry) => entry.category));
   return (
