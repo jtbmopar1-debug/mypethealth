@@ -7,7 +7,7 @@ import { ProductCard } from "./product-card";
 import { conversationStore } from "@/services/conversations/local-storage-store";
 import type { ChatMessage, Conversation, ProductRecommendation } from "@/types";
 
-const WELCOME = "Hi, I’m the My Pet Health guide. Tell me a little about your dog and what you’d like help with — we’ll work it out together.";
+const WELCOME = "Hi, I’m Buddy, your My Pet Health guide. Tell me a little about your dog and what you’d like help with — we’ll work it out together.";
 const QUICK_PROMPTS = ["My dog is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a protein"];
 
 function id() {
@@ -152,7 +152,7 @@ export function ChatWidget() {
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
           <BrandMark compact />
-          <div className="guide-status"><span className="status-avatar"><Sparkles size={17} /></span><span><strong>My Pet Health guide</strong><small><i /> Here to help</small></span></div>
+          <div className="guide-status"><span className="status-avatar"><Sparkles size={17} /></span><span><strong>Buddy</strong><small><i /> My Pet Health guide</small></span></div>
           <button className="header-new" onClick={startNewConversation}><Plus size={16} /> <span>New chat</span></button>
         </header>
 
@@ -178,7 +178,7 @@ export function ChatWidget() {
             {isLoading && (
               <div className="message-row assistant">
                 <span className="assistant-avatar"><Sparkles size={16} /></span>
-                <div className="typing" aria-label="My Pet Health is typing"><i /><i /><i /></div>
+                <div className="typing" aria-label="Buddy is typing"><i /><i /><i /></div>
               </div>
             )}
             <div ref={bottomRef} />

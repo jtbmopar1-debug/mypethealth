@@ -1,6 +1,6 @@
 # My Pet Health
 
-A standalone, customer-facing pet-food guidance website. My Pet Health is the public website and assistant brand; [All Good Petfood](https://allgoodpetfood.co.nz) is the source retailer for its product catalogue and purchase links. The app gives friendly, practical answers, asks useful follow-up questions before recommending food, retrieves only relevant local knowledge, and shows products exclusively from the configured catalogue service.
+A standalone, customer-facing pet-food guidance website. My Pet Health is the public website brand, Buddy is its conversational assistant, and [All Good Petfood](https://allgoodpetfood.co.nz) is the source retailer for its product catalogue and purchase links. The app gives friendly, practical answers, asks useful follow-up questions before recommending food, retrieves only relevant local knowledge, and shows products exclusively from the configured catalogue service.
 
 The same modular chat UI can later appear as a floating Shopify widget. The standalone website remains available at its own Vercel URL or a future custom domain; no public domain is hard-coded.
 
