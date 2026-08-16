@@ -13,14 +13,14 @@ const messageSchema = z.object({
   // response can be longer. Keep the persisted shape aligned with the chat
   // response limit instead of rejecting an otherwise valid conversation.
   content: z.string().min(1).max(12000),
-  createdAt: z.string().datetime(),
+  createdAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
   productIds: z.array(z.string().max(200)).max(20).optional(),
 });
 const conversationSchema = z.object({
   id: idSchema,
   title: z.string().trim().min(1).max(120),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
+  updatedAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
   messages: z.array(messageSchema).min(1).max(100),
   petProfile: z.record(z.string(), z.unknown()).optional(),
 });

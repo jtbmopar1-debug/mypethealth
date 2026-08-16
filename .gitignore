@@ -20,3 +20,4 @@ email-processing/logs/
 email-processing/**/__pycache__/
 email-processing/**/*.pyc
 mbox/Misc-001.zip
+mbox/editable-knowledge.json

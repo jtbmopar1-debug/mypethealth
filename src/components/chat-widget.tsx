@@ -22,12 +22,21 @@ function isUuid(value: string) {
 }
 
 function normalizeConversation(conversation: Conversation): Conversation {
+  const fallbackNow = new Date().toISOString();
+  const validTimestamp = (value: string | undefined) => {
+    if (!value || Number.isNaN(Date.parse(value))) return fallbackNow;
+    return new Date(value).toISOString();
+  };
   return {
     ...conversation,
     id: isUuid(conversation.id) ? conversation.id : id(),
+    createdAt: validTimestamp(conversation.createdAt),
+    updatedAt: validTimestamp(conversation.updatedAt),
     messages: conversation.messages.map((message) => ({
       ...message,
       id: isUuid(message.id) ? message.id : id(),
+      content: String(message.content ?? "").trim(),
+      createdAt: validTimestamp(message.createdAt),
     })),
   };
 }

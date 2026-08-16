@@ -12,8 +12,8 @@ function candidateFinishReason(response: GenerateContentResponse) {
 
 function needsContinuation(content: string) {
   const trimmed = content.trim();
-  if (!trimmed || /[.!?…]$/.test(trimmed)) return false;
-  return /(?:\b(?:from|with|and|or|but|because|that|to|for|of|in|on|if|when|as|the|a|an))$/i.test(trimmed);
+  if (!trimmed || /[.!?…:]$/.test(trimmed)) return false;
+  return /(?:\b(?:from|with|and|or|but|because|that|to|for|of|in|on|if|when|as|the|a|an|i|we|they|it))$/i.test(trimmed);
 }
 
 export async function answerCustomer(
