@@ -1,0 +1,86 @@
+[
+  {
+    "id": "itchy-dogs-first-steps",
+    "title": "Itchy dogs: dietary first steps",
+    "category": "itchy-dogs",
+    "summary": "Gather context before suggesting a food trial and keep non-dietary causes in view.",
+    "content": "Itching can have several causes, including environmental triggers, parasites and skin conditions. Ask what food and protein the dog currently eats, age, approximate weight, how long the itching has been present, other symptoms and what has already been tried. A consistent trial of a different protein may be reasonable, but avoid presenting it as a diagnosis or confirmed allergy.",
+    "followUpQuestions": ["What food and protein are they eating now?", "How long has the itching been going on?", "Are there any other symptoms?", "Have they tried another protein before?"],
+    "safetyNotes": ["Persistent, severe or worsening itching should be discussed with a veterinarian.", "Do not diagnose a food allergy."],
+    "tags": ["itching", "itchy", "skin", "coat", "allergy", "sensitivities", "protein"],
+    "relevantProductTags": ["single-protein", "skin-support"],
+    "enabled": true
+  },
+  {
+    "id": "sensitive-stomachs",
+    "title": "Sensitive stomachs and digestive changes",
+    "category": "digestive-issues",
+    "summary": "Look at duration, current diet, treats and warning signs before discussing gentle dietary options.",
+    "content": "For loose stools, gas or a sensitive stomach, ask when the issue began, what the dog currently eats, whether treats or table food changed, and whether vomiting, lethargy, blood or weight loss is present. A simple recipe and gradual transition may help some dogs. Sudden or serious symptoms need veterinary advice.",
+    "followUpQuestions": ["What are they eating now?", "How long has this been happening?", "Any vomiting, blood, lethargy or weight loss?", "Did anything in their diet change recently?"],
+    "safetyNotes": ["Urgent or severe digestive symptoms require veterinary attention."],
+    "tags": ["stomach", "digestion", "digestive", "stool", "diarrhoea", "gas", "sensitive"],
+    "relevantProductTags": ["digestive-support", "single-protein"],
+    "enabled": true
+  },
+  {
+    "id": "transitioning-food",
+    "title": "Transitioning onto a new food",
+    "category": "transitioning-food",
+    "summary": "Change food gradually and slow down if mild digestive upset appears.",
+    "content": "A typical transition takes 7 to 10 days: begin with about 25% new food, move towards half-and-half, then 75% new food before fully changing. Dogs with sensitive digestion may need longer. Keep portions measured and avoid introducing several other new foods at the same time.",
+    "followUpQuestions": ["Does your dog usually handle food changes well?", "What food are you transitioning from?"],
+    "safetyNotes": ["Repeated vomiting, blood, marked lethargy or persistent diarrhoea needs veterinary advice."],
+    "tags": ["transition", "change", "switch", "new food", "stool"],
+    "relevantProductTags": [],
+    "enabled": true
+  },
+  {
+    "id": "feeding-amounts",
+    "title": "Working out a feeding amount",
+    "category": "feeding-amounts",
+    "summary": "Use the product guide as a starting point, then adjust for body condition and lifestyle.",
+    "content": "Feeding needs vary with current weight, ideal weight, age, activity, neuter status and treats. Start with the guide for the exact product, measure the daily amount, and review body condition and weight over two to four weeks. Split the daily amount across meals where appropriate.",
+    "followUpQuestions": ["What does your dog weigh?", "How old and active are they?", "Are you aiming to maintain, gain or lose weight?", "Which product are you feeding?"],
+    "safetyNotes": ["Growing puppies and dogs with medical weight concerns may need an individual plan from a veterinarian."],
+    "tags": ["feed", "feeding", "amount", "portion", "weight", "cups", "grams"],
+    "relevantProductTags": [],
+    "enabled": true
+  },
+  {
+    "id": "puppy-feeding",
+    "title": "Food for puppies",
+    "category": "puppies",
+    "summary": "Puppies need a complete food appropriate for growth and feeding matched to age and expected adult size.",
+    "content": "Ask the puppy's age, breed or expected adult size, current weight and current food. Puppies generally need multiple meals each day and their needs change quickly as they grow. Use the feeding guide for the specific puppy product and review growth and body condition regularly.",
+    "followUpQuestions": ["How old is your puppy?", "What breed or expected adult size?", "What do they weigh now?", "What are they eating currently?"],
+    "safetyNotes": ["Large-breed puppy nutrition needs particular care; seek veterinary guidance when unsure."],
+    "tags": ["puppy", "puppies", "growth", "young dog"],
+    "relevantProductTags": ["puppy", "growth"],
+    "enabled": true
+  },
+  {
+    "id": "senior-dogs",
+    "title": "Supporting older dogs",
+    "category": "senior-dogs",
+    "summary": "Choose food using the individual dog's condition, activity and health rather than age alone.",
+    "content": "For an older dog, ask about weight trend, appetite, activity, dental comfort, current diet and any veterinary conditions. Some seniors benefit from controlled energy and highly digestible protein, while active older dogs may still need substantial nutrition.",
+    "followUpQuestions": ["How old and active is your dog?", "Has their weight or appetite changed?", "Do they have any diagnosed health conditions?"],
+    "safetyNotes": ["Unexplained weight loss, appetite changes or increased thirst should be discussed with a veterinarian."],
+    "tags": ["senior", "older", "ageing", "old dog", "weight"],
+    "relevantProductTags": ["senior", "weight-care"],
+    "enabled": true
+  },
+  {
+    "id": "delivery-and-subscriptions",
+    "title": "Delivery and subscriptions",
+    "category": "customer-service",
+    "summary": "Do not invent delivery promises or subscription terms when live store data is unavailable.",
+    "content": "Delivery areas, timeframes, costs and subscription rules must come from current store information. In the prototype, explain that live account and order information is not connected and direct the customer to the store team for confirmation.",
+    "followUpQuestions": ["Which delivery area are you in?", "Is this about a current order or a new purchase?"],
+    "safetyNotes": [],
+    "tags": ["delivery", "shipping", "subscription", "order", "account"],
+    "relevantProductTags": [],
+    "enabled": true
+  }
+]
