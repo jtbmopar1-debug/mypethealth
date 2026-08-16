@@ -14,8 +14,8 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Recommendation cards with price, view-product and future add-to-cart controls
 - Gemini API integration that stays entirely server-side
 - Fully functional local demo responder when no Gemini key is configured
-- Email/password sign-up and sign-in through Supabase Auth
-- Account conversations saved across devices through Supabase with local guest fallback
+- Shopify Customer Account login required before Buddy can be used
+- Shopify-owned conversations saved across devices through a protected Supabase server API
 - Placeholder staff admin at `/admin`
 - Safe development logs for retrieval, products, response mode and errors
 - Tests for retrieval and recommendation guardrails
@@ -25,7 +25,7 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 
 - Node.js 20.9 or newer
 - npm
-- A Supabase project for customer accounts and cross-device chat history
+- A Supabase project for cross-device chat history
 - A Gemini API key is optional
 
 ## Install and run
@@ -48,13 +48,17 @@ If `.env.local` already exists, edit it instead of copying over it. Without `GEM
 | `GEMINI_API_KEY` | Enables live Gemini responses | Server only |
 | `GEMINI_MODEL` | Selects the server-side Gemini model | Server only |
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Browser-safe project identifier |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key used with RLS | Browser-safe; never substitute a service-role key |
+| `SUPABASE_URL` | Supabase project URL | Server only |
+| `SUPABASE_SECRET_KEY` | Supabase secret key for the protected server API | Server only; never expose in the browser |
 | `SHOPIFY_STORE_DOMAIN` | Future Shopify store domain | Server configuration |
 | `SHOPIFY_STORE_URL` | All Good Petfood base URL used to create product links | Server configuration |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Future Storefront API access | Use according to Shopify token scope |
-| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` | Future shared All Good customer login | Server configuration |
-| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_SECRET` | Future confidential OAuth flow, when applicable | Server only |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` | All Good Customer Account OAuth client | Server configuration |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_SECRET` | Confidential OAuth client secret | Server only |
+| `SHOPIFY_CUSTOMER_ACCOUNT_AUTHORIZATION_ENDPOINT` | Shopify authorization endpoint | Server configuration |
+| `SHOPIFY_CUSTOMER_ACCOUNT_TOKEN_ENDPOINT` | Shopify token endpoint | Server configuration |
+| `SHOPIFY_CUSTOMER_ACCOUNT_LOGOUT_ENDPOINT` | Shopify logout endpoint | Server configuration |
+| `SHOPIFY_SESSION_SECRET` | Encrypts My Pet Health login sessions | Server only |
 
 Secrets belong in `.env.local` locally and protected Vercel environment variables online. `.env.local` is ignored by Git.
 
@@ -119,19 +123,15 @@ Key boundaries:
 
 ## Accounts and Supabase conversation persistence
 
-Guests keep conversations in browser `localStorage`. Signed-in customers use Supabase Auth and the `SupabaseConversationStore`; existing guest conversations are transferred after the first successful sign-in. If cloud storage is unavailable, the UI reports that the chat remains on the current device.
+Buddy is locked until Shopify Customer Account OAuth verifies the All Good Petfood customer. The protected server API derives ownership from that encrypted Shopify session and stores conversations under the Shopify customer ID. The Supabase secret key is never sent to the browser. If cloud storage is temporarily unavailable, the UI reports that the chat remains on the current device.
 
-To enable accounts:
+To enable chat persistence:
 
-1. Put only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`.
+1. Put `SUPABASE_URL` and a new `SUPABASE_SECRET_KEY` in `.env.local` and protected Vercel environment variables.
 2. In Supabase, open **SQL Editor**, paste [`supabase/migrations/202608160001_create_conversations.sql`](supabase/migrations/202608160001_create_conversations.sql), and run it once.
-3. Under **Authentication → URL Configuration**, set the local Site URL to `http://localhost:3000` and add the eventual HTTPS production URL to Redirect URLs.
-4. Under **Authentication → Providers → Email**, choose whether new accounts must confirm their email. Production should keep confirmation enabled and configure branded SMTP.
-5. Restart `npm run dev`, select **Sign in**, and create a test account.
+3. Restart the app, authenticate through All Good Petfood, and send a test message.
 
-The migration enables Row Level Security and restricts every select, insert, update and delete to rows whose `user_id` equals `auth.uid()`. The app does not require a service-role key. Never place a service-role key in a variable beginning with `NEXT_PUBLIC_`.
-
-The current flow provides My Pet Health email accounts. Shared All Good Petfood identity is the next connection: configure Shopify's Customer Account API OAuth credentials and map the verified Shopify customer ID to the account. No Shopify password should ever be collected by My Pet Health.
+The migration enables Row Level Security, denies browser roles, and permits the server role only. Application endpoints first verify the encrypted Shopify session and constrain every database operation to its Shopify customer ID. Never place `SUPABASE_SECRET_KEY` in a variable beginning with `NEXT_PUBLIC_`.
 
 ## Shopify integration
 

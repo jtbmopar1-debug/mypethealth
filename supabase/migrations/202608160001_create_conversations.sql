@@ -1,34 +1,21 @@
-create table if not exists public.conversations (
-  id uuid primary key,
-  user_id uuid not null references auth.users(id) on delete cascade,
+create table if not exists public.shopify_conversations (
+  id uuid not null,
+  shopify_customer_id text not null,
   title text not null check (char_length(title) between 1 and 120),
-  messages jsonb not null default '[]'::jsonb,
+  messages jsonb not null default '[]'::jsonb check (jsonb_typeof(messages) = 'array'),
   pet_profile jsonb,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  primary key (id, shopify_customer_id)
 );
 
-create index if not exists conversations_user_updated_idx
-  on public.conversations (user_id, updated_at desc);
+create index if not exists shopify_conversations_customer_updated_idx
+  on public.shopify_conversations (shopify_customer_id, updated_at desc);
 
-alter table public.conversations enable row level security;
+alter table public.shopify_conversations enable row level security;
 
-revoke all on public.conversations from anon;
-grant select, insert, update, delete on public.conversations to authenticated;
+revoke all on public.shopify_conversations from anon, authenticated;
+grant select, insert, update, delete on public.shopify_conversations to service_role;
 
-create policy "Customers can view their own conversations"
-  on public.conversations for select to authenticated
-  using ((select auth.uid()) = user_id);
-
-create policy "Customers can create their own conversations"
-  on public.conversations for insert to authenticated
-  with check ((select auth.uid()) = user_id);
-
-create policy "Customers can update their own conversations"
-  on public.conversations for update to authenticated
-  using ((select auth.uid()) = user_id)
-  with check ((select auth.uid()) = user_id);
-
-create policy "Customers can delete their own conversations"
-  on public.conversations for delete to authenticated
-  using ((select auth.uid()) = user_id);
+comment on table public.shopify_conversations is
+  'Buddy chats accessed only by the server after a verified Shopify Customer Account login.';

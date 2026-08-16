@@ -1,0 +1,107 @@
+import type { NextRequest } from "next/server";
+import { z } from "zod";
+import { getServerSupabaseClient } from "@/services/supabase/server";
+import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+
+const idSchema = z.string().uuid();
+const messageSchema = z.object({
+  id: z.string().min(1).max(100),
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(4000),
+  createdAt: z.string().datetime(),
+  productIds: z.array(z.string().max(200)).max(20).optional(),
+});
+const conversationSchema = z.object({
+  id: idSchema,
+  title: z.string().trim().min(1).max(120),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  messages: z.array(messageSchema).min(1).max(100),
+  petProfile: z.record(z.string(), z.unknown()).optional(),
+});
+
+interface ConversationRow {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  messages: z.infer<typeof messageSchema>[];
+  pet_profile: Record<string, unknown> | null;
+}
+
+function customer(request: NextRequest) {
+  return readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+}
+
+function fromRow(row: ConversationRow) {
+  return {
+    id: row.id,
+    title: row.title,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    messages: row.messages,
+    petProfile: row.pet_profile ?? undefined,
+  };
+}
+
+export async function GET(request: NextRequest) {
+  const session = customer(request);
+  if (!session) return Response.json({ error: "Shopify sign-in required" }, { status: 401 });
+
+  const requestedId = request.nextUrl.searchParams.get("id");
+  const parsedId = requestedId ? idSchema.safeParse(requestedId) : null;
+  if (parsedId && !parsedId.success) return Response.json({ error: "Invalid conversation ID" }, { status: 400 });
+
+  const supabase = getServerSupabaseClient();
+  let query = supabase
+    .from("shopify_conversations")
+    .select("id,title,created_at,updated_at,messages,pet_profile")
+    .eq("shopify_customer_id", session.customerId)
+    .order("updated_at", { ascending: false });
+  if (parsedId?.success) query = query.eq("id", parsedId.data).limit(1);
+
+  const { data, error } = await query;
+  if (error) return Response.json({ error: "Cloud chat storage is unavailable" }, { status: 503 });
+  const conversations = (data as ConversationRow[]).map(fromRow);
+  return parsedId?.success
+    ? Response.json({ conversation: conversations[0] ?? null })
+    : Response.json({ conversations });
+}
+
+export async function PUT(request: NextRequest) {
+  const session = customer(request);
+  if (!session) return Response.json({ error: "Shopify sign-in required" }, { status: 401 });
+
+  const parsed = z.object({ conversation: conversationSchema }).safeParse(await request.json());
+  if (!parsed.success) return Response.json({ error: "Invalid conversation" }, { status: 400 });
+  const conversation = parsed.data.conversation;
+  const { error } = await getServerSupabaseClient().from("shopify_conversations").upsert({
+    id: conversation.id,
+    shopify_customer_id: session.customerId,
+    title: conversation.title,
+    messages: conversation.messages,
+    pet_profile: conversation.petProfile ?? null,
+    created_at: conversation.createdAt,
+    updated_at: conversation.updatedAt,
+  }, { onConflict: "id,shopify_customer_id" });
+  if (error) return Response.json({ error: "Cloud chat could not be saved" }, { status: 503 });
+  return Response.json({ ok: true });
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = customer(request);
+  if (!session) return Response.json({ error: "Shopify sign-in required" }, { status: 401 });
+
+  const requestedId = request.nextUrl.searchParams.get("id");
+  const parsedId = requestedId ? idSchema.safeParse(requestedId) : null;
+  if (parsedId && !parsedId.success) return Response.json({ error: "Invalid conversation ID" }, { status: 400 });
+
+  let query = getServerSupabaseClient()
+    .from("shopify_conversations")
+    .delete()
+    .eq("shopify_customer_id", session.customerId);
+  if (parsedId?.success) query = query.eq("id", parsedId.data);
+  const { error } = await query;
+  if (error) return Response.json({ error: "Cloud chat could not be deleted" }, { status: 503 });
+  return Response.json({ ok: true });
+}
