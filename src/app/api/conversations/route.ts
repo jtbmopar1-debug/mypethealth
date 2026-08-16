@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServerSupabaseClient } from "@/services/supabase/server";
 import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
-const idSchema = z.string().uuid();
+const idSchema = z.string().min(1).max(100);
 const messageSchema = z.object({
   id: z.string().min(1).max(100),
   role: z.enum(["user", "assistant"]),
