@@ -8,9 +8,12 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "email:test": "python -m unittest discover -s email-processing/tests -v",
+    "email:process": "python email-processing/process_mbox.py"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^1.31.0",
     "next": "16.3.1",
     "openai": "^7.4.0",

@@ -1,0 +1,28 @@
+{
+  "business_domains": [
+    "allgoodpetfood.co.nz"
+  ],
+  "business_addresses": [],
+  "known_products": [
+    "Natura Itch Buster",
+    "Natura Grain Be Gone",
+    "Natura Maintenance",
+    "Natura PancreaCare",
+    "Natura Puppy",
+    "Natura Active",
+    "Natura Dental & Weight Management",
+    "Natura Grain Free Gourmet",
+    "Natura Every Day Gourmet",
+    "Addiction Le Lamb",
+    "Addiction Salmon Bleu",
+    "Addiction Viva La Venison"
+  ],
+  "product_brands": [
+    "Natura",
+    "Addiction",
+    "BlackHawk"
+  ],
+  "duplicate_similarity_threshold": 0.72,
+  "minimum_customer_text_length": 35,
+  "minimum_reply_text_length": 35
+}

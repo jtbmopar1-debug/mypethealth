@@ -1,26 +1,45 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Clock3, Menu, MessageCircleMore, Plus, ShieldCheck, Sparkles, X } from "lucide-react";
-import { BrandMark } from "./brand-mark";
+import Image from "next/image";
+import type { User } from "@supabase/supabase-js";
+import { ArrowUp, Clock3, Menu, MessageCircleMore, Plus, ShieldCheck, X } from "lucide-react";
+import { AccountControl, type ShopifyCustomer } from "./account-control";
+import { BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
 import { conversationStore } from "@/services/conversations/local-storage-store";
+import { SupabaseConversationStore } from "@/services/conversations/supabase-conversation-store";
+import { getBrowserSupabaseClient, isSupabaseConfigured } from "@/services/supabase/client";
 import type { ChatMessage, Conversation, ProductRecommendation } from "@/types";
 
-const WELCOME = "Hi, I’m Buddy, your My Pet Health guide. Tell me a little about your dog and what you’d like help with — we’ll work it out together.";
-const QUICK_PROMPTS = ["My dog is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a protein"];
+const WELCOME = "I’m Buddy, your My Pet Health Assistant. Tell me a little about your pet or ask about anything you need help with — we’ll work it out together.";
+const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product"];
 
 function id() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
-function welcomeMessage(): ChatMessage {
-  return { id: id(), role: "assistant", content: WELCOME, createdAt: new Date().toISOString() };
+function displayName(user: User | null) {
+  if (!user) return "";
+  const metadataName = [user.user_metadata.display_name, user.user_metadata.full_name, user.user_metadata.name]
+    .find((value): value is string => typeof value === "string" && value.trim().length > 0);
+  const candidate = metadataName ?? user.email?.split("@")[0]?.replace(/[._-]+/g, " ") ?? "";
+  return candidate.trim().split(/\s+/)[0]?.slice(0, 40) ?? "";
 }
 
-function createConversation(): Conversation {
+function welcomeMessage(name = ""): ChatMessage {
+  const greeting = name ? `Hi ${name}, ${WELCOME}` : `Hi, ${WELCOME}`;
+  return { id: id(), role: "assistant", content: greeting, createdAt: new Date().toISOString() };
+}
+
+function createConversation(name = ""): Conversation {
   const now = new Date().toISOString();
-  return { id: id(), title: "New conversation", createdAt: now, updatedAt: now, messages: [welcomeMessage()] };
+  return { id: id(), title: "New conversation", createdAt: now, updatedAt: now, messages: [welcomeMessage(name)] };
+}
+
+function personalizeUntouchedConversation(current: Conversation, user: User) {
+  const isUntouched = current.title === "New conversation" && !current.messages.some((message) => message.role === "user");
+  return isUntouched ? createConversation(displayName(user)) : current;
 }
 
 export function ChatWidget() {
@@ -30,12 +49,89 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<Record<string, ProductRecommendation[]>>({});
+  const [user, setUser] = useState<User | null>(null);
+  const [shopifyCustomer, setShopifyCustomer] = useState<ShopifyCustomer | null>(null);
+  const [shopifyAuthState, setShopifyAuthState] = useState<"checking" | "authenticated" | "guest">("checking");
+  const [storageNotice, setStorageNotice] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const supabaseConfigured = isSupabaseConfigured();
+  const activeStore = useMemo(() => {
+    const client = getBrowserSupabaseClient();
+    return user && client ? new SupabaseConversationStore(client, user.id) : conversationStore;
+  }, [user]);
 
   useEffect(() => {
-    conversationStore.list().then(setHistory);
+    const client = getBrowserSupabaseClient();
+    if (!client) return;
+
+    void client.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      if (data.user) setConversation((current) => personalizeUntouchedConversation(current, data.user));
+    });
+    const { data } = client.auth.onAuthStateChange((event, session) => {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser) setConversation((current) => personalizeUntouchedConversation(current, nextUser));
+      if (event === "SIGNED_OUT") {
+        setConversation(createConversation());
+        setRecommendations({});
+      }
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    void fetch("/api/auth/shopify/session", { cache: "no-store" })
+      .then((response) => response.json() as Promise<{ authenticated: boolean; customer: ShopifyCustomer | null }>)
+      .then((result) => {
+        if (!result.authenticated || !result.customer) {
+          setShopifyAuthState("guest");
+          return;
+        }
+        setShopifyCustomer(result.customer);
+        setShopifyAuthState("authenticated");
+        const name = result.customer.firstName?.trim()
+          || result.customer.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
+          || "";
+        setConversation((current) => {
+          const isUntouched = current.title === "New conversation" && !current.messages.some((message) => message.role === "user");
+          return isUntouched ? createConversation(name) : current;
+        });
+      })
+      .catch(() => {
+        setShopifyCustomer(null);
+        setShopifyAuthState("guest");
+      });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadHistory() {
+      try {
+        if (user && activeStore !== conversationStore) {
+          const localConversations = await conversationStore.list();
+          for (const item of localConversations) await activeStore.save(item);
+          if (localConversations.length > 0) await conversationStore.clear();
+        }
+        const items = await activeStore.list();
+        if (!cancelled) {
+          setHistory(items);
+          setStorageNotice("");
+        }
+      } catch {
+        const localItems = await conversationStore.list();
+        if (!cancelled) {
+          setHistory(localItems);
+          setStorageNotice("Cloud chat saving needs the Supabase database setup to be completed.");
+        }
+      }
+    }
+
+    void loadHistory();
+    return () => { cancelled = true; };
+  }, [activeStore, user]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -44,8 +140,15 @@ export function ChatWidget() {
   const hasCustomerMessage = useMemo(() => conversation.messages.some((message) => message.role === "user"), [conversation.messages]);
 
   async function persist(next: Conversation) {
-    await conversationStore.save(next);
-    setHistory(await conversationStore.list());
+    try {
+      await activeStore.save(next);
+      setHistory(await activeStore.list());
+      setStorageNotice("");
+    } catch {
+      await conversationStore.save(next);
+      setHistory(await conversationStore.list());
+      setStorageNotice("This chat is saved on this device until cloud saving is available.");
+    }
   }
 
   async function sendMessage(value = input) {
@@ -102,7 +205,10 @@ export function ChatWidget() {
   }
 
   function startNewConversation() {
-    setConversation(createConversation());
+    const shopifyName = shopifyCustomer?.firstName?.trim()
+      || shopifyCustomer?.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
+      || "";
+    setConversation(createConversation(displayName(user) || shopifyName));
     setRecommendations({});
     setSidebarOpen(false);
     setInput("");
@@ -119,6 +225,32 @@ export function ChatWidget() {
       event.preventDefault();
       void sendMessage();
     }
+  }
+
+  if (shopifyAuthState !== "authenticated") {
+    return (
+      <main className="access-gate">
+        <section className="access-card" aria-live="polite">
+          <BrandMark />
+          <BuddyLogo />
+          {shopifyAuthState === "checking" ? (
+            <>
+              <h1>Checking your account…</h1>
+              <p>Buddy is confirming your All Good Petfood sign-in.</p>
+            </>
+          ) : (
+            <>
+              <span className="eyebrow">All Good Petfood customer access</span>
+              <h1>Sign in to chat with Buddy</h1>
+              <p>My Pet Health is available to All Good Petfood customers. Sign in with your existing account, or create one securely through All Good Petfood.</p>
+              <a className="access-primary" href="/api/auth/shopify/start">Sign in or create account</a>
+              <a className="access-secondary" href="https://allgoodpetfood.co.nz">Return to All Good Petfood</a>
+              <small>My Pet Health never receives your Shopify password.</small>
+            </>
+          )}
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -151,9 +283,10 @@ export function ChatWidget() {
       <main className="chat-main">
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-          <BrandMark compact />
-          <div className="guide-status"><span className="status-avatar"><Sparkles size={17} /></span><span><strong>Buddy</strong><small><i /> My Pet Health guide</small></span></div>
+          <BuddyLogo />
+          <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> My Pet Health guide</small></span></div>
           <button className="header-new" onClick={startNewConversation}><Plus size={16} /> <span>New chat</span></button>
+          <AccountControl user={user} shopifyCustomer={shopifyCustomer} configured={supabaseConfigured} />
         </header>
 
         <section className="conversation" aria-live="polite">
@@ -161,7 +294,7 @@ export function ChatWidget() {
             <div className="day-divider"><span>Today</span></div>
             {conversation.messages.map((message, index) => (
               <div key={message.id} className={`message-row ${message.role}`}>
-                {message.role === "assistant" && <span className="assistant-avatar"><Sparkles size={16} /></span>}
+                {message.role === "assistant" && <span className="assistant-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="24px" /></span>}
                 <div className="message-stack">
                   <div className="message-bubble">
                     {message.content.split("\n").map((paragraph, paragraphIndex) => paragraph && <p key={paragraphIndex}>{paragraph}</p>)}
@@ -177,7 +310,7 @@ export function ChatWidget() {
             ))}
             {isLoading && (
               <div className="message-row assistant">
-                <span className="assistant-avatar"><Sparkles size={16} /></span>
+                <span className="assistant-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="24px" /></span>
                 <div className="typing" aria-label="Buddy is typing"><i /><i /><i /></div>
               </div>
             )}
@@ -187,10 +320,10 @@ export function ChatWidget() {
 
         <footer className="composer-wrap">
           <form className="composer" onSubmit={(event: FormEvent) => { event.preventDefault(); void sendMessage(); }}>
-            <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={4000} placeholder="Ask about food, feeding, or your dog…" aria-label="Your message" />
+            <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={4000} placeholder="Ask about food, feeding, or your pet…" aria-label="Your message" />
             <button type="submit" className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message"><ArrowUp size={20} /></button>
           </form>
-          <p>General pet-food guidance only. For urgent or ongoing health concerns, talk with your vet.</p>
+          <p>{storageNotice || "General pet-food guidance only. For urgent or ongoing health concerns, talk with your vet."}</p>
         </footer>
       </main>
     </div>

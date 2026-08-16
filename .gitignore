@@ -6,3 +6,16 @@ out/
 *.log
 .DS_Store
 coverage/
+logo/
+
+# Historical email processing: raw and intermediate data must remain local.
+*.mbox
+*.mbox.*
+*.eml
+email-processing/config.json
+email-processing/input/
+email-processing/working/
+email-processing/output/
+email-processing/logs/
+email-processing/**/__pycache__/
+email-processing/**/*.pyc

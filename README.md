@@ -14,16 +14,19 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Recommendation cards with price, view-product and future add-to-cart controls
 - OpenAI Responses API integration that stays entirely server-side
 - Fully functional local demo responder when no OpenAI key is configured
-- Previous conversations stored locally in the browser
+- Email/password sign-up and sign-in through Supabase Auth
+- Account conversations saved across devices through Supabase with local guest fallback
 - Placeholder staff admin at `/admin`
 - Safe development logs for retrieval, products, response mode and errors
 - Tests for retrieval and recommendation guardrails
+- Local-only, restartable MBOX knowledge extraction with privacy auditing and mandatory review
 
 ## Requirements
 
 - Node.js 20.9 or newer
 - npm
-- An OpenAI API key is optional for Phase 1
+- A Supabase project for customer accounts and cross-device chat history
+- An OpenAI API key is optional
 
 ## Install and run
 
@@ -45,13 +48,13 @@ If `.env.local` already exists, edit it instead of copying over it. Without `OPE
 | `OPENAI_API_KEY` | Enables live OpenAI responses | Server only |
 | `OPENAI_MODEL` | Selects the server-side response model | Server only |
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
-| `SUPABASE_URL` | Future Supabase project URL | Not used in Phase 1 |
-| `SUPABASE_ANON_KEY` | Future limited Supabase client key | Not used in Phase 1 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Future privileged server operations | Server only, never browser code |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Browser-safe project identifier |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key used with RLS | Browser-safe; never substitute a service-role key |
 | `SHOPIFY_STORE_DOMAIN` | Future Shopify store domain | Server configuration |
 | `SHOPIFY_STORE_URL` | All Good Petfood base URL used to create product links | Server configuration |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Future Storefront API access | Use according to Shopify token scope |
-| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Future Admin API access | Server only |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` | Future shared All Good customer login | Server configuration |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_SECRET` | Future confidential OAuth flow, when applicable | Server only |
 
 Secrets belong in `.env.local` locally and protected Vercel environment variables online. `.env.local` is ignored by Git.
 
@@ -68,6 +71,8 @@ To edit knowledge:
 5. Run `npm test`, `npm run typecheck` and `npm run build`.
 
 The app queries `KnowledgeService`, not the JSON file directly. A future Supabase/vector implementation can replace `LocalKnowledgeService` without changing the route or UI. The planned historical-email workflow is documented in [`docs/HISTORICAL_EMAIL_KNOWLEDGE.md`](docs/HISTORICAL_EMAIL_KNOWLEDGE.md).
+
+The implemented local MBOX processor lives in [`email-processing`](email-processing/README.md). Its raw input, working state, output and logs are Git-ignored. It uses no external AI and cannot add generated entries to Buddy until a human runs the explicit approval command. Approved imports are stored separately in [`knowledge/email-derived.json`](knowledge/email-derived.json).
 
 ## Mock products
 
@@ -112,17 +117,21 @@ Key boundaries:
 - `src/config` — server-only environment configuration
 - `knowledge` — human-editable local content
 
-## Conversation persistence and Supabase
+## Accounts and Supabase conversation persistence
 
-Phase 1 stores conversations in browser `localStorage`. It is convenient for local testing but is device-specific, unauthenticated and not suitable as durable customer data. The UI only calls `ConversationStore`, so Phase 3 can introduce a server/Supabase implementation.
+Guests keep conversations in browser `localStorage`. Signed-in customers use Supabase Auth and the `SupabaseConversationStore`; existing guest conversations are transferred after the first successful sign-in. If cloud storage is unavailable, the UI reports that the chat remains on the current device.
 
-The planned tables are:
+To enable accounts:
 
-- `customers(id, shopify_customer_id, created_at)`
-- `conversations(id, customer_id, title, created_at, updated_at)`
-- `messages(id, conversation_id, role, content, created_at, metadata)`
+1. Put only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`.
+2. In Supabase, open **SQL Editor**, paste [`supabase/migrations/202608160001_create_conversations.sql`](supabase/migrations/202608160001_create_conversations.sql), and run it once.
+3. Under **Authentication → URL Configuration**, set the local Site URL to `http://localhost:3000` and add the eventual HTTPS production URL to Redirect URLs.
+4. Under **Authentication → Providers → Email**, choose whether new accounts must confirm their email. Production should keep confirmation enabled and configure branded SMTP.
+5. Restart `npm run dev`, select **Sign in**, and create a test account.
 
-Supabase row-level security must ensure customers can access only their own records. Service-role credentials must remain server-only. A future pet profile should be structured, explicit, editable and consented — never uncontrolled AI memory.
+The migration enables Row Level Security and restricts every select, insert, update and delete to rows whose `user_id` equals `auth.uid()`. The app does not require a service-role key. Never place a service-role key in a variable beginning with `NEXT_PUBLIC_`.
+
+The current flow provides My Pet Health email accounts. Shared All Good Petfood identity is the next connection: configure Shopify's Customer Account API OAuth credentials and map the verified Shopify customer ID to the account. No Shopify password should ever be collected by My Pet Health.
 
 ## Shopify integration
 
@@ -159,8 +168,9 @@ npm run typecheck  # TypeScript
 npm test           # Vitest
 npm run build      # production build
 npm start          # serve a production build
+npm run email:test # synthetic privacy/pipeline tests
 ```
 
 ## Still to build
 
-Authoritative My Pet Health content, real Shopify products/cart behaviour, Supabase persistence, customer identity, streaming responses, staff authentication, knowledge editing, analytics, production hardening, Vercel deployment and the Shopify theme app extension remain later phases. See [`ROADMAP.md`](ROADMAP.md).
+Authoritative My Pet Health content, real Shopify products/cart behaviour, shared Shopify customer identity, password recovery, streaming responses, staff authentication, knowledge editing, analytics, production hardening, Vercel deployment and the Shopify theme app extension remain later phases. See [`ROADMAP.md`](ROADMAP.md).

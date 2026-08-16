@@ -1,8 +1,9 @@
 import entries from "../../../knowledge/entries.json";
+import emailDerivedEntries from "../../../knowledge/email-derived.json";
 import type { KnowledgeEntry } from "@/types";
 import type { KnowledgeService } from "./types";
 
-const knowledge = entries as KnowledgeEntry[];
+const knowledge = [...entries, ...emailDerivedEntries] as KnowledgeEntry[];
 const STOP_WORDS = new Set(["about", "could", "does", "have", "help", "should", "their", "there", "they", "what", "when", "which", "with", "would", "your"]);
 
 export function tokenize(value: string): string[] {

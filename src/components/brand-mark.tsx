@@ -1,18 +1,33 @@
-import { Heart, PawPrint } from "lucide-react";
+import Image from "next/image";
 
-export function BrandMark({ compact = false }: { compact?: boolean }) {
+export function BrandMark() {
   return (
-    <div className="brand-mark" aria-label="My Pet Health">
-      <span className="brand-icon" aria-hidden="true">
-        <Heart size={22} fill="currentColor" />
-        <PawPrint className="brand-paw" size={10} fill="currentColor" />
-      </span>
-      {!compact && (
-        <span className="brand-copy">
-          <strong>MY PET</strong>
-          <small>HEALTH</small>
-        </span>
-      )}
+    <div className="brand-mark">
+      <Image
+        className="site-logo-image"
+        src="/brand/main-logo.png"
+        alt="My Pet Health — Guidance, Care, Wellbeing"
+        width={950}
+        height={443}
+        sizes="224px"
+        loading="eager"
+      />
+    </div>
+  );
+}
+
+export function BuddyLogo() {
+  return (
+    <div className="buddy-logo">
+      <Image
+        className="brand-logo-image"
+        src="/brand/buddy-logo.png"
+        alt="Buddy — My Pet Health Guide"
+        width={1536}
+        height={1024}
+        sizes="92px"
+        loading="eager"
+      />
     </div>
   );
 }

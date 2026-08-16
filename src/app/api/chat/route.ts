@@ -1,7 +1,9 @@
 import { z } from "zod";
+import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
 import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
 import { productService } from "@/services/products/mock-product-service";
+import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 const messageSchema = z.object({
   id: z.string(),
@@ -13,8 +15,13 @@ const messageSchema = z.object({
 
 const bodySchema = z.object({ messages: z.array(messageSchema).min(1).max(40) });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const customerSession = readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+    if (!customerSession) {
+      return Response.json({ error: "Sign in with All Good Petfood to chat with Buddy." }, { status: 401 });
+    }
+
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {
       return Response.json({ error: "Please send a valid message." }, { status: 400 });
