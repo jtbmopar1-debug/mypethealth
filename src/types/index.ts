@@ -6,6 +6,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   productIds?: string[];
+  products?: ProductRecommendation[];
 }
 
 export interface Conversation {
@@ -47,6 +48,16 @@ export interface Product {
 export interface ProductRecommendation {
   product: Product;
   reason: string;
+}
+
+export interface CustomerPurchase {
+  productId: string | null;
+  variantId: string | null;
+  title: string;
+  variantTitle: string | null;
+  productType: string | null;
+  quantity: number;
+  purchasedAt: string;
 }
 
 export interface KnowledgeEntry {

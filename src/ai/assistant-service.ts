@@ -2,7 +2,7 @@ import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import type { GenerateContentResponse } from "@google/genai";
 import { serverConfig } from "@/config/env";
-import type { ChatMessage, KnowledgeEntry, ProductRecommendation } from "@/types";
+import type { ChatMessage, CustomerPurchase, KnowledgeEntry, ProductRecommendation } from "@/types";
 import { buildGroundedInstructions } from "./system-prompt";
 import { createLocalResponse, type AssistantResult } from "./local-responder";
 
@@ -16,10 +16,34 @@ function needsContinuation(content: string) {
   return /(?:\b(?:from|with|and|or|but|because|that|to|for|of|in|on|if|when|as|the|a|an|i|we|they|it))$/i.test(trimmed);
 }
 
+function isTemporaryModelOutage(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  return /(?:\"code\"\s*:\s*503|\"status\"\s*:\s*\"UNAVAILABLE\"|high demand)/i.test(error.message);
+}
+
+async function retryTemporaryModelOutage<T>(operation: () => Promise<T>) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isTemporaryModelOutage(error)) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 750));
+    return operation();
+  }
+}
+
 export async function answerCustomer(
   messages: ChatMessage[],
   knowledge: KnowledgeEntry[],
-  recommendations: ProductRecommendation[]
+  recommendations: ProductRecommendation[],
+  options: {
+    productsDisplayed?: boolean;
+    discoveryOnly?: boolean;
+    selectionNeedsVetting?: boolean;
+    recentPurchases?: CustomerPurchase[];
+    primaryPurchaseTitles?: string[];
+    purchaseHistoryDisplayed?: boolean;
+    purchaseHistoryUnavailable?: boolean;
+  } = {}
 ): Promise<AssistantResult> {
   if (!serverConfig.geminiApiKey) {
     return createLocalResponse(messages, knowledge, recommendations);
@@ -28,22 +52,22 @@ export async function answerCustomer(
   const firstUserIndex = messages.findIndex((message) => message.role === "user");
   const conversation = firstUserIndex >= 0 ? messages.slice(firstUserIndex) : messages;
   const gemini = new GoogleGenAI({ apiKey: serverConfig.geminiApiKey });
-  const response = await gemini.models.generateContent({
+  const response = await retryTemporaryModelOutage(() => gemini.models.generateContent({
     model: serverConfig.geminiModel,
     contents: conversation.map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
       parts: [{ text: message.content }]
     })),
     config: {
-      systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product)),
+      systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product), options),
       temperature: 0.35,
-      maxOutputTokens: 1600
+      maxOutputTokens: 900
     }
-  });
+  }));
 
   let content = response.text || "";
   if ((candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) && content) {
-    const continuation = await gemini.models.generateContent({
+    const continuation = await retryTemporaryModelOutage(() => gemini.models.generateContent({
       model: serverConfig.geminiModel,
       contents: [
         ...conversation.map((message) => ({
@@ -54,11 +78,11 @@ export async function answerCustomer(
         { role: "user", parts: [{ text: "Continue exactly from where you stopped. Do not repeat the earlier text. Keep the same tone and finish the answer naturally." }] }
       ],
       config: {
-        systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product)),
+        systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product), options),
         temperature: 0.25,
-        maxOutputTokens: 900
+        maxOutputTokens: 450
       }
-    });
+    }));
     const continuationText = continuation.text || "";
     if (continuationText) content = content.replace(/\s+$/, "") + " " + continuationText.trim();
   }

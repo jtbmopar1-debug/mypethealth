@@ -1,9 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 export async function GET(request: NextRequest) {
-  const session = readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+  const session = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
   return NextResponse.json(session ? {
     authenticated: true,
     customer: {

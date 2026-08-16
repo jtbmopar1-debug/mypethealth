@@ -2,13 +2,30 @@
 
 import Image from "next/image";
 import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import { useState } from "react";
 import type { ProductRecommendation } from "@/types";
 
 export function ProductCard({ recommendation }: { recommendation: ProductRecommendation }) {
   const { product, reason } = recommendation;
+  const [cartStatus, setCartStatus] = useState("");
   const variantId = product.variantId?.split("/").pop();
   let storeOrigin = "https://allgoodpetfood.co.nz";
   try { storeOrigin = new URL(product.url).origin; } catch { /* fallback for local mock products */ }
+
+  function addToStoreCart() {
+    if (!variantId) return;
+    setCartStatus("Adding to your All Good Petfood cart…");
+    const addUrl = `${storeOrigin}/cart/add?id=${encodeURIComponent(variantId)}&quantity=1`;
+    const cartWindow = window.open(addUrl, "buddy-shopify-cart", "popup,width=520,height=680");
+    if (!cartWindow) {
+      setCartStatus("Your browser blocked the cart update. Please allow pop-ups and try again.");
+      return;
+    }
+    window.setTimeout(() => {
+      cartWindow.close();
+      setCartStatus("Added to your All Good Petfood cart.");
+    }, 2500);
+  }
 
   return (
     <article className="product-card">
@@ -25,13 +42,14 @@ export function ProductCard({ recommendation }: { recommendation: ProductRecomme
           <a href={product.url} target="_blank" rel="noreferrer" className="button button-secondary" onClick={(event) => product.url.startsWith("#") && event.preventDefault()}>
             View product <ArrowUpRight size={15} />
           </a>
-          {variantId && <a
-            className="button button-dark"
-            href={`${storeOrigin}/cart/${variantId}:1`}
-          >
+          {variantId && <button type="button" className="button button-dark" onClick={addToStoreCart}>
             <ShoppingBag size={14} /> Add to cart
-          </a>}
+          </button>}
         </div>
+        {cartStatus && <small className="cart-status" role="status">
+          {cartStatus}
+          {cartStatus.startsWith("Added") && <> · <a href={`${storeOrigin}/cart`} target="_blank" rel="noreferrer">View cart</a></>}
+        </small>}
       </div>
     </article>
   );

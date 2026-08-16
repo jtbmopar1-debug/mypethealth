@@ -1,11 +1,30 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { getServerSupabaseClient } from "@/services/supabase/server";
-import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 // These values are primary keys in Supabase, so keep the API contract aligned
 // with the database instead of accepting IDs that will fail at upsert time.
 const idSchema = z.string().uuid();
+const productSchema = z.object({
+  id: z.string().min(1).max(200),
+  variantId: z.string().min(1).max(200).optional(),
+  title: z.string().min(1).max(500),
+  description: z.string().max(20000),
+  ingredients: z.array(z.string().max(500)).max(100),
+  price: z.number().nonnegative(),
+  compareAtPrice: z.number().nonnegative().optional(),
+  currency: z.literal("NZD"),
+  image: z.string().max(3000),
+  url: z.string().max(3000),
+  retailer: z.string().max(200),
+  tags: z.array(z.string().max(300)).max(200),
+  availability: z.enum(["in_stock", "out_of_stock"]),
+});
+const recommendationSchema = z.object({
+  product: productSchema,
+  reason: z.string().max(2000),
+});
 const messageSchema = z.object({
   id: idSchema,
   role: z.enum(["user", "assistant"]),
@@ -15,6 +34,7 @@ const messageSchema = z.object({
   content: z.string().min(1).max(12000),
   createdAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
   productIds: z.array(z.string().max(200)).max(20).optional(),
+  products: z.array(recommendationSchema).max(10).optional(),
 });
 const conversationSchema = z.object({
   id: idSchema,
@@ -35,7 +55,7 @@ interface ConversationRow {
 }
 
 function customer(request: NextRequest) {
-  return readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+  return readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
 }
 
 function fromRow(row: ConversationRow) {

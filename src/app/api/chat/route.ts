@@ -3,7 +3,8 @@ import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
 import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
-import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
 
 const messageSchema = z.object({
   id: z.string(),
@@ -41,6 +42,16 @@ function wantsProductSuggestion(message: string) {
     "best cat food",
     "product for",
     "food for",
+    "do you have",
+    "do you guys do",
+    "do you sell",
+    "do you stock",
+    "do you carry",
+    "have you got",
+    "got any",
+    "what about",
+    "show me treats",
+    "find treats",
   ];
 
   if (explicitPhrases.some((phrase) => text.includes(phrase))) return true;
@@ -49,16 +60,94 @@ function wantsProductSuggestion(message: string) {
   // Requests such as “suggest a better food” and “is there a better option?”
   // are still explicit product-shopping intent.
   return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
-    || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text);
+    || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text)
+    || /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i.test(text)
+    || /\b(?:do you(?: guys)? (?:do|sell|stock|carry)|have you got|got any)\b/i.test(text);
+}
+
+function productSearchTerms(message: string) {
+  const stopWords = new Set([
+    "a", "an", "and", "any", "are", "about", "better", "can", "choose", "could", "do", "find", "for", "have",
+    "carry", "got", "guy", "guys", "help", "i", "in", "is", "it", "looking", "me", "need", "of", "or", "please",
+    "product", "products", "recommend", "sell", "show", "some", "stock", "suggest", "the", "to", "want", "what", "which", "with", "you",
+  ]);
+  return message.toLowerCase().split(/[^a-z0-9]+/)
+    .filter((term) => term.length > 1 && !stopWords.has(term))
+    .map((term) => term.length > 3 && term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term);
 }
 
 function wantsSpecials(message: string) {
   return /\b(?:this\s+week(?:'s|’s)?\s+specials?|weekly\s+specials?|sale\s+items?|special\s+offers?)\b/i.test(message);
 }
 
+function isBroadCategoryQuestion(message: string) {
+  return /\b(?:raw\s+food|dog\s+food|cat\s+food|pet\s+food|treats?|chews?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|cat\s+litter|grooming|flea\s+(?:products?|treatments?)|worming)\b/i.test(message)
+    && /\b(?:do you(?: guys)? (?:do|sell|stock|carry|have)|have you got|got any|what .* do you have)\b/i.test(message);
+}
+
+function isShortCategoryRefinement(message: string) {
+  const terms = productSearchTerms(message);
+  return terms.length > 0 && terms.length <= 4
+    && /\b(?:any|with|without|lamb|beef|chicken|turkey|venison|fish|salmon|tuna|pork|rabbit|grain|raw|freeze[- ]?dried|dry|wet)\b/i.test(message);
+}
+
+function hasRecommendationContext(message: string) {
+  const hasSpecies = /\b(?:dog|puppy|pup|cat|kitten)\b/i.test(message);
+  const hasLifeStage = /\b\d+(?:\.\d+)?\s*(?:weeks?|months?|years?|yo)\b/i.test(message)
+    || /\b(?:puppy|pup|kitten|adult|senior)\b/i.test(message);
+  const hasSize = /\b\d+(?:\.\d+)?\s*(?:kg|kilos?)\b/i.test(message)
+    || /\b(?:small|medium|large|giant)\b/i.test(message);
+  const hasSensitivityContext = /\b(?:sensitive|allerg|intoleran|dietary|condition|no (?:issues?|allergies|sensitivities)|none)\b/i.test(message);
+  return hasSpecies && hasLifeStage && hasSize && hasSensitivityContext;
+}
+
+function needsHealthKnowledge(message: string) {
+  return /\b(?:itch|yeast|allerg|sensitive|stomach|diarrh|vomit|skin|coat|weight|underweight|overweight|feed(?:ing)?|portion|diet|nutrition|health|condition|symptom|puppy|kitten|senior|transition)\b/i.test(message);
+}
+
+function explicitlyWantsPurchaseHistory(message: string) {
+  return /\b(?:order history|purchase history|previous(?:ly)? (?:bought|ordered)|last (?:bought|ordered|purchase|order)|bought last|ordered last|usual (?:food|order|product)|reorder|re-order|buy (?:it|that|them) again|what did i (?:buy|order))\b/i.test(message);
+}
+
+function purchaseHistoryCouldAnswer(message: string) {
+  return explicitlyWantsPurchaseHistory(message)
+    || /\b(?:how much|feeding amount|portion|daily amount)\b[\s\S]{0,60}\b(?:feed|food|give|eat)\b/i.test(message)
+    || /\b(?:feed|give)\b[\s\S]{0,40}\bhow much\b/i.test(message);
+}
+
+function wantsPurchasedProductCards(message: string) {
+  return /\b(?:reorder|re-order|buy (?:it|that|them) again|usual (?:food|order|product)|what did i (?:buy|order)|last (?:bought|ordered))\b/i.test(message);
+}
+
+function purchasesRelevantToQuestion<T extends { title: string; productType: string | null }>(message: string, purchases: T[]) {
+  if (explicitlyWantsPurchaseHistory(message)) return purchases.slice(0, 10);
+
+  const asksAboutPuppy = /\b(?:puppy|pup)\b/i.test(message);
+  const asksAboutKitten = /\bkitten\b/i.test(message);
+  const asksAboutDog = asksAboutPuppy || /\bdog\b/i.test(message);
+  const asksAboutCat = asksAboutKitten || /\bcat\b/i.test(message);
+  const foodProducts = purchases.filter((purchase) => {
+    const searchable = `${purchase.title} ${purchase.productType || ""}`;
+    if (!/\b(?:food|feed|diet|kibble|raw|meal|puppy|kitten)\b/i.test(searchable)) return false;
+    if (asksAboutDog && /\bcat\b/i.test(searchable) && !/\bdog\b/i.test(searchable)) return false;
+    if (asksAboutCat && /\bdog\b/i.test(searchable) && !/\bcat\b/i.test(searchable)) return false;
+    return true;
+  });
+
+  return foodProducts.sort((left, right) => {
+    const leftText = `${left.title} ${left.productType || ""}`;
+    const rightText = `${right.title} ${right.productType || ""}`;
+    const leftLifeStageMatch = asksAboutPuppy && /\b(?:puppy|junior)\b/i.test(leftText)
+      || asksAboutKitten && /\b(?:kitten|junior)\b/i.test(leftText);
+    const rightLifeStageMatch = asksAboutPuppy && /\b(?:puppy|junior)\b/i.test(rightText)
+      || asksAboutKitten && /\b(?:kitten|junior)\b/i.test(rightText);
+    return Number(rightLifeStageMatch) - Number(leftLifeStageMatch);
+  }).slice(0, 5);
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const customerSession = readShopifySession(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+    const customerSession = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
     if (!customerSession) {
       return Response.json({ error: "Sign in with All Good Petfood to chat with Buddy." }, { status: 401 });
     }
@@ -72,31 +161,130 @@ export async function POST(request: NextRequest) {
     const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
     const latestUserMessage = userMessages.at(-1) ?? "";
     const conversationQuery = userMessages.join(" ");
-    const knowledge = await knowledgeService.search(conversationQuery, 3);
     const productService = new ShopifyProductService();
-    // Product intent can be established in an earlier turn, followed by
-    // ordinary pet details such as age or weight. Evaluate the whole user
-    // conversation so those follow-ups do not discard the catalogue context.
-    const recommendations = userMessages.some(wantsSpecials)
+    const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    const previousProductIds = previousAssistant?.productIds ?? [];
+    const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
+    const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
+    const recommendationContextReady = hasRecommendationContext(conversationQuery);
+    const latestProductRequest = [...userMessages].reverse().find(wantsProductSuggestion) ?? latestUserMessage;
+    const broadCategoryQuestion = isBroadCategoryQuestion(latestUserMessage);
+    const broadCategoryIndex = userMessages.findLastIndex(isBroadCategoryQuestion);
+    const activeBroadCategoryRequest = broadCategoryIndex >= 0;
+    const latestDirectTerms = productSearchTerms(latestUserMessage);
+    const refiningBroadCategory = !broadCategoryQuestion
+      && activeBroadCategoryRequest
+      && isShortCategoryRefinement(latestUserMessage);
+    const genericBroadContinuation = !broadCategoryQuestion
+      && activeBroadCategoryRequest
+      && latestHasProductIntent
+      && latestDirectTerms.length === 0;
+    const catalogueOnlyTurn = (wantsSpecials(latestUserMessage)
+      || broadCategoryQuestion
+      || refiningBroadCategory
+      || genericBroadContinuation)
+      && !needsHealthKnowledge(latestUserMessage);
+    const knowledge = catalogueOnlyTurn ? [] : await knowledgeService.search(conversationQuery, 2);
+    const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(latestUserMessage);
+    let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
+    let purchaseHistoryUnavailable = false;
+    if (purchaseHistoryRelevant && customerSession.accessToken) {
+      try {
+        recentPurchases = await fetchRecentCustomerPurchases(customerSession.accessToken);
+      } catch (error) {
+        purchaseHistoryUnavailable = true;
+        console.warn("[chat] purchase history unavailable", error instanceof Error ? error.message : "Unknown error");
+      }
+    }
+    const relevantPurchases = purchasesRelevantToQuestion(latestUserMessage, recentPurchases);
+    const continuingSelection = !latestHasProductIntent
+      && earlierProductIntent
+      && (previousProductIds.length <= 1 || activeBroadCategoryRequest)
+      && (recommendationContextReady || refiningBroadCategory);
+    let recommendations = wantsSpecials(latestUserMessage)
       ? await productService.getSpecials(6)
-      : userMessages.some(wantsProductSuggestion)
-        ? await productService.recommendProducts([...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], 2)
+      : [];
+
+    if (!wantsSpecials(latestUserMessage) && (latestHasProductIntent || continuingSelection)) {
+      const broadCategoryMessages = broadCategoryIndex >= 0
+        ? userMessages.slice(broadCategoryIndex).filter((message, index) => index === 0 || isShortCategoryRefinement(message))
         : [];
+      const broadCategorySearch = broadCategoryMessages.length > 0 ? broadCategoryMessages.join(" ") : latestProductRequest;
+      const useBroadCategorySearch = broadCategoryQuestion
+        || refiningBroadCategory
+        || genericBroadContinuation
+        || (activeBroadCategoryRequest && continuingSelection);
+      const searchSource = useBroadCategorySearch
+        ? broadCategorySearch
+        : latestHasProductIntent ? latestUserMessage : latestProductRequest;
+      const directTerms = productSearchTerms(searchSource);
+      const categoryRequiredTerms = useBroadCategorySearch
+        ? [...new Set(broadCategoryMessages.flatMap(productSearchTerms).filter((term) => term !== "food"))]
+        : [];
+      const discoveryOnly = broadCategoryQuestion;
+      const limit = discoveryOnly ? 6 : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
+      recommendations = await productService.recommendProducts(directTerms.length > 0
+        ? [directTerms.join(" "), ...directTerms]
+        : [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], limit, {
+          includeTreatAddon: recommendationContextReady,
+          availableOnly: !discoveryOnly,
+          allowFallback: !discoveryOnly,
+          requiredTerms: categoryRequiredTerms.length > 0 ? categoryRequiredTerms : undefined,
+        });
+    }
+
+    const referencedProducts = !latestHasProductIntent && !activeBroadCategoryRequest && previousProductIds.length > 0
+      ? (await Promise.all(previousProductIds.slice(0, 6).map((productId) => productService.getProduct(productId))))
+        .filter((product) => product !== null)
+        .map((product) => ({ product, reason: "Product discussed earlier in this conversation." }))
+      : [];
+    const recentProductIds = [...new Set(relevantPurchases.map((purchase) => purchase.productId).filter((id): id is string => Boolean(id)))];
+    const purchasedProducts = (await Promise.all(recentProductIds.slice(0, 6).map((productId) => productService.getProduct(productId))))
+      .filter((product) => product !== null)
+      .map((product) => ({ product, reason: "A product from this customer's recent purchase history." }));
+    const groundingRecommendations = recommendations.length > 0
+      ? recommendations
+      : referencedProducts.length > 0
+        ? referencedProducts
+        : purchasedProducts;
+    const discoveryOnly = broadCategoryQuestion;
+    const selectionNeedsVetting = (refiningBroadCategory || genericBroadContinuation) && !recommendationContextReady;
+    const purchaseHistoryDisplayed = wantsPurchasedProductCards(latestUserMessage) && purchasedProducts.length > 0;
+    const displayRecommendations = purchaseHistoryDisplayed
+      ? purchasedProducts.slice(0, 3)
+      : discoveryOnly
+      ? []
+      : continuingSelection
+      ? recommendations.filter(({ product }) => !previousProductIds.includes(product.id))
+      : recommendations;
 
     console.info("[chat] user message", { length: latestUserMessage.length });
     console.info("[chat] knowledge retrieved", knowledge.map((entry) => entry.id));
     console.info("[chat] products retrieved", recommendations.map(({ product }) => product.id));
 
-    const result = await answerCustomer(messages, knowledge, recommendations);
+    const result = await answerCustomer(messages, knowledge, groundingRecommendations, {
+      productsDisplayed: displayRecommendations.length > 0,
+      discoveryOnly,
+      selectionNeedsVetting,
+      recentPurchases: recentPurchases.slice(0, 10),
+      primaryPurchaseTitles: relevantPurchases.map((purchase) => purchase.title),
+      purchaseHistoryDisplayed,
+      purchaseHistoryUnavailable: explicitlyWantsPurchaseHistory(latestUserMessage)
+        && (purchaseHistoryUnavailable || !customerSession.accessToken),
+    });
     console.info("[chat] assistant response", { mode: result.mode, length: result.content.length });
 
     return Response.json({
       message: result.content,
-      products: result.recommendations,
+      products: displayRecommendations,
+      resetProductContext: discoveryOnly,
       mode: result.mode
     });
   } catch (error) {
     console.error("[chat] error", error instanceof Error ? { name: error.name, message: error.message } : "Unknown error");
-    return Response.json({ error: "The assistant is having trouble responding. Please try again." }, { status: 500 });
+    return Response.json({
+      error: "The assistant is having trouble responding. Please try again.",
+      ...(process.env.NODE_ENV === "development" && error instanceof Error ? { detail: error.message } : {}),
+    }, { status: 500 });
   }
 }

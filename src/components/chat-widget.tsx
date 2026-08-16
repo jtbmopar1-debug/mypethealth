@@ -195,7 +195,7 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages })
       });
-      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; error?: string };
+      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; error?: string };
       if (!response.ok || !data.message) throw new Error(data.error || "No response received");
 
       const assistantMessage: ChatMessage = {
@@ -203,7 +203,12 @@ export function ChatWidget() {
         role: "assistant",
         content: data.message,
         createdAt: new Date().toISOString(),
-        productIds: data.products?.map(({ product }) => product.id)
+        productIds: data.resetProductContext
+          ? undefined
+          : data.products?.length
+          ? data.products.map(({ product }) => product.id)
+          : [...messages].reverse().find((message) => message.role === "assistant")?.productIds,
+        products: data.products ?? [],
       };
       const completed = { ...nextConversation, updatedAt: new Date().toISOString(), messages: [...messages, assistantMessage] };
       setRecommendations((current) => ({ ...current, [assistantMessage.id]: data.products ?? [] }));
@@ -329,7 +334,7 @@ export function ChatWidget() {
           <div className="conversation-inner">
             <div className="day-divider"><span>Today</span></div>
             {conversation.messages.map((message, index) => (
-              <div key={message.id} className={`message-row ${message.role}`}>
+              <div key={message.id} className={`message-row ${message.role} ${index === 0 ? "welcome-message" : ""}`}>
                 {message.role === "assistant" && <span className="assistant-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="24px" /></span>}
                 <div className="message-stack">
                   <div className="message-bubble">
@@ -340,7 +345,7 @@ export function ChatWidget() {
                       {QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => void sendMessage(prompt)}>{prompt}</button>)}
                     </div>
                   )}
-                  {(recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} />)}
+                  {(message.products ?? recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} />)}
                 </div>
               </div>
             ))}

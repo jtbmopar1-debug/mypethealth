@@ -120,6 +120,9 @@ button { color: inherit; }
 .user .message-bubble { color: white; background: var(--brand-navy); border-color: var(--brand-navy); border-radius: 19px 7px 19px 19px; box-shadow: 0 7px 18px rgba(20,44,115,.16); }
 .quick-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .quick-prompts button { padding: 9px 12px; color: var(--brand-navy); background: white; border: 1px solid #ccd4e3; border-radius: 999px; cursor: pointer; font-size: 10px; font-weight: 600; transition: border-color .15s, background .15s; }
+.welcome-message .message-stack { width: calc(100% - 44px); max-width: none; }
+.welcome-message .quick-prompts { flex-wrap: nowrap; }
+.welcome-message .quick-prompts button { white-space: nowrap; }
 .quick-prompts button:hover { border-color: var(--brand-aqua); background: var(--brand-aqua-light); }
 .typing { display: flex; gap: 5px; padding: 15px 18px; background: white; border: 1px solid var(--line); border-radius: 7px 18px 18px 18px; }
 .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-aqua); animation: bob 1s infinite ease-in-out; }
@@ -192,6 +195,8 @@ button { color: inherit; }
   .conversation-inner { width: calc(100% - 24px); padding-top: 17px; }
   .day-divider { margin-bottom: 20px; }
   .message-stack { max-width: calc(100% - 40px); }
+  .welcome-message .message-stack { width: auto; max-width: calc(100% - 40px); }
+  .welcome-message .quick-prompts { flex-wrap: wrap; }
   .message-bubble { padding: 13px 14px; font-size: 12px; }
   .history-open { padding: 10px 10px; }
   .history-delete { width: 26px; height: 26px; }

@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       firstName: customer.firstName,
       lastName: customer.lastName,
       idToken: tokens.id_token,
+      accessToken: tokens.access_token,
       expiresAt: Date.now() + maxAge * 1000,
     });
 

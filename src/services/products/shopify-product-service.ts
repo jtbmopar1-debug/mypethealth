@@ -10,7 +10,7 @@ interface ShopifyProductNode {
   description: string;
   handle: string;
   productType: string;
-  tags: string[];
+  tags?: string[];
   availableForSale: boolean;
   selectedOrFirstAvailableVariant: {
     id: string;
@@ -42,6 +42,29 @@ interface StorefrontTokenResponse {
   errors?: { message: string }[];
 }
 
+interface PublicShopifyVariant {
+  id: number;
+  available: boolean;
+  price: string;
+  compare_at_price: string | null;
+}
+
+interface PublicShopifyProduct {
+  id: number;
+  title: string;
+  handle: string;
+  body_html: string;
+  product_type: string;
+  tags: string[] | string;
+  variants: PublicShopifyVariant[];
+  image: { src: string } | null;
+  images?: { src: string }[];
+}
+
+interface PublicProductsResponse {
+  products?: PublicShopifyProduct[];
+}
+
 const PRODUCTS_QUERY = `
   query BuddyProducts($first: Int!, $query: String) {
     products(first: $first, query: $query, sortKey: TITLE) {
@@ -51,7 +74,6 @@ const PRODUCTS_QUERY = `
         description
         handle
         productType
-        tags
         availableForSale
         selectedOrFirstAvailableVariant { id availableForSale compareAtPrice { amount currencyCode } }
         onlineStoreUrl
@@ -73,10 +95,52 @@ const CREATE_STOREFRONT_TOKEN = `
 
 let sharedAccessTokenCache: { token: string; expiresAt: number } | null = null;
 let sharedAdminTokenCache: { token: string; expiresAt: number } | null = null;
+let sharedPublicProductCache: { products: Product[]; expiresAt: number } | null = null;
+let authenticatedCatalogueRetryAfter = 0;
+
+function plainText(html: string) {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toPublicProduct(node: PublicShopifyProduct): Product | null {
+  const variant = node.variants.find((item) => item.available) || node.variants[0];
+  if (!variant) return null;
+  const rawTags = Array.isArray(node.tags) ? node.tags : node.tags.split(",");
+  const tags = [...new Set([
+    ...rawTags,
+    node.product_type,
+    ...node.title.split(/[^a-z0-9]+/i),
+  ].map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
+  const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
+  return {
+    id: String(node.id),
+    variantId: String(variant.id),
+    title: node.title,
+    description: plainText(node.body_html) || `Available from All Good Petfood: ${node.title}.`,
+    ingredients: [],
+    price: Number(variant.price) || 0,
+    compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) || undefined : undefined,
+    currency: "NZD",
+    image: node.image?.src || node.images?.[0]?.src || "/brand/buddy-paw.png",
+    url: `${storeUrl}/products/${node.handle}`,
+    retailer: "All Good Petfood",
+    tags,
+    availability: variant.available ? "in_stock" : "out_of_stock",
+  };
+}
 
 function toProduct(node: ShopifyProductNode): Product {
   const tags = [...new Set([
-    ...node.tags,
+    ...(node.tags || []),
     node.productType,
     ...node.title.split(/[^a-z0-9]+/i),
   ].map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
@@ -108,6 +172,35 @@ export class ShopifyProductService implements ProductService {
       serverConfig.shopifyStorefrontAccessToken
       || (serverConfig.shopifyAppClientId && serverConfig.shopifyAppClientSecret)
     ));
+  }
+
+  private async fetchPublicProducts(query?: string) {
+    if (!sharedPublicProductCache || sharedPublicProductCache.expiresAt <= Date.now()) {
+      const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
+      const collected: Product[] = [];
+      for (let page = 1; page <= 10; page += 1) {
+        const response = await fetch(`${storeUrl}/products.json?limit=250&page=${page}`, {
+          next: { revalidate: 300 },
+        });
+        if (!response.ok) throw new Error(`Shopify public catalogue returned ${response.status}`);
+        const batch = (await response.json() as PublicProductsResponse).products || [];
+        collected.push(...batch.map(toPublicProduct).filter((product): product is Product => Boolean(product)));
+        if (batch.length < 250) break;
+      }
+      sharedPublicProductCache = { products: collected, expiresAt: Date.now() + 5 * 60 * 1000 };
+    }
+
+    const products = sharedPublicProductCache.products;
+    if (!query) return products;
+    const terms = query
+      .replace(/\b(?:title|tag|product_type):/gi, " ")
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((term) => term.length > 1);
+    return products.filter((product) => {
+      const searchable = `${product.title} ${product.description} ${product.tags.join(" ")}`.toLowerCase();
+      return terms.every((term) => searchable.includes(term));
+    });
   }
 
   async getStorefrontAccessToken() {
@@ -148,27 +241,32 @@ export class ShopifyProductService implements ProductService {
   }
 
   private async fetchProducts(query?: string) {
-    if (!this.configured()) return [];
+    if (!this.configured() || authenticatedCatalogueRetryAfter > Date.now()) return this.fetchPublicProducts(query);
     if (!query && this.cache && this.cache.expiresAt > Date.now()) return this.cache.products;
-
-    const endpoint = `https://${serverConfig.shopifyStorefrontApiDomain}/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`;
-    const accessToken = await this.getStorefrontAccessToken();
-    if (!accessToken) return [];
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": accessToken,
-      },
-      body: JSON.stringify({ query: PRODUCTS_QUERY, variables: { first: 100, query: query || null } }),
-      next: { revalidate: 300 },
-    });
-    if (!response.ok) throw new Error(`Shopify Storefront API returned ${response.status}`);
-    const result = await response.json() as ShopifyResponse;
-    if (result.errors?.length) throw new Error(result.errors[0].message);
-    const products = (result.data?.products?.nodes || []).map(toProduct);
-    if (!query) this.cache = { expiresAt: Date.now() + 5 * 60 * 1000, products };
-    return products;
+    try {
+      const endpoint = `https://${serverConfig.shopifyStorefrontApiDomain}/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`;
+      const accessToken = await this.getStorefrontAccessToken();
+      if (!accessToken) return this.fetchPublicProducts(query);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Storefront-Access-Token": accessToken,
+        },
+        body: JSON.stringify({ query: PRODUCTS_QUERY, variables: { first: 100, query: query || null } }),
+        next: { revalidate: 300 },
+      });
+      if (!response.ok) throw new Error(`Shopify Storefront API returned ${response.status}`);
+      const result = await response.json() as ShopifyResponse;
+      if (result.errors?.length) throw new Error(result.errors[0].message);
+      const products = (result.data?.products?.nodes || []).map(toProduct);
+      if (!query) this.cache = { expiresAt: Date.now() + 5 * 60 * 1000, products };
+      return products;
+    } catch (error) {
+      authenticatedCatalogueRetryAfter = Date.now() + 5 * 60 * 1000;
+      console.warn("[shopify-products] authenticated catalogue unavailable; using public catalogue", error instanceof Error ? error.message : "Unknown error");
+      return this.fetchPublicProducts(query);
+    }
   }
 
   private async products() {
@@ -187,35 +285,79 @@ export class ShopifyProductService implements ProductService {
   }
 
   async getProduct(id: string) {
-    return (await this.products()).find((product) => product.id === id) ?? null;
+    const normalizedId = id.split("/").at(-1) || id;
+    return (await this.products()).find((product) => product.id === id || product.id === normalizedId) ?? null;
   }
 
   async getProductsByTag(tag: string) {
     return (await this.products()).filter((product) => product.availability === "in_stock" && product.tags.includes(tag.toLowerCase()));
   }
 
-  async recommendProducts(tags: string[], limit = 2): Promise<ProductRecommendation[]> {
-    const products = (await this.products()).filter((product) => product.availability === "in_stock");
-    const normalizedTags = tags.map((tag) => tag.toLowerCase());
-    return products
-      .map((product) => ({ product, score: normalizedTags.reduce((score, tag) => score + (product.tags.includes(tag) ? 1 : 0), 0) }))
-      .sort((a, b) => b.score - a.score)
-      .filter(({ score }) => normalizedTags.length === 0 || score > 0)
-      .slice(0, limit)
-      .map(({ product, score }) => ({
+  async recommendProducts(tags: string[], limit = 2, options: { includeTreatAddon?: boolean; availableOnly?: boolean; allowFallback?: boolean; requiredTerms?: string[] } = {}): Promise<ProductRecommendation[]> {
+    const products = (await this.products()).filter((product) => options.availableOnly === false || product.availability === "in_stock");
+    const normalizedTags = tags.map((tag) => tag.toLowerCase()).filter(Boolean);
+    const requiredTerms = (options.requiredTerms || []).map((term) => term.toLowerCase()).filter(Boolean);
+    const ranked = products
+      .filter((product) => {
+        if (requiredTerms.length === 0) return true;
+        const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
+        return requiredTerms.every((term) => titleAndTags.includes(term))
+          && (!requiredTerms.includes("raw") || /\braw\b/i.test(product.title));
+      })
+      .map((product) => ({
+        product,
+        score: normalizedTags.reduce((score, tag) => {
+          const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
+          const description = product.description.toLowerCase();
+          return score + (titleAndTags.includes(tag) ? 3 : description.includes(tag) ? 1 : 0);
+        }, 0),
+      }))
+      .sort((a, b) => b.score - a.score);
+    const matching = normalizedTags.length === 0 ? ranked : ranked.filter(({ score }) => score > 0);
+    const wantsTreat = normalizedTags.some((tag) => /\b(?:treat|chew|ear|snack)\b/i.test(tag));
+    const primaryLimit = wantsTreat ? limit : Math.max(1, limit - 1);
+    const selected = (matching.length > 0 ? matching : options.allowFallback === false ? [] : ranked).slice(0, primaryLimit);
+    const recommendations = selected.map(({ product, score }) => {
+      const searchable = `${product.title} ${product.description} ${product.tags.join(" ")}`.toLowerCase();
+      const matchedTerms = [...new Set(normalizedTags.filter((tag) => searchable.includes(tag)))];
+      return {
         product,
         reason: score > 0
-          ? `Matches the ${normalizedTags.filter((tag) => product.tags.includes(tag)).join(" and ")} considerations we discussed.`
+          ? `Matches the ${matchedTerms.join(" and ")} considerations we discussed.`
           : "Available from the All Good Petfood catalogue for comparison.",
-      }));
+      };
+    });
+
+    if (options.includeTreatAddon && !wantsTreat && recommendations.length < limit) {
+      const species = normalizedTags.find((tag) => tag === "dog" || tag === "cat");
+      const addOn = ranked.find(({ product }) => {
+        if (selected.some((item) => item.product.id === product.id)) return false;
+        const searchable = `${product.title} ${product.description} ${product.tags.join(" ")}`.toLowerCase();
+        return /\b(?:treat|chew|ear|snack)\b/i.test(searchable) && (!species || searchable.includes(species));
+      });
+      if (addOn) recommendations.push({
+        product: addOn.product,
+        reason: "Optional treat add-on from All Good Petfood.",
+      });
+    }
+
+    return recommendations;
   }
 
   async getSpecials(limit = 6): Promise<ProductRecommendation[]> {
-    const products = (await this.products()).filter((product) => product.availability === "in_stock");
-    const specials = products.filter((product) =>
+    // The store prefixes promoted product titles with "SALE". Query those
+    // directly so specials are not missed when the catalogue contains more
+    // than the first 100 alphabetically sorted products.
+    const saleTitleProducts = await this.fetchProducts("title:SALE").catch((error) => {
+      console.error("[shopify-products] specials query failed", error instanceof Error ? error.message : "Unknown error");
+      return [];
+    });
+    const products = saleTitleProducts.length > 0 ? saleTitleProducts : await this.products();
+    const specials = products.filter((product) => product.availability === "in_stock" && (
       (product.compareAtPrice !== undefined && product.compareAtPrice > product.price)
+      || /\b(?:sale|special|discount)\b/i.test(`${product.title} ${product.description}`)
       || product.tags.some((tag) => /^(sale|special|specials|on-sale|discount)/i.test(tag))
-    );
+    ));
     return specials.slice(0, limit).map((product) => ({
       product,
       reason: product.compareAtPrice && product.compareAtPrice > product.price

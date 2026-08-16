@@ -18,6 +18,7 @@ const sessionSchema = z.object({
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
   idToken: z.string().min(1),
+  accessToken: z.string().min(1).optional(),
   expiresAt: z.number(),
 });
 
@@ -111,6 +112,31 @@ export function readShopifySession(cookieValue: string | undefined) {
   }
 }
 
+/**
+ * Allows the complete authenticated experience to be exercised with `next dev`.
+ * This can never activate in a production build, even if the environment flag
+ * is accidentally copied to Vercel.
+ */
+export function readShopifySessionOrLocalDev(cookieValue: string | undefined) {
+  const session = readShopifySession(cookieValue);
+  if (session) return session;
+  if (process.env.NODE_ENV !== "development" || process.env.LOCAL_DEV_AUTH_BYPASS === "false") return null;
+
+  const adminEmail = (process.env.ADMIN_EMAIL_ADDRESSES || process.env.ADMIN_EMAIL_ADDRESS || "")
+    .split(",")
+    .map((email) => email.trim())
+    .find(Boolean);
+
+  return {
+    customerId: "gid://shopify/Customer/local-development",
+    email: process.env.LOCAL_DEV_CUSTOMER_EMAIL?.trim() || adminEmail || "local-dev@allgoodpetfood.co.nz",
+    firstName: "Local",
+    lastName: "Tester",
+    idToken: "local-development-only",
+    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+  } satisfies ShopifyCustomerSession;
+}
+
 export function callbackUrl() {
   return new URL("/api/auth/shopify/callback", shopifyCustomerConfig().appBaseUrl).toString();
 }
@@ -146,16 +172,22 @@ export async function exchangeShopifyCode(code: string, verifier: string) {
   if (!response.ok) throw new Error(`Shopify token exchange failed (${response.status})`);
   return z.object({
     access_token: z.string().min(1),
+    refresh_token: z.string().min(1).optional(),
     id_token: z.string().min(1),
     expires_in: z.number().positive().optional(),
   }).parse(await response.json());
 }
 
-export async function fetchShopifyCustomer(accessToken: string) {
+export async function customerAccountGraphqlEndpoint() {
   const { storefrontDomain } = shopifyCustomerConfig();
   const discovery = await fetch(`https://${storefrontDomain}/.well-known/customer-account-api`, { cache: "no-store" });
   if (!discovery.ok) throw new Error(`Shopify API discovery failed (${discovery.status})`);
   const { graphql_api: graphqlApi } = z.object({ graphql_api: z.string().url() }).parse(await discovery.json());
+  return graphqlApi;
+}
+
+export async function fetchShopifyCustomer(accessToken: string) {
+  const graphqlApi = await customerAccountGraphqlEndpoint();
   const response = await fetch(graphqlApi, {
     method: "POST",
     headers: { Authorization: accessToken, "Content-Type": "application/json" },
