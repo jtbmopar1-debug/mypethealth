@@ -10,7 +10,7 @@ import { conversationStore } from "@/services/conversations/local-storage-store"
 import { apiConversationStore } from "@/services/conversations/api-conversation-store";
 import type { ChatMessage, Conversation, ProductRecommendation } from "@/types";
 
-const WELCOME = "I’m Buddy, your My Pet Health Assistant. Tell me a little about your pet or ask about anything you need help with — we’ll work it out together.";
+const WELCOME = "I’m Buddy, All Good Petfood’s Pet Health and Shop Assistant. How can I help?";
 const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product"];
 
 function id() {
@@ -320,7 +320,7 @@ export function ChatWidget() {
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
           <a className="header-back" href="https://allgoodpetfood.co.nz">Back to All Good Petfood</a>
           <BuddyLogo />
-          <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> My Pet Health guide</small></span></div>
+          <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> All Good Petfood assistant</small></span></div>
           <button className="header-new" onClick={startNewConversation}><Plus size={16} /> <span>New chat</span></button>
           {shopifyCustomer && <ShopifyAccountControl customer={shopifyCustomer} />}
         </header>

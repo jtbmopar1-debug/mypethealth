@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
 import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
-import { productService } from "@/services/products/mock-product-service";
+import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { readShopifySession, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 const messageSchema = z.object({
@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     const { messages } = parsed.data;
     const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
     const knowledge = await knowledgeService.search(latestUserMessage, 3);
+    const productService = new ShopifyProductService();
     const recommendations = wantsProductSuggestion(latestUserMessage)
       ? await productService.recommendProducts([...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], 2)
       : [];

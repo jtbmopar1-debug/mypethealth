@@ -6,4 +6,10 @@ export const serverConfig = {
   appBaseUrl: process.env.APP_BASE_URL || "http://localhost:3000",
   shopifyStoreDomain: process.env.SHOPIFY_STORE_DOMAIN,
   shopifyStoreUrl: process.env.SHOPIFY_STORE_URL,
+  shopifyStorefrontDomain: process.env.SHOPIFY_STOREFRONT_DOMAIN,
+  shopifyStorefrontApiDomain: process.env.SHOPIFY_STOREFRONT_API_DOMAIN,
+  shopifyStorefrontAccessToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+  shopifyStorefrontApiVersion: process.env.SHOPIFY_STOREFRONT_API_VERSION || "2026-07",
+  shopifyAppClientId: process.env.SHOPIFY_APP_CLIENT_ID,
+  shopifyAppClientSecret: process.env.SHOPIFY_APP_CLIENT_SECRET,
 };
