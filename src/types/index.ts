@@ -29,6 +29,22 @@ export interface PetProfile {
   foodsTried: string[];
 }
 
+export interface CustomerPet {
+  id: string;
+  name: string;
+  species: "dog" | "cat" | null;
+  breed: string | null;
+  ageValue: number | null;
+  ageUnit: "weeks" | "months" | "years" | null;
+  ageRecordedAt: string | null;
+  weightKg: number | null;
+  currentFoodTitle: string | null;
+  knownSensitivities: string[];
+  status: "active" | "deceased" | "archived";
+  deceasedAt: string | null;
+  lastMentionedAt: string;
+}
+
 export interface Product {
   id: string;
   variantId?: string;

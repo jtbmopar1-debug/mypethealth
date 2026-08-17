@@ -2,7 +2,7 @@ import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import type { GenerateContentResponse } from "@google/genai";
 import { serverConfig } from "@/config/env";
-import type { ChatMessage, CustomerPurchase, KnowledgeEntry, ProductRecommendation } from "@/types";
+import type { ChatMessage, CustomerPet, CustomerPurchase, KnowledgeEntry, ProductRecommendation } from "@/types";
 import { buildGroundedInstructions } from "./system-prompt";
 import { createLocalResponse, type AssistantResult } from "./local-responder";
 
@@ -43,6 +43,9 @@ export async function answerCustomer(
     primaryPurchaseTitles?: string[];
     purchaseHistoryDisplayed?: boolean;
     purchaseHistoryUnavailable?: boolean;
+    customerPets?: CustomerPet[];
+    petProfileProposals?: string[];
+    savedPetNames?: string[];
   } = {}
 ): Promise<AssistantResult> {
   if (!serverConfig.geminiApiKey) {

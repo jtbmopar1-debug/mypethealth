@@ -5,6 +5,7 @@ import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
+import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
 
 const messageSchema = z.object({
   id: z.string(),
@@ -15,6 +16,11 @@ const messageSchema = z.object({
 });
 
 const bodySchema = z.object({ messages: z.array(messageSchema).min(1).max(40) });
+
+function confirmsPetProfile(message: string, previousAssistantMessage = "") {
+  const affirmative = /^(?:yes|yes please|yep|yeah|sure|okay|ok|please do|go ahead|add (?:him|her|them|it)|please add (?:him|her|them|it))\b/i.test(message.trim());
+  return affirmative && /(?:add|save|remember).{0,120}(?:profile|my pets)/i.test(previousAssistantMessage);
+}
 
 function wantsProductSuggestion(message: string) {
   const text = message.toLowerCase();
@@ -120,7 +126,12 @@ function wantsPurchasedProductCards(message: string) {
 }
 
 function purchasesRelevantToQuestion<T extends { title: string; productType: string | null }>(message: string, purchases: T[]) {
-  if (explicitlyWantsPurchaseHistory(message)) return purchases.slice(0, 10);
+  if (explicitlyWantsPurchaseHistory(message)) {
+    return [...purchases].sort((left, right) => {
+      const isFood = (purchase: T) => /\b(?:food|feed|diet|kibble|raw|meal|puppy|kitten)\b/i.test(`${purchase.title} ${purchase.productType || ""}`);
+      return Number(isFood(right)) - Number(isFood(left));
+    }).slice(0, 10);
+  }
 
   const asksAboutPuppy = /\b(?:puppy|pup)\b/i.test(message);
   const asksAboutKitten = /\bkitten\b/i.test(message);
@@ -161,8 +172,22 @@ export async function POST(request: NextRequest) {
     const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
     const latestUserMessage = userMessages.at(-1) ?? "";
     const conversationQuery = userMessages.join(" ");
-    const productService = new ShopifyProductService();
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    const confirmsProposedPet = confirmsPetProfile(latestUserMessage, previousAssistant?.content);
+    const confirmedProposalMessage = confirmsProposedPet ? userMessages.at(-2) : undefined;
+    let customerPets: Awaited<ReturnType<typeof rememberCustomerPets>>["pets"] = [];
+    let petProfileProposals: string[] = [];
+    let savedPetNames: string[] = [];
+    try {
+      const petMemory = await rememberCustomerPets(customerSession.customerId, latestUserMessage, confirmedProposalMessage);
+      customerPets = petMemory.pets;
+      petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
+      savedPetNames = petMemory.savedPetNames;
+      console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
+    } catch (error) {
+      console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
+    }
+    const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
     const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
     const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
@@ -271,6 +296,9 @@ export async function POST(request: NextRequest) {
       purchaseHistoryDisplayed,
       purchaseHistoryUnavailable: explicitlyWantsPurchaseHistory(latestUserMessage)
         && (purchaseHistoryUnavailable || !customerSession.accessToken),
+      customerPets,
+      petProfileProposals,
+      savedPetNames,
     });
     console.info("[chat] assistant response", { mode: result.mode, length: result.content.length });
 
@@ -278,6 +306,7 @@ export async function POST(request: NextRequest) {
       message: result.content,
       products: displayRecommendations,
       resetProductContext: discoveryOnly,
+      pets: customerPets,
       mode: result.mode
     });
   } catch (error) {

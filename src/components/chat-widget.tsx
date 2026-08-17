@@ -2,16 +2,55 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUp, Clock3, Menu, MessageCircleMore, Plus, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowUp, Clock3, Heart, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, Trash2, X } from "lucide-react";
 import { ShopifyAccountControl, type ShopifyCustomer } from "./shopify-account-control";
 import { BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
 import { conversationStore } from "@/services/conversations/local-storage-store";
 import { apiConversationStore } from "@/services/conversations/api-conversation-store";
-import type { ChatMessage, Conversation, ProductRecommendation } from "@/types";
+import type { ChatMessage, Conversation, CustomerPet, ProductRecommendation } from "@/types";
 
 const WELCOME = "I’m Buddy, All Good Petfood’s Pet Health and Shop Assistant. How can I help?";
 const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product", "This week’s specials"];
+
+interface PetDraft {
+  name: string;
+  species: "" | "dog" | "cat";
+  breed: string;
+  ageValue: string;
+  ageUnit: "weeks" | "months" | "years";
+  weightKg: string;
+  currentFoodTitle: string;
+  knownSensitivities: string;
+  status: CustomerPet["status"];
+}
+
+const EMPTY_PET: PetDraft = {
+  name: "",
+  species: "",
+  breed: "",
+  ageValue: "",
+  ageUnit: "years",
+  weightKg: "",
+  currentFoodTitle: "",
+  knownSensitivities: "",
+  status: "active",
+};
+
+function petDraft(pet?: CustomerPet): PetDraft {
+  if (!pet) return { ...EMPTY_PET };
+  return {
+    name: pet.name,
+    species: pet.species ?? "",
+    breed: pet.breed ?? "",
+    ageValue: pet.ageValue === null ? "" : String(pet.ageValue),
+    ageUnit: pet.ageUnit ?? "years",
+    weightKg: pet.weightKg === null ? "" : String(pet.weightKg),
+    currentFoodTitle: pet.currentFoodTitle ?? "",
+    knownSensitivities: pet.knownSensitivities.join(", "),
+    status: pet.status,
+  };
+}
 
 function id() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -41,14 +80,20 @@ function normalizeConversation(conversation: Conversation): Conversation {
   };
 }
 
-function welcomeMessage(name = ""): ChatMessage {
-  const greeting = name ? `Hi ${name}, ${WELCOME}` : `Hi, ${WELCOME}`;
+function welcomeMessage(name = "", pets: CustomerPet[] = []): ChatMessage {
+  const activeNames = pets.filter((pet) => pet.status === "active").map((pet) => pet.name);
+  const petGreeting = activeNames.length === 1
+    ? ` How is ${activeNames[0]} doing today?`
+    : activeNames.length === 2
+      ? ` How are ${activeNames[0]} and ${activeNames[1]} doing today?`
+      : activeNames.length > 2 ? " How are your pets doing today?" : "";
+  const greeting = `${name ? `Hi ${name},` : "Hi,"} ${WELCOME}${petGreeting}`;
   return { id: id(), role: "assistant", content: greeting, createdAt: new Date().toISOString() };
 }
 
-function createConversation(name = ""): Conversation {
+function createConversation(name = "", pets: CustomerPet[] = []): Conversation {
   const now = new Date().toISOString();
-  return { id: id(), title: "New conversation", createdAt: now, updatedAt: now, messages: [welcomeMessage(name)] };
+  return { id: id(), title: "New conversation", createdAt: now, updatedAt: now, messages: [welcomeMessage(name, pets)] };
 }
 
 export function ChatWidget() {
@@ -59,26 +104,32 @@ export function ChatWidget() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<Record<string, ProductRecommendation[]>>({});
   const [shopifyCustomer, setShopifyCustomer] = useState<ShopifyCustomer | null>(null);
+  const [customerPets, setCustomerPets] = useState<CustomerPet[]>([]);
+  const [editingPetId, setEditingPetId] = useState<"new" | string | null>(null);
+  const [petForm, setPetForm] = useState<PetDraft>(EMPTY_PET);
+  const [petFormError, setPetFormError] = useState("");
+  const [petFormSaving, setPetFormSaving] = useState(false);
   const [shopifyAuthState, setShopifyAuthState] = useState<"checking" | "authenticated" | "guest">("checking");
   const [storageNotice, setStorageNotice] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     void fetch("/api/auth/shopify/session", { cache: "no-store" })
-      .then((response) => response.json() as Promise<{ authenticated: boolean; customer: ShopifyCustomer | null }>)
+      .then((response) => response.json() as Promise<{ authenticated: boolean; customer: ShopifyCustomer | null; pets?: CustomerPet[] }>)
       .then((result) => {
         if (!result.authenticated || !result.customer) {
           setShopifyAuthState("guest");
           return;
         }
         setShopifyCustomer(result.customer);
+        setCustomerPets(result.pets ?? []);
         setShopifyAuthState("authenticated");
         const name = result.customer.firstName?.trim()
           || result.customer.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
           || "";
         setConversation((current) => {
           const isUntouched = current.title === "New conversation" && !current.messages.some((message) => message.role === "user");
-          return isUntouched ? createConversation(name) : current;
+          return isUntouched ? createConversation(name, result.pets ?? []) : current;
         });
       })
       .catch(() => {
@@ -163,9 +214,10 @@ export function ChatWidget() {
     setHistory(remaining);
 
     if (conversation.id === idToDelete) {
-      const fallback = remaining[0] ?? createConversation(shopifyCustomer?.firstName?.trim()
+      const customerName = shopifyCustomer?.firstName?.trim()
         || shopifyCustomer?.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
-        || "");
+        || "";
+      const fallback = remaining[0] ?? createConversation(customerName, customerPets);
       setConversation(fallback);
       setRecommendations({});
     }
@@ -195,8 +247,9 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages })
       });
-      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; error?: string };
+      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; error?: string };
       if (!response.ok || !data.message) throw new Error(data.error || "No response received");
+      if (data.pets) setCustomerPets(data.pets);
 
       const assistantMessage: ChatMessage = {
         id: id(),
@@ -236,10 +289,63 @@ export function ChatWidget() {
     const shopifyName = shopifyCustomer?.firstName?.trim()
       || shopifyCustomer?.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
       || "";
-    setConversation(createConversation(shopifyName));
+    setConversation(createConversation(shopifyName, customerPets));
     setRecommendations({});
     setSidebarOpen(false);
     setInput("");
+  }
+
+  function openPetEditor(pet?: CustomerPet) {
+    setEditingPetId(pet?.id ?? "new");
+    setPetForm(petDraft(pet));
+    setPetFormError("");
+  }
+
+  async function savePetProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!petForm.name.trim() || petFormSaving) return;
+    setPetFormSaving(true);
+    setPetFormError("");
+    const pet = {
+      name: petForm.name.trim(),
+      species: petForm.species || null,
+      breed: petForm.breed.trim() || null,
+      ageValue: petForm.ageValue === "" ? null : Number(petForm.ageValue),
+      ageUnit: petForm.ageValue === "" ? null : petForm.ageUnit,
+      weightKg: petForm.weightKg === "" ? null : Number(petForm.weightKg),
+      currentFoodTitle: petForm.currentFoodTitle.trim() || null,
+      knownSensitivities: petForm.knownSensitivities.split(",").map((value) => value.trim()).filter(Boolean),
+      status: petForm.status,
+    };
+    try {
+      const isNew = editingPetId === "new";
+      const response = await fetch("/api/pets", {
+        method: isNew ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(isNew ? pet : { id: editingPetId, pet }),
+      });
+      const data = await response.json() as { pets?: CustomerPet[]; error?: string };
+      if (!response.ok || !data.pets) throw new Error(data.error || "Pet profile could not be saved");
+      setCustomerPets(data.pets);
+      setEditingPetId(null);
+    } catch (error) {
+      setPetFormError(error instanceof Error ? error.message : "Pet profile could not be saved");
+    } finally {
+      setPetFormSaving(false);
+    }
+  }
+
+  async function deletePetProfile(pet: CustomerPet) {
+    if (!window.confirm(`Permanently delete ${pet.name}’s profile?`)) return;
+    try {
+      const response = await fetch(`/api/pets?id=${encodeURIComponent(pet.id)}`, { method: "DELETE" });
+      const data = await response.json() as { pets?: CustomerPet[]; error?: string };
+      if (!response.ok || !data.pets) throw new Error(data.error || "Pet profile could not be deleted");
+      setCustomerPets(data.pets);
+      if (editingPetId === pet.id) setEditingPetId(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Pet profile could not be deleted");
+    }
   }
 
   async function openConversation(item: Conversation) {
@@ -291,6 +397,30 @@ export function ChatWidget() {
           <button className="icon-button mobile-only" aria-label="Close menu" onClick={() => setSidebarOpen(false)}><X size={20} /></button>
         </div>
         <button className="new-chat-button" onClick={startNewConversation}><Plus size={18} /> New conversation</button>
+        <section className="pets-block" aria-labelledby="my-pets-heading">
+          <div className="pets-label">
+            <span id="my-pets-heading"><Heart size={14} /> My pets</span>
+            <button type="button" onClick={() => openPetEditor()} aria-label="Add a pet"><Plus size={14} /> Add</button>
+          </div>
+          {customerPets.length === 0 ? (
+            <button type="button" className="empty-pets" onClick={() => openPetEditor()}>
+              Add a pet so Buddy can remember them.
+            </button>
+          ) : (
+            <div className="pets-list">
+              {customerPets.map((pet) => (
+                <div key={pet.id} className={`pet-item ${pet.status !== "active" ? "inactive" : ""}`}>
+                  <button type="button" className="pet-open" onClick={() => openPetEditor(pet)}>
+                    <span>{pet.name}</span>
+                    <small>{[pet.breed, pet.species, pet.status !== "active" ? pet.status : null].filter(Boolean).join(" · ") || "Profile"}</small>
+                  </button>
+                  <button type="button" className="pet-edit" onClick={() => openPetEditor(pet)} aria-label={`Edit ${pet.name}`}><Pencil size={12} /></button>
+                  <button type="button" className="pet-delete" onClick={() => void deletePetProfile(pet)} aria-label={`Delete ${pet.name}`}><Trash2 size={12} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
         <div className="history-block">
           <div className="history-label"><Clock3 size={14} /> Previous conversations</div>
           {history.length === 0 ? (
@@ -319,6 +449,33 @@ export function ChatWidget() {
         <div className="sidebar-note"><ShieldCheck size={18} /><span>Practical guidance, grounded in trusted pet-health knowledge.</span></div>
         <a className="admin-link" href="/admin">Staff admin preview →</a>
       </aside>
+
+      {editingPetId && (
+        <div className="pet-dialog-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !petFormSaving) setEditingPetId(null);
+        }}>
+          <section className="pet-dialog" role="dialog" aria-modal="true" aria-labelledby="pet-dialog-title">
+            <button type="button" className="pet-dialog-close" onClick={() => setEditingPetId(null)} aria-label="Close pet profile"><X size={18} /></button>
+            <p className="pet-dialog-kicker">Buddy’s memory</p>
+            <h2 id="pet-dialog-title">{editingPetId === "new" ? "Add a pet" : `Update ${petForm.name}`}</h2>
+            <p>Only save details you want Buddy to remember and use in future chats.</p>
+            <form className="pet-form" onSubmit={savePetProfile}>
+              <label>Name<input required maxLength={80} value={petForm.name} onChange={(event) => setPetForm((current) => ({ ...current, name: event.target.value }))} /></label>
+              <label>Pet type<select value={petForm.species} onChange={(event) => setPetForm((current) => ({ ...current, species: event.target.value as PetDraft["species"] }))}><option value="">Not specified</option><option value="dog">Dog</option><option value="cat">Cat</option></select></label>
+              <label className="pet-form-wide">Breed<input maxLength={120} value={petForm.breed} onChange={(event) => setPetForm((current) => ({ ...current, breed: event.target.value }))} placeholder="e.g. Staffy" /></label>
+              <label>Age<input type="number" min="0" max="100" step="0.1" value={petForm.ageValue} onChange={(event) => setPetForm((current) => ({ ...current, ageValue: event.target.value }))} /></label>
+              <label>Age unit<select value={petForm.ageUnit} onChange={(event) => setPetForm((current) => ({ ...current, ageUnit: event.target.value as PetDraft["ageUnit"] }))}><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></label>
+              <label>Weight (kg)<input type="number" min="0.1" max="500" step="0.1" value={petForm.weightKg} onChange={(event) => setPetForm((current) => ({ ...current, weightKg: event.target.value }))} /></label>
+              <label>Status<select value={petForm.status} onChange={(event) => setPetForm((current) => ({ ...current, status: event.target.value as CustomerPet["status"] }))}><option value="active">Active</option><option value="deceased">Passed away</option><option value="archived">Archived</option></select></label>
+              <label className="pet-form-wide">Current food<input maxLength={500} value={petForm.currentFoodTitle} onChange={(event) => setPetForm((current) => ({ ...current, currentFoodTitle: event.target.value }))} placeholder="Brand and recipe, if known" /></label>
+              <label className="pet-form-wide">Sensitivities<input value={petForm.knownSensitivities} onChange={(event) => setPetForm((current) => ({ ...current, knownSensitivities: event.target.value }))} placeholder="Chicken, grain (separate with commas)" /></label>
+              {petForm.status === "deceased" && <p className="pet-status-note">Buddy will retain this profile but will not mention this pet in greetings or make sales suggestions for them.</p>}
+              {petFormError && <p className="pet-form-error" role="alert">{petFormError}</p>}
+              <div className="pet-form-actions"><button type="button" onClick={() => setEditingPetId(null)} disabled={petFormSaving}>Cancel</button><button type="submit" disabled={petFormSaving || !petForm.name.trim()}>{petFormSaving ? "Saving…" : "Save pet"}</button></div>
+            </form>
+          </section>
+        </div>
+      )}
 
       <main className="chat-main">
         <header className="chat-header">
