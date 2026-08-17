@@ -2,6 +2,7 @@ import "server-only";
 
 import type { CustomerPet } from "@/types";
 import { getServerSupabaseClient } from "@/services/supabase/server";
+import { appearsToIntroduceNewPet, explicitlyRequestsPetSave, namedPets } from "./pet-message-parser";
 
 interface CustomerPetRow {
   id: string;
@@ -71,33 +72,6 @@ function fromRow(row: CustomerPetRow): CustomerPet {
 
 function escaped(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function cleanName(value: string) {
-  const cleaned = value.trim().replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, "").slice(0, 80);
-  return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : "";
-}
-
-function namedPets(message: string) {
-  const matches: { name: string; species: "dog" | "cat" | null }[] = [];
-  const patterns: { regex: RegExp; speciesIndex?: number; nameIndex: number }[] = [
-    { regex: /\bmy\s+(dog|puppy|pup|cat|kitten)\s+(?:is\s+)?(?:named|called)\s+([A-Za-z][A-Za-z'-]{0,39})\b/gi, speciesIndex: 1, nameIndex: 2 },
-    { regex: /\bi\s+(?:also\s+)?have\s+(?:a|an|another)\s+(dog|puppy|pup|cat|kitten)(?:\s+[A-Za-z][A-Za-z -]{0,60})?\s+(?:named|called)\s+([A-Za-z][A-Za-z'-]{0,39})\b/gi, speciesIndex: 1, nameIndex: 2 },
-    { regex: /\bmy\s+(dog|puppy|pup|cat|kitten)\s+([A-Za-z][A-Za-z'-]{0,39})\s+(?:is|has|was)\b/gi, speciesIndex: 1, nameIndex: 2 },
-    { regex: /\b([A-Za-z][A-Za-z'-]{0,39})\s+is\s+my\s+(dog|puppy|pup|cat|kitten)\b/gi, speciesIndex: 2, nameIndex: 1 },
-    { regex: /\b(?:his|her|their|my pet'?s?)\s+name\s+is\s+([A-Za-z][A-Za-z'-]{0,39})\b/gi, nameIndex: 1 },
-  ];
-
-  for (const { regex, speciesIndex, nameIndex } of patterns) {
-    for (const match of message.matchAll(regex)) {
-      const name = cleanName(match[nameIndex] || "");
-      if (!name) continue;
-      const rawSpecies = speciesIndex ? match[speciesIndex]?.toLowerCase() : null;
-      const species = rawSpecies && /^(?:cat|kitten)$/.test(rawSpecies) ? "cat" : rawSpecies ? "dog" : null;
-      if (!matches.some((item) => item.name.toLowerCase() === name.toLowerCase())) matches.push({ name, species });
-    }
-  }
-  return matches;
 }
 
 function reportsLoss(message: string) {
@@ -271,10 +245,16 @@ export async function rememberCustomerPets(
   const facts = profileFacts(message);
   const hasProfileFacts = Object.values(facts).some((value) => value !== undefined);
   const proposedPets: ProposedCustomerPet[] = [];
+  const explicitSaveRequest = explicitlyRequestsPetSave(message);
 
   for (const pet of discovered) {
     const knownPet = existingPets.find((existing) => existing.name.toLowerCase() === pet.name.toLowerCase());
     if (!knownPet) {
+      if (explicitSaveRequest) {
+        await saveNamedPet(shopifyCustomerId, pet.name, facts.species ?? pet.species, loss ? "deceased" : "active", facts);
+        savedPetNames.push(pet.name);
+        continue;
+      }
       proposedPets.push({
         name: pet.name,
         species: facts.species ?? pet.species,
@@ -303,7 +283,7 @@ export async function rememberCustomerPets(
 
   const namedOrMentioned = discovered.length > 0 || existingPets.some((pet) => new RegExp(`\\b${escaped(pet.name)}\\b`, "i").test(message));
   const soleActivePets = existingPets.filter((pet) => pet.status === "active");
-  if (!namedOrMentioned && soleActivePets.length === 1 && (hasProfileFacts || loss)) {
+  if (!namedOrMentioned && !appearsToIntroduceNewPet(message) && soleActivePets.length === 1 && (hasProfileFacts || loss)) {
     const pet = soleActivePets[0];
     await saveNamedPet(shopifyCustomerId, pet.name, pet.species, loss ? "deceased" : pet.status, facts);
     updatedPetNames.add(pet.name);
