@@ -191,6 +191,9 @@ export async function POST(request: NextRequest) {
     const previousProductIds = previousAssistant?.productIds ?? [];
     const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
     const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
+    const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0)
+      && !latestHasProductIntent
+      && !needsHealthKnowledge(latestUserMessage);
     const recommendationContextReady = hasRecommendationContext(conversationQuery);
     const latestProductRequest = [...userMessages].reverse().find(wantsProductSuggestion) ?? latestUserMessage;
     const broadCategoryQuestion = isBroadCategoryQuestion(latestUserMessage);
@@ -209,7 +212,7 @@ export async function POST(request: NextRequest) {
       || refiningBroadCategory
       || genericBroadContinuation)
       && !needsHealthKnowledge(latestUserMessage);
-    const knowledge = catalogueOnlyTurn ? [] : await knowledgeService.search(conversationQuery, 2);
+    const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(conversationQuery, 2);
     const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(latestUserMessage);
     let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
     let purchaseHistoryUnavailable = false;
@@ -299,6 +302,7 @@ export async function POST(request: NextRequest) {
       customerPets,
       petProfileProposals,
       savedPetNames,
+      petProfileOnlyTurn,
     });
     console.info("[chat] assistant response", { mode: result.mode, length: result.content.length });
 

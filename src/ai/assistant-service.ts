@@ -12,23 +12,7 @@ function candidateFinishReason(response: GenerateContentResponse) {
 
 function needsContinuation(content: string) {
   const trimmed = content.trim();
-  if (!trimmed || /[.!?…:]$/.test(trimmed)) return false;
-  return /(?:\b(?:from|with|and|or|but|because|that|to|for|of|in|on|if|when|as|the|a|an|i|we|they|it))$/i.test(trimmed);
-}
-
-function isTemporaryModelOutage(error: unknown) {
-  if (!(error instanceof Error)) return false;
-  return /(?:\"code\"\s*:\s*503|\"status\"\s*:\s*\"UNAVAILABLE\"|high demand)/i.test(error.message);
-}
-
-async function retryTemporaryModelOutage<T>(operation: () => Promise<T>) {
-  try {
-    return await operation();
-  } catch (error) {
-    if (!isTemporaryModelOutage(error)) throw error;
-    await new Promise((resolve) => setTimeout(resolve, 750));
-    return operation();
-  }
+  return Boolean(trimmed) && !/[.!?…:]$/.test(trimmed);
 }
 
 export async function answerCustomer(
@@ -46,8 +30,36 @@ export async function answerCustomer(
     customerPets?: CustomerPet[];
     petProfileProposals?: string[];
     savedPetNames?: string[];
+    petProfileOnlyTurn?: boolean;
   } = {}
 ): Promise<AssistantResult> {
+  if (options.petProfileOnlyTurn && options.petProfileProposals?.length) {
+    const names = options.petProfileProposals.join(" and ");
+    return {
+      content: `It’s lovely to meet ${names}. Tell me their age, breed or size, and any dietary or health needs whenever you’re ready.\n\nShall I add ${names} to My Pets? This helps me remember their details between conversations and make future guidance and product suggestions more relevant.`,
+      recommendations: [],
+      mode: "pet-profile",
+    };
+  }
+
+  if (options.petProfileOnlyTurn && options.savedPetNames?.length) {
+    const names = options.savedPetNames.join(" and ");
+    const savedPets = (options.customerPets ?? []).filter((pet) => options.savedPetNames?.includes(pet.name));
+    const missing = new Set<string>();
+    for (const pet of savedPets) {
+      if (!pet.breed) missing.add("breed or size");
+      if (pet.ageValue === null) missing.add("age");
+      if (!pet.currentFoodTitle) missing.add("current food");
+      if (pet.knownSensitivities.length === 0) missing.add("dietary sensitivities");
+    }
+    const followUp = [...missing].slice(0, 3);
+    return {
+      content: `${names} ${options.savedPetNames.length === 1 ? "is" : "are"} now saved in My Pets.${followUp.length ? ` You can help me complete ${options.savedPetNames.length === 1 ? "the profile" : "their profiles"} by sharing ${followUp.join(", ")} when you’re ready.` : " You can review or update the details from My Pets at any time."}`,
+      recommendations: [],
+      mode: "pet-profile",
+    };
+  }
+
   if (!serverConfig.geminiApiKey) {
     return createLocalResponse(messages, knowledge, recommendations);
   }
@@ -55,39 +67,35 @@ export async function answerCustomer(
   const firstUserIndex = messages.findIndex((message) => message.role === "user");
   const conversation = firstUserIndex >= 0 ? messages.slice(firstUserIndex) : messages;
   const gemini = new GoogleGenAI({ apiKey: serverConfig.geminiApiKey });
-  const response = await retryTemporaryModelOutage(() => gemini.models.generateContent({
+  const generate = (temperature: number) => gemini.models.generateContent({
     model: serverConfig.geminiModel,
     contents: conversation.map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
       parts: [{ text: message.content }]
     })),
     config: {
+      httpOptions: {
+        timeout: 12000,
+        retryOptions: { attempts: 2, initialDelay: 0.4, maxDelay: 1, expBase: 1.5, jitter: 0.2 },
+      },
       systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product), options),
-      temperature: 0.35,
+      temperature,
       maxOutputTokens: 900
     }
-  }));
+  });
+
+  let response = await generate(0.35);
 
   let content = response.text || "";
   if ((candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) && content) {
-    const continuation = await retryTemporaryModelOutage(() => gemini.models.generateContent({
-      model: serverConfig.geminiModel,
-      contents: [
-        ...conversation.map((message) => ({
-          role: message.role === "assistant" ? "model" : "user",
-          parts: [{ text: message.content }]
-        })),
-        { role: "model", parts: [{ text: content }] },
-        { role: "user", parts: [{ text: "Continue exactly from where you stopped. Do not repeat the earlier text. Keep the same tone and finish the answer naturally." }] }
-      ],
-      config: {
-        systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product), options),
-        temperature: 0.25,
-        maxOutputTokens: 450
-      }
-    }));
-    const continuationText = continuation.text || "";
-    if (continuationText) content = content.replace(/\s+$/, "") + " " + continuationText.trim();
+    console.warn("[chat] incomplete model response; regenerating", { finishReason: candidateFinishReason(response), length: content.length });
+    response = await generate(0.2);
+    content = response.text || "";
+  }
+
+  if (!content || candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) {
+    console.warn("[chat] rejecting incomplete model response", { finishReason: candidateFinishReason(response), length: content.length });
+    return createLocalResponse(messages, knowledge, recommendations);
   }
 
   return {

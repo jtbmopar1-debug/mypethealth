@@ -3,7 +3,7 @@ import type { ChatMessage, KnowledgeEntry, ProductRecommendation } from "@/types
 export interface AssistantResult {
   content: string;
   recommendations: ProductRecommendation[];
-  mode: "gemini" | "local-demo";
+  mode: "gemini" | "local-demo" | "pet-profile";
 }
 
 function detailsPresent(messages: ChatMessage[]) {
