@@ -30,6 +30,7 @@ export async function answerCustomer(
     customerPets?: CustomerPet[];
     petProfileProposals?: string[];
     savedPetNames?: string[];
+    updatedPetNames?: string[];
     petProfileOnlyTurn?: boolean;
   } = {}
 ): Promise<AssistantResult> {
@@ -60,6 +61,15 @@ export async function answerCustomer(
     };
   }
 
+  if (options.petProfileOnlyTurn && options.updatedPetNames?.length) {
+    const names = options.updatedPetNames.join(" and ");
+    return {
+      content: `Thanks for clarifying — I’ve updated ${names}${options.updatedPetNames.length === 1 ? "’s profile" : "’ profiles"} in My Pets.`,
+      recommendations: [],
+      mode: "pet-profile",
+    };
+  }
+
   if (!serverConfig.geminiApiKey) {
     return createLocalResponse(messages, knowledge, recommendations);
   }
@@ -84,13 +94,24 @@ export async function answerCustomer(
     }
   });
 
-  let response = await generate(0.35);
+  let response: GenerateContentResponse;
+  try {
+    response = await generate(0.35);
+  } catch (error) {
+    console.warn("[chat] model unavailable; using local response", error instanceof Error ? error.message : "Unknown error");
+    return createLocalResponse(messages, knowledge, recommendations);
+  }
 
   let content = response.text || "";
   if ((candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) && content) {
     console.warn("[chat] incomplete model response; regenerating", { finishReason: candidateFinishReason(response), length: content.length });
-    response = await generate(0.2);
-    content = response.text || "";
+    try {
+      response = await generate(0.2);
+      content = response.text || "";
+    } catch (error) {
+      console.warn("[chat] model regeneration failed; using local response", error instanceof Error ? error.message : "Unknown error");
+      return createLocalResponse(messages, knowledge, recommendations);
+    }
   }
 
   if (!content || candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) {

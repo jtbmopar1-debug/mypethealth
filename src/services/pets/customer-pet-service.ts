@@ -46,6 +46,7 @@ export interface PetMemoryResult {
   pets: CustomerPet[];
   proposedPets: ProposedCustomerPet[];
   savedPetNames: string[];
+  updatedPetNames: string[];
 }
 
 type ExistingPetSnapshot = Pick<CustomerPetRow, "age_value" | "age_unit" | "age_recorded_at" | "status" | "deceased_at">;
@@ -73,7 +74,8 @@ function escaped(value: string) {
 }
 
 function cleanName(value: string) {
-  return value.trim().replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, "").slice(0, 80);
+  const cleaned = value.trim().replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, "").slice(0, 80);
+  return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : "";
 }
 
 function namedPets(message: string) {
@@ -107,7 +109,9 @@ function reportsAliveCorrection(message: string) {
 }
 
 function profileFacts(message: string) {
-  const ageMatch = message.match(/\b(\d+(?:\.\d+)?)\s*(weeks?|wks?|months?|mths?|mos?|years?|yrs?|yo)\s*(?:old)?\b/i);
+  const explicitAgeMatch = message.match(/\b(\d+(?:\.\d+)?)\s*(weeks?|wks?|months?|mths?|mos?|years?|yrs?|yo)\s*(?:old)?\b/i);
+  const ageWithoutUnitMatch = message.match(/\b(?:he|she|they|it|[A-Za-z][A-Za-z'-]{0,39})\s+(?:is|was)\s+(\d{1,2})(?!\s*(?:kg|weeks?|wks?|months?|mths?|mos?|years?|yrs?|yo))\b/i);
+  const ageMatch = explicitAgeMatch ?? ageWithoutUnitMatch;
   const weightMatch = message.match(/\b(\d+(?:\.\d+)?)\s*(?:kg|kilos?|kilograms?)\b/i);
   const explicitBreed = message.match(/\b(american staffy|american staffordshire terrier|staffordshire bull terrier|staffy|labrador|golden retriever|german shepherd|border collie|cavoodle|poodle|chihuahua|jack russell|shih tzu|rottweiler|greyhound|beagle|bulldog|french bulldog|pug|maine coon|ragdoll|burmese|siamese|domestic short ?hair|domestic long ?hair)\b/i);
   const foodMatch = message.match(/\b(?:currently (?:eating|on)|current food is|eats|i (?:feed|am feeding) (?:him|her|them)?)\s+([^.!?]{2,120})/i);
@@ -116,10 +120,10 @@ function profileFacts(message: string) {
   const species = /\b(?:cat|kitten)\b/i.test(message) ? "cat" as const
     : /\b(?:dog|puppy|pup)\b/i.test(message) ? "dog" as const
       : undefined;
-  const rawAgeUnit = ageMatch?.[2]?.toLowerCase();
+  const rawAgeUnit = explicitAgeMatch?.[2]?.toLowerCase();
   const ageUnit = rawAgeUnit?.startsWith("w") ? "weeks" as const
     : rawAgeUnit?.startsWith("m") ? "months" as const
-      : rawAgeUnit ? "years" as const
+      : rawAgeUnit || ageWithoutUnitMatch ? "years" as const
         : undefined;
 
   return {
@@ -248,6 +252,7 @@ export async function rememberCustomerPets(
 ): Promise<PetMemoryResult> {
   let existingPets = await listCustomerPets(shopifyCustomerId);
   const savedPetNames: string[] = [];
+  const updatedPetNames = new Set<string>();
 
   if (confirmedProposalMessage) {
     const confirmedFacts = profileFacts(confirmedProposalMessage);
@@ -264,6 +269,7 @@ export async function rememberCustomerPets(
   const loss = reportsLoss(message);
   const aliveCorrection = reportsAliveCorrection(message);
   const facts = profileFacts(message);
+  const hasProfileFacts = Object.values(facts).some((value) => value !== undefined);
   const proposedPets: ProposedCustomerPet[] = [];
 
   for (const pet of discovered) {
@@ -282,7 +288,8 @@ export async function rememberCustomerPets(
       continue;
     }
     const status = loss ? "deceased" : aliveCorrection ? "active" : knownPet?.status ?? "active";
-    await saveNamedPet(shopifyCustomerId, pet.name, pet.species, status, facts);
+    await saveNamedPet(shopifyCustomerId, knownPet.name, pet.species, status, facts);
+    if (hasProfileFacts || loss || aliveCorrection) updatedPetNames.add(knownPet.name);
   }
 
   for (const pet of existingPets) {
@@ -291,19 +298,21 @@ export async function rememberCustomerPets(
     if (loss) await saveNamedPet(shopifyCustomerId, pet.name, pet.species, "deceased", facts);
     else if (aliveCorrection) await saveNamedPet(shopifyCustomerId, pet.name, pet.species, "active", facts);
     else await saveNamedPet(shopifyCustomerId, pet.name, pet.species, pet.status, facts);
+    if (hasProfileFacts || loss || aliveCorrection) updatedPetNames.add(pet.name);
   }
 
   const namedOrMentioned = discovered.length > 0 || existingPets.some((pet) => new RegExp(`\\b${escaped(pet.name)}\\b`, "i").test(message));
   const soleActivePets = existingPets.filter((pet) => pet.status === "active");
-  const hasProfileFacts = Object.values(facts).some((value) => value !== undefined);
   if (!namedOrMentioned && soleActivePets.length === 1 && (hasProfileFacts || loss)) {
     const pet = soleActivePets[0];
     await saveNamedPet(shopifyCustomerId, pet.name, pet.species, loss ? "deceased" : pet.status, facts);
+    updatedPetNames.add(pet.name);
   }
 
   return {
     pets: await listCustomerPets(shopifyCustomerId),
     proposedPets,
     savedPetNames,
+    updatedPetNames: [...updatedPetNames],
   };
 }

@@ -37,10 +37,11 @@ interface GroundingOptions {
   customerPets?: CustomerPet[];
   petProfileProposals?: string[];
   savedPetNames?: string[];
+  updatedPetNames?: string[];
 }
 
 export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products: Product[], options: GroundingOptions = {}) {
-  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [] } = options;
+  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
   const knowledgeText = knowledge.length
     ? knowledge.map((entry) => `### ${entry.title}\n${entry.content.slice(0, 1400)}\nFollow-up options: ${entry.followUpQuestions.slice(0, 3).join("; ")}\nSafety: ${entry.safetyNotes.slice(0, 3).join("; ") || "None supplied"}`).join("\n\n")
     : "No directly relevant My Pet Health knowledge was found.";
@@ -76,7 +77,9 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     ? `The customer just consented to saving ${savedPetNames.join(" and ")}. Confirm briefly that ${savedPetNames.length === 1 ? "the profile is" : "their profiles are"} now saved in My Pets.`
     : petProfileProposals.length
       ? `The customer mentioned ${petProfileProposals.join(" and ")}, but ${petProfileProposals.length === 1 ? "this is a new pet that has" : "these are new pets that have"} not been saved. End the response with: "Shall I add ${petProfileProposals.join(" and ")} to My Pets? This helps me remember their details between conversations and make future guidance and product suggestions more relevant." Do not claim the profile is already saved.`
-      : "There is no pending pet-profile action in this turn.";
+      : updatedPetNames.length
+        ? `The customer just updated ${updatedPetNames.join(" and ")}. Confirm briefly that the profile information has been updated in My Pets.`
+        : "There is no pending pet-profile action in this turn.";
 
   const categoryAvailability = products.some((product) => product.availability === "in_stock")
     ? "Matching products are currently available."

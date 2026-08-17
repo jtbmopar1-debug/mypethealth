@@ -178,11 +178,13 @@ export async function POST(request: NextRequest) {
     let customerPets: Awaited<ReturnType<typeof rememberCustomerPets>>["pets"] = [];
     let petProfileProposals: string[] = [];
     let savedPetNames: string[] = [];
+    let updatedPetNames: string[] = [];
     try {
       const petMemory = await rememberCustomerPets(customerSession.customerId, latestUserMessage, confirmedProposalMessage);
       customerPets = petMemory.pets;
       petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
       savedPetNames = petMemory.savedPetNames;
+      updatedPetNames = petMemory.updatedPetNames;
       console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
     } catch (error) {
       console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
@@ -191,7 +193,7 @@ export async function POST(request: NextRequest) {
     const previousProductIds = previousAssistant?.productIds ?? [];
     const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
     const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
-    const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0)
+    const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
       && !latestHasProductIntent
       && !needsHealthKnowledge(latestUserMessage);
     const recommendationContextReady = hasRecommendationContext(conversationQuery);
@@ -302,6 +304,7 @@ export async function POST(request: NextRequest) {
       customerPets,
       petProfileProposals,
       savedPetNames,
+      updatedPetNames,
       petProfileOnlyTurn,
     });
     console.info("[chat] assistant response", { mode: result.mode, length: result.content.length });
