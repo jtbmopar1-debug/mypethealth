@@ -64,6 +64,7 @@ export interface Product {
 export interface ProductRecommendation {
   product: Product;
   reason: string;
+  priceNote?: string;
 }
 
 export interface CustomerPurchase {
@@ -74,6 +75,8 @@ export interface CustomerPurchase {
   productType: string | null;
   quantity: number;
   purchasedAt: string;
+  unitPrice: number | null;
+  currency: string | null;
 }
 
 export interface KnowledgeEntry {
@@ -88,4 +91,7 @@ export interface KnowledgeEntry {
   relevantProductTags: string[];
   recommendedProductUrls?: string[];
   enabled: boolean;
+  publicationStatus?: "draft" | "published" | "archived";
+  lastVerifiedAt?: string | null;
+  reviewAfter?: string | null;
 }

@@ -23,7 +23,12 @@ interface ShopifyProductNode {
 }
 
 interface ShopifyResponse {
-  data?: { products?: { nodes: ShopifyProductNode[] } };
+  data?: {
+    products?: {
+      nodes: ShopifyProductNode[];
+      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+    };
+  };
   errors?: { message: string }[];
 }
 
@@ -65,9 +70,33 @@ interface PublicProductsResponse {
   products?: PublicShopifyProduct[];
 }
 
+interface ShopifyVariantResponse {
+  data?: {
+    node?: {
+      id: string;
+      title: string;
+      availableForSale: boolean;
+      price: { amount: string; currencyCode: string };
+      compareAtPrice: { amount: string; currencyCode: string } | null;
+      image: { url: string } | null;
+      product: {
+        id: string;
+        title: string;
+        description: string;
+        handle: string;
+        productType: string;
+        tags: string[];
+        onlineStoreUrl: string | null;
+        featuredImage: { url: string } | null;
+      };
+    } | null;
+  };
+  errors?: { message: string }[];
+}
+
 const PRODUCTS_QUERY = `
-  query BuddyProducts($first: Int!, $query: String) {
-    products(first: $first, query: $query, sortKey: TITLE) {
+  query BuddyProducts($first: Int!, $after: String, $query: String) {
+    products(first: $first, after: $after, query: $query, sortKey: TITLE) {
       nodes {
         id
         title
@@ -80,6 +109,7 @@ const PRODUCTS_QUERY = `
         featuredImage { url }
         priceRange { minVariantPrice { amount currencyCode } }
       }
+      pageInfo { hasNextPage endCursor }
     }
   }
 `;
@@ -89,6 +119,31 @@ const CREATE_STOREFRONT_TOKEN = `
     storefrontAccessTokenCreate(input: $input) {
       storefrontAccessToken { accessToken }
       userErrors { message }
+    }
+  }
+`;
+
+const PRODUCT_VARIANT_QUERY = `
+  query BuddyProductVariant($id: ID!) {
+    node(id: $id) {
+      ... on ProductVariant {
+        id
+        title
+        availableForSale
+        price { amount currencyCode }
+        compareAtPrice { amount currencyCode }
+        image { url }
+        product {
+          id
+          title
+          description
+          handle
+          productType
+          tags
+          onlineStoreUrl
+          featuredImage { url }
+        }
+      }
     }
   }
 `;
@@ -247,19 +302,26 @@ export class ShopifyProductService implements ProductService {
       const endpoint = `https://${serverConfig.shopifyStorefrontApiDomain}/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`;
       const accessToken = await this.getStorefrontAccessToken();
       if (!accessToken) return this.fetchPublicProducts(query);
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Storefront-Access-Token": accessToken,
-        },
-        body: JSON.stringify({ query: PRODUCTS_QUERY, variables: { first: 100, query: query || null } }),
-        next: { revalidate: 300 },
-      });
-      if (!response.ok) throw new Error(`Shopify Storefront API returned ${response.status}`);
-      const result = await response.json() as ShopifyResponse;
-      if (result.errors?.length) throw new Error(result.errors[0].message);
-      const products = (result.data?.products?.nodes || []).map(toProduct);
+      const products: Product[] = [];
+      let after: string | null = null;
+      for (let page = 0; page < 20; page += 1) {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Storefront-Access-Token": accessToken,
+          },
+          body: JSON.stringify({ query: PRODUCTS_QUERY, variables: { first: 100, after, query: query || null } }),
+          next: { revalidate: 300 },
+        });
+        if (!response.ok) throw new Error(`Shopify Storefront API returned ${response.status}`);
+        const result = await response.json() as ShopifyResponse;
+        if (result.errors?.length) throw new Error(result.errors[0].message);
+        const connection = result.data?.products;
+        products.push(...(connection?.nodes || []).map(toProduct));
+        if (!connection?.pageInfo.hasNextPage || !connection.pageInfo.endCursor) break;
+        after = connection.pageInfo.endCursor;
+      }
       if (!query) this.cache = { expiresAt: Date.now() + 5 * 60 * 1000, products };
       return products;
     } catch (error) {
@@ -287,6 +349,73 @@ export class ShopifyProductService implements ProductService {
   async getProduct(id: string) {
     const normalizedId = id.split("/").at(-1) || id;
     return (await this.products()).find((product) => product.id === id || product.id === normalizedId) ?? null;
+  }
+
+  async getPurchasedProduct(productId: string, variantId: string | null, variantTitle: string | null) {
+    if (variantId && variantId.startsWith("gid://")) {
+      try {
+        const accessToken = await this.getStorefrontAccessToken();
+        if (accessToken && serverConfig.shopifyStorefrontApiDomain) {
+          const endpoint = `https://${serverConfig.shopifyStorefrontApiDomain}/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`;
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Shopify-Storefront-Access-Token": accessToken,
+            },
+            body: JSON.stringify({ query: PRODUCT_VARIANT_QUERY, variables: { id: variantId } }),
+            cache: "no-store",
+          });
+          if (!response.ok) throw new Error(`Shopify variant query returned ${response.status}`);
+          const result = await response.json() as ShopifyVariantResponse;
+          if (result.errors?.length) throw new Error(result.errors[0].message);
+          const variant = result.data?.node;
+          if (variant?.product) {
+            const tags = [...new Set([
+              ...variant.product.tags,
+              variant.product.productType,
+              ...variant.product.title.split(/[^a-z0-9]+/i),
+            ].map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
+            const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
+            return {
+              id: variant.product.id,
+              variantId: variant.id,
+              title: variant.title && !/^default title$/i.test(variant.title)
+                ? `${variant.product.title} - ${variant.title}`
+                : variant.product.title,
+              description: variant.product.description || `Available from All Good Petfood: ${variant.product.title}.`,
+              ingredients: [],
+              price: Number(variant.price.amount) || 0,
+              compareAtPrice: variant.compareAtPrice ? Number(variant.compareAtPrice.amount) || undefined : undefined,
+              currency: "NZD" as const,
+              image: variant.image?.url || variant.product.featuredImage?.url || "/brand/buddy-paw.png",
+              url: variant.product.onlineStoreUrl || `${storeUrl}/products/${variant.product.handle}`,
+              retailer: "All Good Petfood",
+              tags,
+              availability: variant.availableForSale ? "in_stock" as const : "out_of_stock" as const,
+            };
+          }
+          return null;
+        }
+      } catch (error) {
+        console.warn("[shopify-products] exact purchased variant unavailable", error instanceof Error ? error.message : "Unknown error");
+        return null;
+      }
+      // Never offer a historical variant for repurchase unless its current
+      // price and availability were verified live.
+      return null;
+    }
+    const product = await this.getProduct(productId);
+    if (!product) return null;
+    return {
+      ...product,
+      // The Customer Account API supplies the exact variant that was ordered.
+      // Keep it on the card so "buy again" never adds the first/default size.
+      variantId: variantId || product.variantId,
+      title: variantTitle && !/^default title$/i.test(variantTitle)
+        ? `${product.title} - ${variantTitle}`
+        : product.title,
+    };
   }
 
   async getProductByUrl(value: string) {

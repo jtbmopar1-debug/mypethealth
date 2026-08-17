@@ -4,7 +4,7 @@ import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "
 import Image from "next/image";
 import { ArrowUp, Clock3, Heart, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, Trash2, X } from "lucide-react";
 import { ShopifyAccountControl, type ShopifyCustomer } from "./shopify-account-control";
-import { BrandMark, BuddyLogo } from "./brand-mark";
+import { AllGoodLogo, BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
 import { conversationStore } from "@/services/conversations/local-storage-store";
 import { apiConversationStore } from "@/services/conversations/api-conversation-store";
@@ -119,6 +119,12 @@ export function ChatWidget() {
       .then((result) => {
         if (!result.authenticated || !result.customer) {
           setShopifyAuthState("guest");
+          // Buddy cannot read Shopify's cookie across domains. Ask Shopify to
+          // reuse it silently; if it is absent, the callback redirects to the
+          // All Good Petfood login rather than presenting a second login here.
+          if (!new URLSearchParams(window.location.search).has("auth_error")) {
+            window.location.replace("/api/auth/shopify/start?silent=1");
+          }
           return;
         }
         setShopifyCustomer(result.customer);
@@ -375,9 +381,9 @@ export function ChatWidget() {
           ) : (
             <>
               <span className="eyebrow">All Good Petfood customer access</span>
-              <h1>Sign in to chat with Buddy</h1>
-              <p>My Pet Health is available to All Good Petfood customers. Sign in with your existing account, or create one securely through All Good Petfood.</p>
-              <a className="access-primary" href="/api/auth/shopify/start">Sign In</a>
+              <h1>Continue through All Good Petfood</h1>
+              <p>Buddy uses your All Good Petfood customer account. Sign in or create an account on the store, then open Chat with Buddy again.</p>
+              <a className="access-primary" href="https://allgoodpetfood.co.nz/account/login">Sign in at All Good Petfood</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz/account/register">Create Account</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz">Return to All Good Petfood</a>
               <small>My Pet Health never receives your Shopify password.</small>
@@ -447,7 +453,7 @@ export function ChatWidget() {
           )}
         </div>
         <div className="sidebar-note"><ShieldCheck size={18} /><span>Practical guidance, grounded in trusted pet-health knowledge.</span></div>
-        <a className="admin-link" href="/admin">Staff admin preview →</a>
+        <a className="admin-link" href="/admin">Admin</a>
       </aside>
 
       {editingPetId && (
@@ -481,9 +487,8 @@ export function ChatWidget() {
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
           <a className="header-back" href="https://allgoodpetfood.co.nz">Back to All Good Petfood</a>
-          <BuddyLogo />
+          <AllGoodLogo />
           <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> All Good Petfood assistant</small></span></div>
-          <button className="header-new" onClick={startNewConversation}><Plus size={16} /> <span>New chat</span></button>
           {shopifyCustomer && <ShopifyAccountControl customer={shopifyCustomer} />}
         </header>
 

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createShopifySession, exchangeShopifyCode, fetchShopifyCustomer, readShopifyFlow, shopifyCookieOptions, shopifyCustomerConfig, SHOPIFY_FLOW_COOKIE, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { createShopifySession, exchangeShopifyCode, fetchShopifyCustomer, readShopifyFlow, shopifyCookieOptions, shopifyCustomerConfig, shopifyStorefrontLoginUrl, SHOPIFY_FLOW_COOKIE, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 export async function GET(request: NextRequest) {
   const config = shopifyCustomerConfig();
@@ -8,6 +8,11 @@ export async function GET(request: NextRequest) {
     const code = request.nextUrl.searchParams.get("code");
     const state = request.nextUrl.searchParams.get("state");
     const oauthError = request.nextUrl.searchParams.get("error");
+    if (oauthError === "login_required" || oauthError === "interaction_required") {
+      const response = NextResponse.redirect(shopifyStorefrontLoginUrl());
+      response.cookies.delete(SHOPIFY_FLOW_COOKIE);
+      return response;
+    }
     if (oauthError) throw new Error(`Shopify authorization declined: ${oauthError}`);
     if (!code || !state) throw new Error("Shopify callback is missing code or state");
 

@@ -214,7 +214,11 @@ export async function POST(request: NextRequest) {
       || refiningBroadCategory
       || genericBroadContinuation)
       && !needsHealthKnowledge(latestUserMessage);
-    const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(conversationQuery, 2);
+    const previousUserMessage = userMessages.at(-2) ?? "";
+    const knowledgeQuery = productSearchTerms(latestUserMessage).length <= 4 && previousUserMessage
+      ? `${previousUserMessage} ${latestUserMessage}`
+      : latestUserMessage;
+    const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
     const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(latestUserMessage);
     let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
     let purchaseHistoryUnavailable = false;
@@ -281,9 +285,31 @@ export async function POST(request: NextRequest) {
         .map((product) => ({ product, reason: "Product discussed earlier in this conversation." }))
       : [];
     const recentProductIds = [...new Set(relevantPurchases.map((purchase) => purchase.productId).filter((id): id is string => Boolean(id)))];
-    const purchasedProducts = (await Promise.all(recentProductIds.slice(0, 6).map((productId) => productService.getProduct(productId))))
-      .filter((product) => product !== null)
-      .map((product) => ({ product, reason: "A product from this customer's recent purchase history." }));
+    const purchasesByProductId = new Map(relevantPurchases
+      .filter((purchase) => purchase.productId)
+      .map((purchase) => [purchase.productId as string, purchase]));
+    const purchasedProducts = (await Promise.all(recentProductIds.slice(0, 6).map(async (productId) => {
+      const purchase = purchasesByProductId.get(productId);
+      const product = await productService.getPurchasedProduct(productId, purchase?.variantId ?? null, purchase?.variantTitle ?? null);
+      return product ? { product, purchase } : null;
+    })))
+      .filter((item) => item !== null)
+      .map(({ product, purchase }) => {
+        const oldPrice = purchase?.unitPrice;
+        const difference = oldPrice === null || oldPrice === undefined ? null : product.price - oldPrice;
+        const priceNote = difference === null
+          ? "The earlier purchase price was unavailable for comparison."
+          : Math.abs(difference) < 0.005
+            ? "Current price matches the recorded purchase price."
+            : `Current price is $${Math.abs(difference).toFixed(2)} ${difference > 0 ? "higher" : "lower"} than the recorded purchase price.`;
+        return {
+          product,
+          reason: product.availability === "in_stock"
+            ? "The exact item and variant from this customer's recent purchase history."
+            : "This previously purchased variant is currently out of stock.",
+          priceNote,
+        };
+      });
     const groundingRecommendations = recommendations.length > 0
       ? recommendations
       : referencedProducts.length > 0

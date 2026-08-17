@@ -141,6 +141,20 @@ export function callbackUrl() {
   return new URL("/api/auth/shopify/callback", shopifyCustomerConfig().appBaseUrl).toString();
 }
 
+export function shopifyStorefrontLoginUrl() {
+  const { storefrontDomain } = shopifyCustomerConfig();
+  const loginUrl = new URL("/customer_authentication/login", `https://${storefrontDomain}`);
+  const configuredReturnPath = process.env.SHOPIFY_BUDDY_RETURN_PATH?.trim() || "/";
+  const returnPath = configuredReturnPath.startsWith("/") && !configuredReturnPath.startsWith("//")
+    ? configuredReturnPath
+    : "/";
+  // Shopify only accepts a relative storefront path here. After signing in,
+  // customers can return to a small Shopify Buddy launch page, which sends
+  // them back through the silent My Pet Health session handoff.
+  loginUrl.searchParams.set("return_to", returnPath);
+  return loginUrl;
+}
+
 export function shopifyCookieOptions(maxAge: number) {
   return {
     httpOnly: true,

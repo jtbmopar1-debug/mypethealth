@@ -77,8 +77,8 @@ export async function answerCustomer(
   const firstUserIndex = messages.findIndex((message) => message.role === "user");
   const conversation = firstUserIndex >= 0 ? messages.slice(firstUserIndex) : messages;
   const gemini = new GoogleGenAI({ apiKey: serverConfig.geminiApiKey });
-  const generate = (temperature: number) => gemini.models.generateContent({
-    model: serverConfig.geminiModel,
+  const generate = (model: string, temperature: number) => gemini.models.generateContent({
+    model,
     contents: conversation.map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
       parts: [{ text: message.content }]
@@ -95,18 +95,32 @@ export async function answerCustomer(
   });
 
   let response: GenerateContentResponse;
+  let activeModel = serverConfig.geminiModel;
   try {
-    response = await generate(0.35);
+    response = await generate(activeModel, 0.35);
   } catch (error) {
-    console.warn("[chat] model unavailable; using local response", error instanceof Error ? error.message : "Unknown error");
-    return createLocalResponse(messages, knowledge, recommendations);
+    const fallbackModel = serverConfig.geminiFallbackModel;
+    if (!fallbackModel || fallbackModel === activeModel) {
+      console.warn("[chat] model unavailable; using local response", error instanceof Error ? error.message : "Unknown error");
+      return createLocalResponse(messages, knowledge, recommendations);
+    }
+    console.warn("[chat] primary model unavailable; trying configured fallback", { primaryModel: activeModel, fallbackModel });
+    try {
+      activeModel = fallbackModel;
+      response = await generate(activeModel, 0.25);
+    } catch (fallbackError) {
+      console.warn("[chat] fallback model unavailable; using local response", fallbackError instanceof Error ? fallbackError.message : "Unknown error");
+      return createLocalResponse(messages, knowledge, recommendations);
+    }
   }
 
   let content = response.text || "";
   if ((candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) && content) {
     console.warn("[chat] incomplete model response; regenerating", { finishReason: candidateFinishReason(response), length: content.length });
     try {
-      response = await generate(0.2);
+      const fallbackModel = serverConfig.geminiFallbackModel;
+      activeModel = fallbackModel && fallbackModel !== activeModel ? fallbackModel : activeModel;
+      response = await generate(activeModel, 0.2);
       content = response.text || "";
     } catch (error) {
       console.warn("[chat] model regeneration failed; using local response", error instanceof Error ? error.message : "Unknown error");

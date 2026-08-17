@@ -24,6 +24,7 @@ const productSchema = z.object({
 const recommendationSchema = z.object({
   product: productSchema,
   reason: z.string().max(2000),
+  priceNote: z.string().max(500).optional(),
 });
 const messageSchema = z.object({
   id: idSchema,

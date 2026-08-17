@@ -9,6 +9,9 @@ export interface ManagedKnowledgeEntry extends KnowledgeEntry {
   sourceCandidateId: string | null;
   createdAt: string;
   updatedAt: string;
+  publicationStatus: "draft" | "published" | "archived";
+  lastVerifiedAt: string | null;
+  reviewAfter: string | null;
 }
 
 interface KnowledgeRow {
@@ -26,9 +29,12 @@ interface KnowledgeRow {
   enabled: boolean;
   created_at: string;
   updated_at: string;
+  publication_status: "draft" | "published" | "archived";
+  last_verified_at: string | null;
+  review_after: string | null;
 }
 
-const columns = "id,question,answer,category,summary,follow_up_questions,safety_notes,tags,relevant_product_tags,recommended_product_urls,source_candidate_id,enabled,created_at,updated_at";
+const columns = "id,question,answer,category,summary,follow_up_questions,safety_notes,tags,relevant_product_tags,recommended_product_urls,source_candidate_id,enabled,publication_status,last_verified_at,review_after,created_at,updated_at";
 
 function fromRow(row: KnowledgeRow): ManagedKnowledgeEntry {
   return {
@@ -46,6 +52,9 @@ function fromRow(row: KnowledgeRow): ManagedKnowledgeEntry {
     enabled: row.enabled,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    publicationStatus: row.publication_status,
+    lastVerifiedAt: row.last_verified_at,
+    reviewAfter: row.review_after,
   };
 }
 
@@ -66,20 +75,19 @@ export class SupabaseKnowledgeService implements KnowledgeService {
   async search(query: string, limit = 3): Promise<KnowledgeEntry[]> {
     const localEntries = await this.local.listEnabled();
     try {
-      const managedEntries = await listManagedKnowledgeEntries();
+      const { data, error } = await getServerSupabaseClient().rpc("search_published_knowledge", {
+        search_text: query,
+        result_limit: limit,
+      });
+      if (error) throw new Error(error.message);
+      const managedEntries = ((data || []) as KnowledgeRow[]).map(fromRow);
       if (!managedEntries.length) return localEntries
         .map((entry) => ({ entry, score: scoreKnowledge(entry, query) }))
         .filter(({ score }) => score > 0)
         .sort((left, right) => right.score - left.score)
         .slice(0, limit)
         .map(({ entry }) => entry);
-      return managedEntries
-        .filter((entry) => entry.enabled)
-        .map((entry) => ({ entry, score: scoreKnowledge(entry, query) }))
-        .filter(({ score }) => score > 0)
-        .sort((left, right) => right.score - left.score)
-        .slice(0, limit)
-        .map(({ entry }) => entry);
+      return managedEntries.slice(0, limit);
     } catch (error) {
       console.warn("[knowledge] managed entries unavailable; using built-in knowledge", error instanceof Error ? error.message : "Unknown error");
       return localEntries
@@ -100,6 +108,7 @@ export class SupabaseKnowledgeService implements KnowledgeService {
         .select(columns)
         .eq("id", id)
         .eq("enabled", true)
+        .eq("publication_status", "published")
         .maybeSingle();
       if (error) throw new Error(error.message);
       return data ? fromRow(data as KnowledgeRow) : null;
@@ -113,7 +122,9 @@ export class SupabaseKnowledgeService implements KnowledgeService {
     const localEntries = await this.local.listEnabled();
     try {
       const managedEntries = await listManagedKnowledgeEntries();
-      return managedEntries.length ? managedEntries.filter((entry) => entry.enabled) : localEntries;
+      return managedEntries.length
+        ? managedEntries.filter((entry) => entry.enabled && entry.publicationStatus === "published")
+        : localEntries;
     } catch (error) {
       console.warn("[knowledge] managed entries unavailable; using built-in knowledge", error instanceof Error ? error.message : "Unknown error");
       return localEntries;

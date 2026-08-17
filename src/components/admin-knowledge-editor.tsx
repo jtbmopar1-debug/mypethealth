@@ -8,6 +8,9 @@ interface AdminKnowledgeEntry extends KnowledgeEntry {
   sourceCandidateId: string | null;
   createdAt: string;
   updatedAt: string;
+  publicationStatus: "draft" | "published" | "archived";
+  lastVerifiedAt: string | null;
+  reviewAfter: string | null;
 }
 
 export interface KnowledgeReviewCandidate {
@@ -30,7 +33,9 @@ interface EntryDraft {
   tags: string;
   relevantProductTags: string;
   recommendedProductUrls: string;
-  enabled: boolean;
+  publicationStatus: "draft" | "published" | "archived";
+  lastVerifiedAt: string;
+  reviewAfter: string;
 }
 
 const EMPTY_ENTRY: EntryDraft = {
@@ -44,7 +49,9 @@ const EMPTY_ENTRY: EntryDraft = {
   tags: "",
   relevantProductTags: "",
   recommendedProductUrls: "",
-  enabled: true,
+  publicationStatus: "published",
+  lastVerifiedAt: "",
+  reviewAfter: "",
 };
 
 function lines(value: string) {
@@ -67,7 +74,9 @@ function draftFromEntry(entry: AdminKnowledgeEntry): EntryDraft {
     tags: entry.tags.join(", "),
     relevantProductTags: entry.relevantProductTags.join(", "),
     recommendedProductUrls: (entry.recommendedProductUrls ?? []).join("\n"),
-    enabled: entry.enabled,
+    publicationStatus: entry.publicationStatus,
+    lastVerifiedAt: entry.lastVerifiedAt ?? "",
+    reviewAfter: entry.reviewAfter ?? "",
   };
 }
 
@@ -83,7 +92,9 @@ function payload(draft: EntryDraft) {
     relevantProductTags: commaList(draft.relevantProductTags),
     recommendedProductUrls: lines(draft.recommendedProductUrls),
     sourceCandidateId: draft.sourceCandidateId,
-    enabled: draft.enabled,
+    publicationStatus: draft.publicationStatus,
+    lastVerifiedAt: draft.lastVerifiedAt || null,
+    reviewAfter: draft.reviewAfter || null,
   };
 }
 
@@ -127,7 +138,7 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
   }, [entries, reviewCandidates]);
 
   const categories = new Set(entries.map((entry) => entry.category)).size;
-  const enabledCount = entries.filter((entry) => entry.enabled).length;
+  const enabledCount = entries.filter((entry) => entry.publicationStatus === "published").length;
 
   function newEntry() {
     setEditingId(null);
@@ -157,7 +168,7 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
       category: candidate.category,
       safetyNotes: candidate.safetyNote,
       tags: candidate.tags.join(", "),
-      enabled: false,
+      publicationStatus: "draft",
     });
     setError("");
     setNotice("Source Q&A loaded as a draft. Review medical claims, add safety notes, then publish only when approved.");
@@ -179,7 +190,7 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
       const data = await response.json() as { entries?: AdminKnowledgeEntry[]; error?: string };
       if (!response.ok || !data.entries) throw new Error(data.error || "Knowledge entry could not be saved");
       setEntries(data.entries);
-      setNotice(draft.enabled ? "Published knowledge saved. Buddy can retrieve it now." : "Draft knowledge saved. Buddy will not retrieve it until published.");
+      setNotice(draft.publicationStatus === "published" ? "Published knowledge saved. Buddy can retrieve it now." : "Unpublished knowledge saved. Buddy will not retrieve it until published.");
       setEditingId(null);
       setDraft({ ...EMPTY_ENTRY });
       setSelectedCandidateId("");
@@ -196,7 +207,7 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
       const response = await fetch("/api/admin/knowledge", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: entry.id, entry: { ...payload(draftFromEntry(entry)), enabled } }),
+        body: JSON.stringify({ id: entry.id, entry: { ...payload(draftFromEntry(entry)), publicationStatus: enabled ? "published" : "draft" } }),
       });
       const data = await response.json() as { entries?: AdminKnowledgeEntry[]; error?: string };
       if (!response.ok || !data.entries) throw new Error(data.error || "Publish status could not be changed");
@@ -256,7 +267,11 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
             <label>Safety notes <small>One instruction per line</small><textarea rows={3} value={draft.safetyNotes} onChange={(event) => setDraft((current) => ({ ...current, safetyNotes: event.target.value }))} placeholder="Persistent or severe symptoms require veterinary advice." /></label>
             <label>Product matching tags <small>Optional, comma-separated Shopify/product tags</small><input value={draft.relevantProductTags} onChange={(event) => setDraft((current) => ({ ...current, relevantProductTags: event.target.value }))} placeholder="puppy, growth, sensitive-stomach" /></label>
             <label>Recommended product links <small>Optional, one All Good Petfood product URL per line</small><textarea rows={3} value={draft.recommendedProductUrls} onChange={(event) => setDraft((current) => ({ ...current, recommendedProductUrls: event.target.value }))} placeholder={'https://allgoodpetfood.co.nz/products/example-balm\nhttps://allgoodpetfood.co.nz/products/example-cream'} /></label>
-            <label className="publish-check"><input type="checkbox" checked={draft.enabled} onChange={(event) => setDraft((current) => ({ ...current, enabled: event.target.checked }))} /><span><strong>Publish for Buddy</strong><small>Turn this off to save as a staff-only draft.</small></span></label>
+            <div className="knowledge-form-row">
+              <label>Publication status<select value={draft.publicationStatus} onChange={(event) => setDraft((current) => ({ ...current, publicationStatus: event.target.value as EntryDraft["publicationStatus"] }))}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
+              <label>Last verified<input type="date" value={draft.lastVerifiedAt} onChange={(event) => setDraft((current) => ({ ...current, lastVerifiedAt: event.target.value }))} /></label>
+              <label>Review after<input type="date" value={draft.reviewAfter} onChange={(event) => setDraft((current) => ({ ...current, reviewAfter: event.target.value }))} /></label>
+            </div>
             {error && <p className="admin-error" role="alert">{error}</p>}
             {notice && <p className="admin-notice" role="status">{notice}</p>}
             <div className="knowledge-form-actions"><button type="button" onClick={newEntry}>Clear</button><button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Save changes" : "Add knowledge"}</button></div>
@@ -269,13 +284,13 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
           {loading ? <p className="admin-empty">Loading managed knowledge…</p> : filteredEntries.length === 0 ? <p className="admin-empty">{entries.length ? "No entries match that search." : "No managed entries yet. Add your first approved Q&A."}</p> : (
             <div className="managed-entry-list">
               {filteredEntries.map((entry) => (
-                <article key={entry.id} className={!entry.enabled ? "draft" : ""}>
-                  <div className="managed-entry-meta"><span>{entry.category.replaceAll("-", " ")}</span><i>{entry.enabled ? "Published" : "Draft"}</i></div>
+                <article key={entry.id} className={entry.publicationStatus !== "published" ? "draft" : ""}>
+                  <div className="managed-entry-meta"><span>{entry.category.replaceAll("-", " ")}</span><i>{entry.publicationStatus}{entry.reviewAfter && entry.reviewAfter < new Date().toISOString().slice(0, 10) ? " Â· review due" : ""}</i></div>
                   <h3>{entry.title}</h3>
                   <p>{entry.summary}</p>
                   <div className="managed-entry-actions">
                     <button type="button" onClick={() => editEntry(entry)}>Edit</button>
-                    <button type="button" onClick={() => void setPublished(entry, !entry.enabled)}>{entry.enabled ? "Unpublish" : "Publish"}</button>
+                    <button type="button" onClick={() => void setPublished(entry, entry.publicationStatus !== "published")}>{entry.publicationStatus === "published" ? "Move to draft" : "Publish"}</button>
                     <button type="button" className="danger" onClick={() => void deleteEntry(entry)}><Trash2 size={13} /> Delete</button>
                   </div>
                 </article>

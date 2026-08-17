@@ -1,7 +1,8 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { callbackUrl, createShopifyFlow, shopifyCookieOptions, shopifyCustomerConfig, SHOPIFY_FLOW_COOKIE } from "@/services/shopify/customer-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const config = shopifyCustomerConfig();
     const flow = createShopifyFlow();
@@ -13,6 +14,13 @@ export async function GET() {
     authorizationUrl.searchParams.set("state", flow.state);
     authorizationUrl.searchParams.set("code_challenge", flow.challenge);
     authorizationUrl.searchParams.set("code_challenge_method", "S256");
+    if (request.nextUrl.searchParams.get("silent") === "1") {
+      // Reuse an existing All Good Petfood customer-account session without
+      // showing another sign-in screen. Shopify returns `login_required` when
+      // no such session exists, and the callback sends that customer back to
+      // the store's own login page.
+      authorizationUrl.searchParams.set("prompt", "none");
+    }
 
     const response = NextResponse.redirect(authorizationUrl);
     response.cookies.set(SHOPIFY_FLOW_COOKIE, flow.cookieValue, shopifyCookieOptions(10 * 60));

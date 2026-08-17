@@ -19,6 +19,7 @@ const RECENT_PURCHASES_QUERY = `
               variantTitle
               productType
               quantity
+              price { amount currencyCode }
             }
           }
         }
@@ -42,6 +43,7 @@ const responseSchema = z.object({
               variantTitle: z.string().nullable(),
               productType: z.string().nullable(),
               quantity: z.number().int().nonnegative(),
+              price: z.object({ amount: z.string(), currencyCode: z.string() }).nullable(),
             })),
           }),
         })),
@@ -75,5 +77,7 @@ export async function fetchRecentCustomerPurchases(accessToken: string): Promise
     productType: item.productType,
     quantity: item.quantity,
     purchasedAt: order.processedAt,
+    unitPrice: item.price ? Number(item.price.amount) : null,
+    currency: item.price?.currencyCode ?? null,
   })));
 }

@@ -26,7 +26,9 @@ const entrySchema = z.object({
   relevantProductTags: z.array(z.string().trim().min(1).max(100)).max(40),
   recommendedProductUrls: z.array(recommendedProductUrlSchema).max(12),
   sourceCandidateId: z.string().trim().min(1).max(200).nullable().optional(),
-  enabled: z.boolean(),
+  publicationStatus: z.enum(["draft", "published", "archived"]),
+  lastVerifiedAt: z.iso.date().nullable(),
+  reviewAfter: z.iso.date().nullable(),
 });
 
 function admin(request: NextRequest) {
@@ -47,7 +49,11 @@ function row(entry: z.infer<typeof entrySchema>, createdBy?: string | null) {
     relevant_product_tags: [...new Set(entry.relevantProductTags.map((tag) => tag.toLowerCase()))],
     recommended_product_urls: [...new Set(entry.recommendedProductUrls)],
     source_candidate_id: entry.sourceCandidateId || null,
-    enabled: entry.enabled,
+    publication_status: entry.publicationStatus,
+    enabled: entry.publicationStatus === "published",
+    last_verified_at: entry.lastVerifiedAt,
+    review_after: entry.reviewAfter,
+    updated_by: createdBy || null,
     ...(createdBy ? { created_by: createdBy } : {}),
     updated_at: now,
   };
@@ -79,13 +85,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!admin(request)) return Response.json({ error: "Admin access required" }, { status: 403 });
+  const session = admin(request);
+  if (!session) return Response.json({ error: "Admin access required" }, { status: 403 });
   const parsed = z.object({ id: idSchema, entry: entrySchema }).safeParse(await request.json());
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message || "Please check the required knowledge fields" }, { status: 400 });
   try {
     const { error } = await getServerSupabaseClient()
       .from("knowledge_entries")
-      .update(row(parsed.data.entry))
+      .update(row(parsed.data.entry, session.email))
       .eq("id", parsed.data.id);
     if (error) throw new Error(error.message);
     return Response.json({ entries: await listManagedKnowledgeEntries() });
