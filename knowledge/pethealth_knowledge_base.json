@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "site": "mypethealth.co.nz",
+  "description": "Refined, PII-free pet health FAQ knowledge base derived from customer support correspondence. Rewritten as generalized Q&A pairs suitable for chatbot ingestion.",
+  "recordCount": 29,
+  "records": [
+    {
+      "category": "skin_and_itching",
+      "question": "My dog has itchy skin and we've tried multiple elimination diets through skin specialists without success. What else can we try?",
+      "answer": "A clean hypoallergenic diet is usually the first place to start, ideally one that's grain-free and uses a novel or limited protein source. It can take a few different approaches before finding what works, so it's worth persevering with a properly controlled elimination trial rather than switching foods too quickly.",
+      "tags": [
+        "itchy skin",
+        "elimination diet",
+        "hypoallergenic"
+      ],
+      "id": "kb_faq_001",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My dog is itchy around the eyes, face, muzzle and ears. Could this be food related?",
+      "answer": "Itching concentrated around the eyes, face, muzzle and ears is quite often food related. Chicken is one of the most common triggers, so if your dog's current food contains chicken, trialling a chicken-free hypoallergenic diet for several weeks is a reasonable first step.",
+      "tags": [
+        "itchy skin",
+        "food allergy",
+        "chicken allergy",
+        "face itching"
+      ],
+      "id": "kb_faq_002",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My dog's itching gets worse in spring and summer but clears up over winter. What does this mean?",
+      "answer": "A seasonal pattern like this, especially when it shows up on the legs or belly, is very typical of an environmental allergy, most commonly grass. Unlike a food allergy, you can't fully eliminate exposure to grass or other environmental triggers, but management options include limiting contact with fresh-cut or long grass, wiping paws and belly after time outside, and using a hypoallergenic diet to reduce the overall allergy burden.",
+      "tags": [
+        "seasonal allergy",
+        "grass allergy",
+        "environmental allergy"
+      ],
+      "id": "kb_faq_003",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My dog has a yeasty smell and their skin gets worse in summer. What could be causing this?",
+      "answer": "A yeasty smell combined with symptoms worsening in summer often points to a seasonal or contact allergy with a secondary yeast overgrowth. A raw or low-carbohydrate diet can help, since reducing carbohydrates limits the sugars that feed yeast on the skin.",
+      "tags": [
+        "yeast",
+        "seasonal allergy",
+        "skin smell"
+      ],
+      "id": "kb_faq_004",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My dog is licking their paws and rolling around a lot. What are the common causes?",
+      "answer": "Paw licking and rolling/rubbing on the ground are both classic signs of itching, most often linked to either a food allergy or a contact/environmental allergy such as grass. Note when it happens (after walks, indoors only, seasonal) as that can help narrow down whether it's contact-based or food-based.",
+      "tags": [
+        "paw licking",
+        "itchy skin",
+        "allergy signs"
+      ],
+      "id": "kb_faq_005",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "Even organic beef seems to cause my dog's allergies. Is that normal?",
+      "answer": "Yes — allergies are to the specific animal protein itself, not to how it was farmed. So even organic or free-range beef will still trigger a reaction in a dog that's allergic to beef. If beef is a suspected trigger, it needs to be avoided entirely rather than switched to a higher-welfare source.",
+      "tags": [
+        "beef allergy",
+        "protein allergy",
+        "organic food"
+      ],
+      "id": "kb_faq_006",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My terrier has chronic itching. Are certain breeds more prone to allergies?",
+      "answer": "Terrier breeds can be more prone to both food and contact allergies. Grass is the most common contact trigger. If your dog is a terrier with ongoing itching, it's worth considering both an elimination diet trial and reducing exposure to grass to see which has more impact.",
+      "tags": [
+        "breed predisposition",
+        "terrier",
+        "allergies"
+      ],
+      "id": "kb_faq_007",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "My dog has chronic skin issues (belly, groin, armpit, neck) and is now getting recurring ear infections. Could switching food help?",
+      "answer": "If a dog is already eating a fully hypoallergenic diet and the ingredients aren't a likely cause, ongoing skin and ear issues may be pointing to something other than diet — for example an environmental or contact allergy. In that case, changing food again may not resolve it, and it's worth discussing with a vet whether further allergy testing or a different management approach (such as topical treatment) makes sense alongside diet.",
+      "tags": [
+        "chronic skin issues",
+        "ear infections",
+        "hypoallergenic diet"
+      ],
+      "safety_note": "Recurring ear infections and chronic skin issues that don't improve with diet changes should be assessed by a vet.",
+      "id": "kb_faq_008",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "Is it okay to keep my dog on a topical itch spray alongside a prescribed allergy medication?",
+      "answer": "A natural topical spray can generally be used alongside a vet-prescribed allergy medication to give extra relief during flare-ups. It's a supportive measure rather than a replacement for the prescribed treatment, so keep following your vet's guidance on the medication itself.",
+      "tags": [
+        "topical spray",
+        "allergy medication",
+        "itch relief"
+      ],
+      "safety_note": "Always check with your vet before combining any new topical or supplement with prescribed medication.",
+      "id": "kb_faq_009",
+      "relevant_product_names": []
+    },
+    {
+      "category": "skin_and_itching",
+      "question": "How do I bathe my itchy dog without making the itching worse?",
+      "answer": "If regular bathing seems to help an itchy dog, bathing around twice a week is generally fine. Using a topical itch-soothing spray between baths can help manage flare-ups without over-bathing, since bathing too frequently can sometimes dry out the skin further.",
+      "tags": [
+        "bathing",
+        "itchy skin",
+        "topical spray"
+      ],
+      "id": "kb_faq_010",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "My dog got sick after eating a smoked treat. Could the smoking process be the cause?",
+      "answer": "Variation in how much a treat is smoked between production batches can occur, and a treat that's more heavily smoked than usual can occasionally upset a sensitive dog's stomach. If you notice a treat behaves differently between batches (stronger smell, darker colour), it's worth flagging to the manufacturer so they can check their process.",
+      "tags": [
+        "treats",
+        "smoked treats",
+        "batch variation",
+        "upset stomach"
+      ],
+      "id": "kb_faq_011",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "What's a good hypoallergenic protein option if I need to buy in bulk for multiple dogs?",
+      "answer": "A venison and lamb trachea mix is a good hypoallergenic option for feeding multiple dogs, and buying in bulk (larger box sizes) is generally the best value per kilo.",
+      "tags": [
+        "bulk feeding",
+        "hypoallergenic",
+        "venison",
+        "multiple dogs"
+      ],
+      "id": "kb_faq_012",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "My dog is a fussy eater and isn't taking to a new hypoallergenic food. What should I try?",
+      "answer": "For fussy eaters, trying a different hypoallergenic range with a more novel or appealing protein (such as kangaroo or venison based options) is often the next step. Every dog's preference is different, so it can take trying two or three ranges before finding one they'll happily eat.",
+      "tags": [
+        "fussy eater",
+        "hypoallergenic",
+        "protein options"
+      ],
+      "id": "kb_faq_013",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "My dog has IBD and is limited to single-protein exotic meats. What should I know about ingredient changes?",
+      "answer": "Dogs on a strict single-protein diet for IBD or severe allergies need any formula change checked carefully, since even a small ingredient or moisture-content change in a recipe can affect them. Always compare the old and new ingredient list before switching bags, and check with your vet if you're unsure whether a reformulation is safe for your dog's condition.",
+      "tags": [
+        "IBD",
+        "single protein diet",
+        "formula change",
+        "exotic proteins"
+      ],
+      "safety_note": "For dogs with a vet-diagnosed condition like IBD, confirm any recipe or ingredient change with your vet before feeding.",
+      "id": "kb_faq_014",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "My dog is bored of eating the same food. What can I do to add variety without upsetting their stomach?",
+      "answer": "If a dog gets bored of the same food, mixing in a small amount of a low-fat wet food alongside their regular kibble is a good way to add variety without a full diet change. Keeping the base diet consistent while varying the topper reduces the risk of stomach upset.",
+      "tags": [
+        "food boredom",
+        "wet food topper",
+        "variety"
+      ],
+      "id": "kb_faq_015",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "protein_selection",
+      "question": "Why might my dog get bored of a food after being on it for a while?",
+      "answer": "Some dogs go off a food after a period of time simply because it's a richer recipe and the taste becomes less exciting to them. This isn't unusual and doesn't necessarily mean something is wrong with the food — rotating to a different flavour or protein within the same hypoallergenic range can often solve it.",
+      "tags": [
+        "food boredom",
+        "picky eating"
+      ],
+      "id": "kb_faq_016",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "allergies_and_sensitivities",
+      "question": "My dog has multiple food allergies. Are treats safe to give as well?",
+      "answer": "If your dog has known food allergies, check that any treat is made with a protein and ingredient list your dog already tolerates well, ideally from a hypoallergenic range. Treats should be treated the same as their main food when it comes to allergy management.",
+      "tags": [
+        "food allergies",
+        "treats",
+        "hypoallergenic"
+      ],
+      "id": "kb_faq_017",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "allergies_and_sensitivities",
+      "question": "How do I figure out which protein my dog is allergic to?",
+      "answer": "The standard approach is an elimination diet: start with a novel protein your dog hasn't eaten before (such as kangaroo or lamb), feed it exclusively for several weeks, and watch for improvement. If symptoms improve, you can then reintroduce previous proteins one at a time to identify the trigger. This narrows things down from a clean baseline rather than guessing.",
+      "tags": [
+        "elimination diet",
+        "food allergy testing",
+        "novel protein"
+      ],
+      "id": "kb_faq_018",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "allergies_and_sensitivities",
+      "question": "My dog has environmental sensitivities as well as food ones. What can help?",
+      "answer": "For dogs with both environmental and food sensitivities, a hypoallergenic diet won't remove the environmental triggers, but it reduces the overall allergy load on the body, which can make environmental flare-ups less severe. It's often used alongside management of contact/environmental exposure rather than as a complete fix on its own.",
+      "tags": [
+        "environmental allergy",
+        "food allergy",
+        "hypoallergenic diet"
+      ],
+      "id": "kb_faq_019",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "diarrhoea_and_stool_changes",
+      "question": "My dog has ongoing diarrhoea even after switching food. What should I check?",
+      "answer": "If diarrhoea continues after a food switch, it's worth checking whether your dog has been on a course of probiotics or prebiotics, as gut flora can take time to rebalance after a diet change. Unless a vet has diagnosed a specific gastrointestinal issue, there's usually no reason for diarrhoea to continue long-term, so if it persists it's worth getting it checked out.",
+      "tags": [
+        "diarrhoea",
+        "probiotics",
+        "gut health",
+        "food transition"
+      ],
+      "safety_note": "Persistent diarrhoea, especially if it continues for more than a few days or is accompanied by other symptoms, should be assessed by a vet.",
+      "id": "kb_faq_020",
+      "relevant_product_names": []
+    },
+    {
+      "category": "diarrhoea_and_stool_changes",
+      "question": "Can a change in protein help firm up my dog's stool?",
+      "answer": "Yes — some proteins are gentler on digestion than others. Novel proteins like kangaroo, combined with a fruit like apple, are often reported to help with digestion and stool consistency, particularly in dogs who react poorly to more common proteins like chicken or beef.",
+      "tags": [
+        "stool consistency",
+        "digestion",
+        "protein change"
+      ],
+      "id": "kb_faq_021",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "puppies",
+      "question": "My large-breed puppy is 9 months old. Should I switch them to adult food now or wait?",
+      "answer": "Large breed dogs generally benefit from staying on a puppy formula until around 12 months old, since their bones and joints take longer to develop. The alternative is moving them onto a good quality all-life-stages food rather than switching straight to a standard adult formula early.",
+      "tags": [
+        "large breed puppy",
+        "puppy food timing",
+        "adult food transition"
+      ],
+      "id": "kb_faq_022",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "puppies",
+      "question": "My puppy isn't very food motivated and is slow to adjust to a new food. Is that normal?",
+      "answer": "It's common for puppies to be less food-driven than adult dogs and to take longer to adjust to a new food. A slow, gradual transition over a week or two, mixed in with their previous food, usually helps them come around without stressing their stomach.",
+      "tags": [
+        "puppy nutrition",
+        "food transition",
+        "picky puppy"
+      ],
+      "id": "kb_faq_023",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "ingredients",
+      "question": "I noticed my bag of food looks or smells slightly different from the last one. Is that a problem?",
+      "answer": "Small natural variations between batches are normal — the colour of grains or vegetables in a formula can vary slightly depending on the raw ingredient batch, and this doesn't affect quality or safety. If a bag has an unusual smell, visible mould, or looks noticeably different in texture, that's worth reporting directly, since it may indicate the product was exposed to heat or moisture in transit (for example, being left in the sun during delivery) rather than a manufacturing issue.",
+      "tags": [
+        "batch variation",
+        "ingredient quality",
+        "mould",
+        "storage during transit"
+      ],
+      "safety_note": "If you notice visible mould, an off smell, or your pet has an adverse reaction after eating a specific bag, stop feeding it and contact the manufacturer with the batch number.",
+      "id": "kb_faq_024",
+      "relevant_product_names": []
+    },
+    {
+      "category": "ingredients",
+      "question": "Why did the ingredient list on a product change?",
+      "answer": "Manufacturers do occasionally reformulate a recipe, which can mean small changes to ingredients or moisture content even if the overall product name stays the same. If your pet has specific dietary restrictions, it's worth comparing the old and new ingredient list side by side whenever you're unsure, rather than assuming the recipe is unchanged.",
+      "tags": [
+        "recipe reformulation",
+        "ingredient list",
+        "moisture content"
+      ],
+      "id": "kb_faq_025",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "ingredients",
+      "question": "Is it cheaper to buy dog food in bulk?",
+      "answer": "Generally yes — buying a larger bag size works out to a lower cost per kilogram than buying smaller bags more frequently. It's worth comparing the cost-per-kg across bag sizes rather than just the sticker price when deciding what to buy.",
+      "tags": [
+        "bulk buying",
+        "cost comparison",
+        "food pricing"
+      ],
+      "id": "kb_faq_026",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "weight_management",
+      "question": "My dog is overweight for their breed. What kind of food change can help?",
+      "answer": "For weight management, choosing a lower-calorie protein option — such as a kangaroo and apple based recipe — alongside portion control is a common approach. Weight loss in dogs should be gradual, so pair any food change with monitoring body condition over several weeks rather than expecting a fast result.",
+      "tags": [
+        "overweight dog",
+        "weight loss",
+        "low calorie food"
+      ],
+      "id": "kb_faq_027",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "weight_management",
+      "question": "How many treats or treat-sticks can I give without overdoing calories?",
+      "answer": "Treats should generally make up a small portion of a dog's daily calorie intake. For calorie-dense treats like meaty sticks, cutting them in half (or choosing a smaller bite-size version of the same treat) is an easy way to reduce calories per treat without cutting them out altogether, especially for small or food-driven dogs.",
+      "tags": [
+        "treats",
+        "calorie control",
+        "portion size"
+      ],
+      "id": "kb_faq_028",
+      "safety_note": "",
+      "relevant_product_names": []
+    },
+    {
+      "category": "product_comparisons",
+      "question": "What's the difference between a grain-free and a wheat-free hypoallergenic food?",
+      "answer": "Grain-free means the recipe excludes all grains, while wheat-free only excludes wheat specifically and may still contain other grains. Both are considered hypoallergenic options, but if your dog has a broader grain sensitivity rather than a wheat-specific one, a fully grain-free option is the safer choice.",
+      "tags": [
+        "grain-free",
+        "wheat-free",
+        "hypoallergenic comparison"
+      ],
+      "id": "kb_faq_029",
+      "safety_note": "",
+      "relevant_product_names": []
+    }
+  ]
+}

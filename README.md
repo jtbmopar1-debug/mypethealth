@@ -9,14 +9,14 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Responsive desktop and mobile chat website at `/`
 - My Pet Health branding with Poppins typography and a navy, aqua, green and yellow palette
 - Natural follow-up behaviour and medical/veterinary guardrails
-- Seven editable local knowledge entries with ranked keyword retrieval
-- Four illustrative mock products behind a replaceable service interface
-- Recommendation cards with price, view-product and future add-to-cart controls
+- Seven reviewed built-in knowledge entries plus admin-managed Supabase Q&A
+- Live Shopify catalogue search, purchase history and stock-aware product cards
+- Recommendation cards with price, product links and add-to-cart controls
 - Gemini API integration that stays entirely server-side
 - Fully functional local demo responder when no Gemini key is configured
 - Shopify Customer Account login required before Buddy can be used
 - Shopify-owned conversations saved across devices through a protected Supabase server API
-- Placeholder staff admin at `/admin`
+- Email-gated staff knowledge editor at `/admin`
 - Safe development logs for retrieval, products, response mode and errors
 - Tests for retrieval and recommendation guardrails
 - Local-only, restartable MBOX knowledge extraction with privacy auditing and mandatory review
@@ -50,31 +50,24 @@ If `.env.local` already exists, edit it instead of copying over it. Without `GEM
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
 | `SUPABASE_URL` | Supabase project URL | Server only |
 | `SUPABASE_SECRET_KEY` | Supabase secret key for the protected server API | Server only; never expose in the browser |
-| `SHOPIFY_STORE_DOMAIN` | Future Shopify store domain | Server configuration |
+| `SHOPIFY_STORE_DOMAIN` | Shopify store domain | Server configuration |
 | `SHOPIFY_STORE_URL` | All Good Petfood base URL used to create product links | Server configuration |
-| `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Future Storefront API access | Use according to Shopify token scope |
+| `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Storefront API product access | Server only |
 | `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` | All Good Customer Account OAuth client | Server configuration |
 | `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_SECRET` | Confidential OAuth client secret | Server only |
 | `SHOPIFY_CUSTOMER_ACCOUNT_AUTHORIZATION_ENDPOINT` | Shopify authorization endpoint | Server configuration |
 | `SHOPIFY_CUSTOMER_ACCOUNT_TOKEN_ENDPOINT` | Shopify token endpoint | Server configuration |
 | `SHOPIFY_CUSTOMER_ACCOUNT_LOGOUT_ENDPOINT` | Shopify logout endpoint | Server configuration |
 | `SHOPIFY_SESSION_SECRET` | Encrypts My Pet Health login sessions | Server only |
+| `ADMIN_EMAIL_ADDRESSES` | Comma-separated Shopify account emails allowed into `/admin` | Server only |
 
 Secrets belong in `.env.local` locally and protected Vercel environment variables online. `.env.local` is ignored by Git.
 
 ## Knowledge base
 
-Knowledge lives in [`knowledge/entries.json`](knowledge/entries.json). Each entry has a stable ID, category, summary, detailed content, suggested follow-up questions, safety notes, retrieval tags, product tags and an `enabled` flag.
+The seven baseline reviewed entries are seeded into Supabase by [`supabase/migrations/202608170003_create_knowledge_entries.sql`](supabase/migrations/202608170003_create_knowledge_entries.sql). Staff can add, edit, draft, publish and delete every Q&A entry at `/admin`; published changes become searchable by Buddy immediately. Entries can also link reviewed All Good Petfood product URLs, which are resolved against the live catalogue and shown only when the customer asks for a relevant product. [`knowledge/entries.json`](knowledge/entries.json) remains an emergency read-only fallback if the managed table is unavailable or empty.
 
-To edit knowledge:
-
-1. Update an existing entry or add another object following the same shape.
-2. Use factual, reviewed My Pet Health guidance; do not include customer-identifying data.
-3. Add specific retrieval tags customers are likely to use.
-4. Add product tags only when that relationship has been reviewed.
-5. Run `npm test`, `npm run typecheck` and `npm run build`.
-
-The app queries `KnowledgeService`, not the JSON file directly. A future Supabase/vector implementation can replace `LocalKnowledgeService` without changing the route or UI. The planned historical-email workflow is documented in [`docs/HISTORICAL_EMAIL_KNOWLEDGE.md`](docs/HISTORICAL_EMAIL_KNOWLEDGE.md).
+The admin editor can load the 29 records in [`knowledge/pethealth_knowledge_base.json`](knowledge/pethealth_knowledge_base.json) as review candidates. They always load unpublished and must be checked for medical accuracy, safety advice and useful search/product tags before publication. The larger email audit exports are not used at runtime.
 
 The implemented local MBOX processor lives in [`email-processing`](email-processing/README.md). Its raw input, working state, output and logs are Git-ignored. It uses no external AI and cannot add generated entries to Buddy until a human runs the explicit approval command. Approved imports are stored separately in [`knowledge/email-derived.json`](knowledge/email-derived.json).
 
@@ -173,4 +166,4 @@ npm run email:test # synthetic privacy/pipeline tests
 
 ## Still to build
 
-Authoritative My Pet Health content, real Shopify products/cart behaviour, shared Shopify customer identity, password recovery, streaming responses, staff authentication, knowledge editing, analytics, production hardening, Vercel deployment and the Shopify theme app extension remain later phases. See [`ROADMAP.md`](ROADMAP.md).
+The remaining work includes expanding reviewed knowledge, admin analytics and unanswered-question review, further production hardening, and the Shopify theme app extension. See [`ROADMAP.md`](ROADMAP.md).

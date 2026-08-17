@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
-import { knowledgeService } from "@/services/knowledge/local-knowledge-service";
+import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
@@ -261,6 +261,18 @@ export async function POST(request: NextRequest) {
           allowFallback: !discoveryOnly,
           requiredTerms: categoryRequiredTerms.length > 0 ? categoryRequiredTerms : undefined,
         });
+
+      const linkedUrls = [...new Set(knowledge.flatMap((entry) => entry.recommendedProductUrls ?? []))];
+      if (linkedUrls.length > 0 && !discoveryOnly) {
+        const linkedRecommendations = (await Promise.all(linkedUrls.slice(0, 6).map((url) => productService.getProductByUrl(url))))
+          .filter((product): product is NonNullable<typeof product> => product !== null)
+          .filter((product) => product.availability === "in_stock")
+          .map((product) => ({ product, reason: "Staff-reviewed product linked to this guidance." }));
+        recommendations = [
+          ...linkedRecommendations,
+          ...recommendations.filter(({ product }) => !linkedRecommendations.some((linked) => linked.product.id === product.id)),
+        ].slice(0, limit);
+      }
     }
 
     const referencedProducts = !latestHasProductIntent && !activeBroadCategoryRequest && previousProductIds.length > 0

@@ -1,0 +1,897 @@
+[
+  {
+    "id": "kb_000006",
+    "category": "delivery",
+    "customer_question": "Thanks for reaching out to us and a big thank you for supporting Buy Kiwi \ud83d\ude0a ***All products listed on Buy Kiwi are in stock in New Zealand ready from prompt delivery across the country*** Email Support:",
+    "situation": "Thanks for reaching out to us and a big thank you for supporting Buy Kiwi \ud83d\ude0a ***All products listed on Buy Kiwi are in stock in New Zealand ready from prompt delivery across the country*** Email Support:",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "Hi,we want to add our range to your website how does it work?",
+      "items get sold- through our website or yours?",
+      "do you make a cut on the sales?",
+      "category - [dogs] and none of the products there are New Zealand made?",
+      "you confirm what Buy Kiwi promotes that is different to any other website?"
+    ],
+    "all_good_guidance": "Hi,we want to add our range to your website how does it work? How do our items get sold- through our website or yours? How does shipping etc work, do you make a cut on the sales? Also I see on your main page you have all of the categories but no category",
+    "reasoning": "industry is massive and I would certainly recommend them getting their own",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "redacted",
+      "kiwi",
+      "email",
+      "products",
+      "business",
+      "address",
+      "team",
+      "more"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000011",
+    "category": "subscriptions",
+    "customer_question": "Every 6 month On Thu, 25 Sept 2025, 11:21 Luanne Vacy-Lyle, <[EMAIL REDACTED]> the customer love your subscription but would wish you could make it a bit longer, as",
+    "situation": "Every 6 month On Thu, 25 Sept 2025, 11:21 Luanne Vacy-Lyle, <[EMAIL REDACTED]> the customer love your subscription but would wish you could make it a bit longer, as",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so that, at this stage we cannot extend it that far in advance, but please do let me know of you would like me to set up a reminder to let you know when you need to order. Or alternatively, just order a week before you need more food. Thanks so much for your continued support, we appreciate you!",
+    "reasoning": "Hi,so that, at this stage we cannot extend it that far in advance, but",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "luanne",
+      "vacy",
+      "lyle",
+      "email",
+      "need",
+      "every",
+      "food"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000031",
+    "category": "delivery",
+    "customer_question": "The customer has yet to receive the parcel...the customer has been at home and no delivery or signature request. Pleaseadvise. Sincerely,",
+    "situation": "The customer has yet to receive the parcel...the customer has been at home and no delivery or signature request. Pleaseadvise. Sincerely,",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "alternative address we could send too, a work address perhaps?"
+    ],
+    "all_good_guidance": "Hi,for clarifying that for me, as I am sure you could tell I was a bit confused lol. Are you at home most days for a signature delivery, or perhaps you have an alternative address we could send too, a work address perhaps? We would hate to stop spoiling you dogs because of an issue we can hopefully resolve :)",
+    "reasoning": "We would hate to stop spoiling you dogs because of an issue we can",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "been",
+      "home",
+      "signature",
+      "problem",
+      "address",
+      "receive",
+      "jodi"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "candidate_000024",
+    "category": "subscriptions",
+    "customer_question": "The customer see noway of making changes to subscription orders. Adding and Deleting?",
+    "situation": "The customer see noway of making changes to subscription orders. Adding and Deleting?",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,on the big green button on your email below that says- manage subscription. There, you can swap products, edit delivery times etc. Let me know if you need us to help with anything. Thanks so much,",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "subscription",
+      "food",
+      "noway",
+      "making",
+      "changes",
+      "orders",
+      "adding",
+      "deleting"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000138",
+    "category": "subscriptions",
+    "customer_question": "The customer see my subscription has been cancelled but unsure why! the customer keep going to refresh it and my card details are correct and haven\u2019t changed, so unsure what\u2019s happening?",
+    "situation": "The customer see my subscription has been cancelled but unsure why! the customer keep going to refresh it and my card details are correct and haven\u2019t changed, so unsure what\u2019s happening?",
+    "useful_context": [
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "been skipped?"
+    ],
+    "all_good_guidance": "I have checked this morning and can see your order has not come through. The new info on the one I tried to process yesterday says the order has been skipped? Did you skip it by chance or is it the system giving us grey Are you wanting to get this sent today, let me know and I can deep delve That or we just create a new subscription :)",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "know",
+      "image",
+      "email",
+      "luanne",
+      "vacy",
+      "lyle",
+      "subscription"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000174",
+    "category": "other",
+    "customer_question": "The customer was going to get the customer's cat to try the cat treats?? Molly likes the marshmallow treats it\u2019s hard to find them on the site to order.",
+    "situation": "The customer was going to get the customer's cat to try the cat treats?? Molly likes the marshmallow treats it\u2019s hard to find them on the site to order.",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,cat loves them to! You can find the options on the below link for them- [URL REDACTED] if you do order any then just pop on the cat samples and we will resend Thanks so much,",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "them",
+      "treats",
+      "find",
+      "order",
+      "going",
+      "molly",
+      "likes",
+      "marshmallow"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000248",
+    "category": "subscriptions",
+    "customer_question": "\u2019s great, thank you \ud83d\ude01 the customer\u2019m coming over tomorrow to take the dogs for their vaccinations so will call in and pick it up.",
+    "situation": "\u2019s great, thank you \ud83d\ude01 the customer\u2019m coming over tomorrow to take the dogs for their vaccinations so will call in and pick it up.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [
+      "cycle that suits you better?",
+      "you like us to edit the schedule at all?"
+    ],
+    "all_good_guidance": "That is great, I am working out of the office tomorrow, so just mention to the team that you want to bring your subscription forward and collect :) Have a great day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "address",
+      "next",
+      "subscription",
+      "email",
+      "great",
+      "kerikeri",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000347",
+    "category": "other",
+    "customer_question": "Available to order NOW No images? Click here [URL REDACTED]",
+    "situation": "Available to order NOW No images? Click here [URL REDACTED]",
+    "useful_context": [],
+    "follow_up_questions": [
+      "No images?",
+      "Did you know?"
+    ],
+    "all_good_guidance": "Hi,are for the June Campaign :) *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "tags",
+      "owners",
+      "pets",
+      "download",
+      "available",
+      "images",
+      "ruby"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000362",
+    "category": "subscriptions",
+    "customer_question": "Please cancel recurring orders. This was set up in error.",
+    "situation": "Please cancel recurring orders. This was set up in error.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I can see that you have managed to cancel your subscription. Let us know if you need any further help. Have a great day, *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "cancel",
+      "please",
+      "recurring",
+      "orders",
+      "error",
+      "managed",
+      "subscription"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000374",
+    "category": "other",
+    "customer_question": "Thank you so much Luanne. You are a star :-) Finally the good weather has arrived.",
+    "situation": "Thank you so much Luanne. You are a star :-) Finally the good weather has arrived.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "They look great, thank you On Fri, 29 Nov 2024 at 16:04, Casi Bulkeley <[EMAIL REDACTED]> all sorted. - Natura Samples - Addiction Sample - Marshmallow Sample",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "thank",
+      "much",
+      "2024",
+      "email",
+      "wrote",
+      "sample",
+      "luanne"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000434",
+    "category": "subscriptions",
+    "customer_question": "Thanks for double checking that for me, good to know the customer is not going to get any surprise subscriptions now. He's having a bit of a sulk moving over to the Pancreatitis care food at",
+    "situation": "Thanks for double checking that for me, good to know the customer is not going to get any surprise subscriptions now. He's having a bit of a sulk moving over to the Pancreatitis care food at",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "Can you let me know what the other subscription is that I have going?",
+      "of the other Addiction samples for him to try as well?"
+    ],
+    "all_good_guidance": "Hi, that is understandable, he has been spoilt with the the Addiction as it is super yummy lol. I promise the PancreaCare is yummy too but just not as yummy apparently lol. He will get used to it, even if you have to go cold Turkey on it.",
+    "reasoning": "Yes it's really weird because when I click on any links to manage my and he was in ICU in Auckland so pretty serious) so I try and keep him on a So I thought I'd try him on a couple of your other products that are low in If you are wanting to try different Addiction flavours, then you of the other Addiction samples for him to try as well?",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "just",
+      "other",
+      "subscription",
+      "addiction",
+      "been",
+      "couple"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000462",
+    "category": "other",
+    "customer_question": "Thank you, the customer will get that out today. Best wishes, [NAME REDACTED]",
+    "situation": "Thank you, the customer will get that out today. Best wishes, [NAME REDACTED]",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,you for confirming, the dog's name is [PET NAME REDACTED]. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "email",
+      "name",
+      "01dc8159",
+      "67d9ed40",
+      "address",
+      "australia",
+      "mailto"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000488",
+    "category": "other",
+    "customer_question": "Please can you let me know when you have the kangaroo treats in stock the customer's dog seems to only be ok with kangaroo so would love to try them out Please can you let me know when you have the kangaroo treats in stock",
+    "situation": "Please can you let me know when you have the kangaroo treats in stock the customer's dog seems to only be ok with kangaroo so would love to try them out Please can you let me know when you have the kangaroo treats in stock",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for your email, we are expecting them back in stock today or tomorrow :) Be sure to click the NOTIFY ME WHEN BACK IN STOCK button on the product and you will be emailed as soon as they are in. Thanks so much, On Wed, 12 Mar 2025 at 19:12, Angelique Cox <[EMAIL REDACTED]>",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "kangaroo",
+      "stock",
+      "them",
+      "there",
+      "please",
+      "know",
+      "treats",
+      "seems"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000506",
+    "category": "subscriptions",
+    "customer_question": "Hey [NAME REDACTED], the customer have prepared an amazing set of tools for you. You can now generate high-performing ad creatives with AI and launch advertising campaigns on Facebook.",
+    "situation": "Hey [NAME REDACTED], the customer have prepared an amazing set of tools for you. You can now generate high-performing ad creatives with AI and launch advertising campaigns on Facebook.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I am wanting to dispute the charges on my account, the initial purchase was for US$39.95. I have then been charged USD$49.95 on the same day, which may have been an upgrade I agreed too- please advise what this 2nd charge is for, so I can confirm. Then I have been charged an ' upgraded plan' charge for US$79.95 which I",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "zeely",
+      "been",
+      "subscription",
+      "charges",
+      "please",
+      "never",
+      "tools",
+      "high"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000550",
+    "category": "subscriptions",
+    "customer_question": "Subscription paused Hi bryony richardson, Your subscription have been paused.",
+    "situation": "Subscription paused Hi bryony richardson, Your subscription have been paused.",
+    "useful_context": [],
+    "follow_up_questions": [
+      "anything we can do to help, or a reason that made you hit pause?",
+      "changing the interval between deliveries?"
+    ],
+    "all_good_guidance": "Thank you so much for being part of the All Good Petfood family! We noticed you\u2019ve paused your subscription, and just wanted to check in. anything we can do to help, or a reason that made you hit pause? Sometimes orders can arrive a little too soon, would you like a hand changing the interval between deliveries?",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "subscription",
+      "redacted",
+      "address",
+      "paused",
+      "richardson",
+      "back",
+      "bryony",
+      "reference"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000553",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you for your reply Luanne, it was much appreciated.",
+    "situation": "Thank you for your reply Luanne, it was much appreciated.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "It was my pleasure. Wishing you and your dog the best and hoping some of those ideas bring them a bit more comfort. Have an amazing day! *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "hypoallergenic and so that is as clean as you get. tried everything, but if you are still hunting for solutions, try them on recommend the following-",
+    "relevant_product_names": [],
+    "safety_notes": "matter what you do for them and so medication is the most humane option to",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "them",
+      "luanne",
+      "some",
+      "really",
+      "itch",
+      "soothe",
+      "much"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000560",
+    "category": "other",
+    "customer_question": "You for your information. *Best [NAME REDACTED],* *[NAME REDACTED] (Toey)*",
+    "situation": "You for your information. *Best [NAME REDACTED],* *[NAME REDACTED] (Toey)*",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi, this is not something we are interested in as we are not looking to Thanks so much On Wed, 12 Mar 2025 at 07:02, Nika Van der Merwe < [EMAIL REDACTED]> wrote:",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "email",
+      "universe",
+      "office",
+      "nourish",
+      "london",
+      "bangkok",
+      "limited"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000583",
+    "category": "other",
+    "customer_question": "Working on your 2025 Annual Accounts, the customer\u2019ve encountered several issues that are currently preventing us from progressing further. These are the same errors that were advised to Ilona via email and will take considerable time to reconcile. Transactions have been duplicated in xero by not reconciling to the bank feed.",
+    "situation": "Working on your 2025 Annual Accounts, the customer\u2019ve encountered several issues that are currently preventing us from progressing further. These are the same errors that were advised to Ilona via email and will take considerable time to reconcile. Transactions have been duplicated in xero by not reconciling to the bank feed.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,I have been chasing my EOY Financials from PKF for months, they have just come back with this email saying they have been in contact with you about the issues that need to be resolved. Not sure how long ago this would have been, assume ages ago and they have never followed up. See their email below, please advise - we need to get this resolved.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "email",
+      "annual",
+      "accounts",
+      "were",
+      "advised",
+      "time",
+      "been"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000588",
+    "category": "subscriptions",
+    "customer_question": "Good morning Luanne, Sorry to bother you again about this. It appears that your system has reverted the price for Poppy's food back to the original price....?",
+    "situation": "Good morning Luanne, Sorry to bother you again about this. It appears that your system has reverted the price for Poppy's food back to the original price....?",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,worries at all- I am in contact with the Subscription company to get it saved and not automatically updated as all the other subscriptions need to We will get it sorted! Thanks so much for your patience- it is appreciated! *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "luanne",
+      "price",
+      "good",
+      "morning",
+      "sorry",
+      "bother",
+      "appears"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000591",
+    "category": "subscriptions",
+    "customer_question": "Please cancel my subscription from today. the customer will no longer need dog food from your store.",
+    "situation": "Please cancel my subscription from today. the customer will no longer need dog food from your store.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,problem at all, I have done that for you. Let us know if ever we can help, have an amazing day. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "please",
+      "email",
+      "there",
+      "cancel",
+      "subscription",
+      "today",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000613",
+    "category": "other",
+    "customer_question": "Awesome, thank you so much! On Wed, 8 Jan 2025, 10:30\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hey there,",
+    "situation": "Awesome, thank you so much! On Wed, 8 Jan 2025, 10:30\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hey there,",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Brilliant thank you, I will get that updated! On Wed, 8 Jan 2025 at 10:26, Catie Grace <[EMAIL REDACTED]>",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "thank",
+      "2025",
+      "email",
+      "wrote",
+      "address",
+      "awesome",
+      "much"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000634",
+    "category": "weight_management",
+    "customer_question": "Thanks for getting back to me again . Would love to try samples",
+    "situation": "Thanks for getting back to me again . Would love to try samples",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "No problem at all, they will head out today :) Let me know how they get on, I am happy to help with any questions/ advice. Have a wonderful day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "thanks",
+      "getting",
+      "back",
+      "love",
+      "samples",
+      "problem",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000658",
+    "category": "subscriptions",
+    "customer_question": "Please cancel our subscription, thank you ,",
+    "situation": "Please cancel our subscription, thank you ,",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "reason is you are cancelling?"
+    ],
+    "all_good_guidance": "Sorted, subscription was already cancelled but have emailed her and will cancale her order if it appears in orders tomorrow which it shouldn't! Hi,I will forward this onto the dispatch team! I see you have been buying from us for quite a while, may I ask what the reason is you are cancelling? Is the dog getting bored of it, are you",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "subscription",
+      "thank",
+      "will",
+      "better",
+      "please",
+      "cancel",
+      "sorted",
+      "already"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000661",
+    "category": "delivery",
+    "customer_question": "Thank you for your interest in our courier delivery service. requested, the customer is pleased to provide you with our pricing details: $10 per parcel (excluding GST) for any parcel weighing up to 25 kgs.",
+    "situation": "Thank you for your interest in our courier delivery service. requested, the customer is pleased to provide you with our pricing details: $10 per parcel (excluding GST) for any parcel weighing up to 25 kgs.",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,won't be able to get to the packing times you require, but delivery thenext day would work. Can you send me your price list please. from 1-25 kg boxes. Thanks so much *[NAME REDACTED]*",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "redacted",
+      "kerikeri",
+      "kaikohe",
+      "paihia",
+      "haruru",
+      "falls",
+      "service"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000669",
+    "category": "other",
+    "customer_question": "That's alright processing was very quick which is good! the customer will give it a go with the customer's dog",
+    "situation": "That's alright processing was very quick which is good! the customer will give it a go with the customer's dog",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Amazing, it is a really great product so I am sure you will be pleased with Do let us know if you have any issues you would like any recommendations on to help you dog with any issues they may have.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "will",
+      "issues",
+      "alright",
+      "processing",
+      "very",
+      "quick",
+      "which",
+      "good"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000730",
+    "category": "other",
+    "customer_question": "Short period is fine, they still need chick crumble with Coccidiostat until well settled, or feed any coccidiostat separately should be ok. ---Original--- the customer've put them on pullet food, will that be ok?",
+    "situation": "Short period is fine, they still need chick crumble with Coccidiostat until well settled, or feed any coccidiostat separately should be ok. ---Original--- the customer've put them on pullet food, will that be ok?",
+    "useful_context": [],
+    "follow_up_questions": [
+      "I've put them on pullet food, will that be ok?"
+    ],
+    "all_good_guidance": "I've put them on pullet food, will that be ok? *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "coccidiostat",
+      "them",
+      "pullet",
+      "food",
+      "will",
+      "luanne",
+      "vacy"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000769",
+    "category": "delivery",
+    "customer_question": "You please change the delivery address of order for Fiona Stapleton #0HECE1KEJ New delivery address",
+    "situation": "You please change the delivery address of order for Fiona Stapleton #0HECE1KEJ New delivery address",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Done, thanks :) *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "redacted",
+      "address",
+      "fiona",
+      "stapleton",
+      "email",
+      "please",
+      "2025"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000770",
+    "category": "subscriptions",
+    "customer_question": "This subscription has been canceled please make sure it is not sent!",
+    "situation": "This subscription has been canceled please make sure it is not sent!",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for your email, this is just a notification of a price movement should you return. Thanks so much, Have an amazing day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "email",
+      "there",
+      "subscription",
+      "been",
+      "canceled",
+      "please",
+      "make"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000811",
+    "category": "other",
+    "customer_question": "Yes that's fine. Sent via Samsung Galaxy S10",
+    "situation": "Yes that's fine. Sent via Samsung Galaxy S10",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thanks so much, have a wonderful day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "other",
+      "redacted",
+      "fine",
+      "sent",
+      "samsung",
+      "galaxy",
+      "thanks",
+      "much",
+      "wonderful"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000814",
+    "category": "skin_and_itching",
+    "customer_question": "16A Heron Hill, Kerikeri, 0230 Dear,records show that you are overdue for a skin check. Please click here to schedule an appointment using our online booking system.",
+    "situation": "16A Heron Hill, Kerikeri, 0230 Dear,records show that you are overdue for a skin check. Please click here to schedule an appointment using our online booking system.",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,- we will be going to the Kerikeri Branch.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "email",
+      "please",
+      "skin",
+      "check",
+      "information",
+      "kerikeri",
+      "nbsp",
+      "appointment"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000854",
+    "category": "delivery",
+    "customer_question": "My card was charged 198.50. Before then 206 which was with shipping, rural.",
+    "situation": "My card was charged 198.50. Before then 206 which was with shipping, rural.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for bringing that up, I have looked through your subscription orders and they are as follows, there have only been 2 subscription orders, both were done at the free shipping rate. I can see however that a manual order was placed in January where you paid freight. In order to get free freight",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "redacted",
+      "reference",
+      "subscription",
+      "free",
+      "orders",
+      "select",
+      "shipping",
+      "katja"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000878",
+    "category": "subscriptions",
+    "customer_question": "The customer's dog is no longer with me and hasn't been since January. the customer did contact you at the time and asked for my subscription to be cancelled.",
+    "situation": "The customer's dog is no longer with me and hasn't been since January. the customer did contact you at the time and asked for my subscription to be cancelled.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for touching base with us, Your subscription has been cancelled a while ago so there will be no further bags sent. This was just a price update for any potential orders you may place in the future. Please see your Subscription portal confirming- [image: image.png]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "subscriptions",
+      "redacted",
+      "subscription",
+      "been",
+      "since",
+      "cancelled",
+      "price",
+      "sent",
+      "email"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000963",
+    "category": "delivery",
+    "customer_question": "So impressed with every super quick delivery, thank you again! And Cooper & Augustus On Mon, 10 Nov 2025 at 10:39, All Good Petfood <[EMAIL REDACTED]>",
+    "situation": "So impressed with every super quick delivery, thank you again! And Cooper & Augustus On Mon, 10 Nov 2025 at 10:39, All Good Petfood <[EMAIL REDACTED]>",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Shipping review and a cute pic. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "delivery",
+      "redacted",
+      "email",
+      "impressed",
+      "every",
+      "super",
+      "quick",
+      "thank"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  }
+]

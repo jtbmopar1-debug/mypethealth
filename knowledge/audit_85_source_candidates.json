@@ -1,0 +1,2511 @@
+[
+  {
+    "id": "kb_000001",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks [NAME REDACTED] not a bad idea as the customer is out of town 3/4 days a week. Thanks [NAME REDACTED].",
+    "situation": "Thanks [NAME REDACTED] not a bad idea as the customer is out of town 3/4 days a week. Thanks [NAME REDACTED].",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "that address?"
+    ],
+    "all_good_guidance": "That's all been updated :) Thanks so much, *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "Because we use only natural",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "address",
+      "food",
+      "thanks",
+      "luanne",
+      "good",
+      "been",
+      "know"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000002",
+    "category": "protein_selection",
+    "customer_question": "Thankyou for sending the replacement smokey venison shank skins. the customer was a little nervous to try, BUT happy to report that she has now happily chewed through some of the new batch sent, & no issues again.",
+    "situation": "Thankyou for sending the replacement smokey venison shank skins. the customer was a little nervous to try, BUT happy to report that she has now happily chewed through some of the new batch sent, & no issues again.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "might also be a bit more sensitive tummy wise to excessive smokiness?",
+      "bit too smoked is causing a stomach revolt?"
+    ],
+    "all_good_guidance": "Hi,on from our previous conversation about the Venison Skin Shank that was making their dog sick. Please see pics attached of the difference in the amount of smoke between the batches. Just a heads up to let your team know so you can resolve anything if needed. Please can you also provide me with the ingredient list of the artificial",
+    "reasoning": "I was a little nervous to try, BUT happy to report that she has now happily",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "batches",
+      "venison",
+      "batch",
+      "smokey",
+      "some",
+      "issues",
+      "more",
+      "just"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000003",
+    "category": "skin_and_itching",
+    "customer_question": "The customer's dog has very itchy skin. She has been on multiple elimination diets through skin specialists but the customer aren't getting anywhere.",
+    "situation": "The customer's dog has very itchy skin. She has been on multiple elimination diets through skin specialists but the customer aren't getting anywhere.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "then you are bathing your best mate in it?"
+    ],
+    "all_good_guidance": "I am so sorry, I have just realized I missed replying to your email! Wow, what a remarkable transformation, amazing what love and care can do! I would hit her from a few different angles, get her onto a clean hypoallergenic diet first off, our Natura Itch Buster would be ideal. fish based, so great for skin and coat health. It has no colourants.",
+    "reasoning": "You use one then try another, as they all offer To add to your arsenal I would like to suggest the Washbar Itch Soothe",
+    "relevant_product_names": [
+      "Natura Itch Buster"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "then",
+      "help",
+      "skin",
+      "shampoo",
+      "like",
+      "much",
+      "tried"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000007",
+    "category": "protein_selection",
+    "customer_question": "Thanks [NAME REDACTED]. the customer has been dealing with Nosloc directly in the past and they have also been very helpful. They thought there might be some local deer starkers who are willing to give me their offcuts but of course that doesn\u2019t happen in Northland, but was a good idea.",
+    "situation": "Thanks [NAME REDACTED]. the customer has been dealing with Nosloc directly in the past and they have also been very helpful. They thought there might be some local deer starkers who are willing to give me their offcuts but of course that doesn\u2019t happen in Northland, but was a good idea.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thanks for letting me know about the phone issues, we have those sorted out In regards to Venison in Bulk, the best option is a Venison & Lamb Trachaea mix, it is in 25kg Boxes and is considered Hypoallergenic. only plain venison meat I have is at about $19 per kg so it would be far too expensive for a dog that size. The 25kg box comes with a Bulk discount and sells at $249.50 [ normally",
+    "reasoning": "the shop know so that he can increase his stock holding.",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "venison",
+      "thanks",
+      "some",
+      "25kg",
+      "redacted",
+      "luanne",
+      "shop",
+      "phone"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000008",
+    "category": "skin_and_itching",
+    "customer_question": "What breed/ size is your dog? Mostly Jack Russell, around 7-8kg Do they have yeast issues [ ears or feet?",
+    "situation": "What breed/ size is your dog? Mostly Jack Russell, around 7-8kg Do they have yeast issues [ ears or feet?",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [
+      "What breed/ size is your dog?",
+      "Do they have yeast issues [ ears or feet?",
+      "normal sized biscuits?"
+    ],
+    "all_good_guidance": "Thanks for that info, these biscuits are great for Jack Russel's as they have big teeth lol! Also they are great for their dental hygiene, as they cannot just swallow them, they have to chew them! This makes them take longer so they feel fuller, it promotes saliva production while they are",
+    "reasoning": "I am a terrible salesperson, because I am honest lol, I would recommend",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "great",
+      "will",
+      "them",
+      "biscuits",
+      "like",
+      "issues",
+      "size",
+      "yeast"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000009",
+    "category": "protein_selection",
+    "customer_question": "Poor dog on a diet!! Too funny. Thank you again!",
+    "situation": "Poor dog on a diet!! Too funny. Thank you again!",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "With his itching where about does he itch?",
+      "or all over his whole body?",
+      "What food treats does he currently eat?"
+    ],
+    "all_good_guidance": "No worries at all! Any treats on our website with a pink background are safe for them- there are tons of options, so they don't have to be the poor dog on a diet! *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "The foods are perfect, but try to drop the Chicken,",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "chicken",
+      "luanne",
+      "vacy",
+      "lyle",
+      "email",
+      "2025",
+      "wrote"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000010",
+    "category": "ingredients",
+    "customer_question": "\u2026thank you so much for sorting this so quickly my parcel turned up today \ud83d\ude0a \ud83d\ude4f There will be some happy dogs that the customer get to treat when Im out walking tomorrow Good morning",
+    "situation": "\u2026thank you so much for sorting this so quickly my parcel turned up today \ud83d\ude0a \ud83d\ude4f There will be some happy dogs that the customer get to treat when Im out walking tomorrow Good morning",
+    "useful_context": [
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,you so much for getting in touch, we really appreciate your concern and letting us know! mould issue occur. We did have a batch a few months back where a courier unfortunately left a pallet in the sun, which can cause the product to sweat, and that moisture can lead to mould.",
+    "reasoning": "This can occasionally happen because we choose not to use chemical",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "ingredients",
+      "much",
+      "there",
+      "thank",
+      "today",
+      "carol",
+      "good",
+      "been",
+      "away"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000013",
+    "category": "allergies_and_sensitivities",
+    "customer_question": "Milly has lots of allergies so her food is very limited (the customer make it) but this treats are good for her, and she also have allergies to some grasses and pollens so life is fine the customer's dog has lots of food allergies and this is the only treat the customer have found that works for her, the customer have been buying a while now",
+    "situation": "Milly has lots of allergies so her food is very limited (the customer make it) but this treats are good for her, and she also have allergies to some grasses and pollens so life is fine the customer's dog has lots of food allergies and this is the only treat the customer have found that works for her, the customer have been buying a while now",
+    "useful_context": [],
+    "follow_up_questions": [
+      "they have a sensitive tummy?"
+    ],
+    "all_good_guidance": "That's great to hear that they do well on them! Are they an itchy dog or do they have a sensitive tummy? * I can see the treat arrived earlier this morning so that is great :) *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "* I can see the treat arrived earlier this morning so that is great :)",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "allergies-and-sensitivities",
+      "redacted",
+      "allergies",
+      "lots",
+      "food",
+      "treat",
+      "great",
+      "milly",
+      "very"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000014",
+    "category": "skin_and_itching",
+    "customer_question": "The customer is [NAME REDACTED], the customer've just taken over the Food Donations Coordinator role for the Wandering Angels Animal Shelter in Waipu. the customer is really hoping",
+    "situation": "The customer is [NAME REDACTED], the customer've just taken over the Food Donations Coordinator role for the Wandering Angels Animal Shelter in Waipu. the customer is really hoping",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for reaching out to us, you guys will be doing some amazing work no doubt! Unfortunately, we are unable to offer any extra assistance at this time, we do a ton of work with BOI Animal Rescue up here and like all rescues are also desperate for funds and assistance. I hope you find an organisation that can help-perhaps try the northland rep",
+    "reasoning": "I hope you find an organisation that can help-perhaps try the northland rep",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "shelter",
+      "animal",
+      "help",
+      "work",
+      "heidi",
+      "donations",
+      "coordinator"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000015",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks for sending our order and the customer've been trying out all 3 products for our dog Sia. the customer was wondering if you could help with a bit of advice around",
+    "situation": "Thanks for sending our order and the customer've been trying out all 3 products for our dog Sia. the customer was wondering if you could help with a bit of advice around",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for your email, you are doing a great job! Itching around the eyes/ face/ muzzle/ ears etc can quite often be food related, so in order to test that theory I would stop with the Perfect grain free chicken and pumpkin Chicken is the 2nd biggest cause of itching and allergies, so let's cut it out for a few weeks so we can eliminate that as a potential",
+    "reasoning": "Let's try those few tweaks and then reassess in a month to see if we have",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "well",
+      "could",
+      "help",
+      "around",
+      "skin",
+      "redacted",
+      "itchy",
+      "food"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000016",
+    "category": "ingredients",
+    "customer_question": "Good morning Luanne, the customer has not received any feedback regarding this issue to date and am unaware of any changes to the recipe or manufacturing processes. Could you please provide the batch numbers for both bags?",
+    "situation": "Good morning Luanne, the customer has not received any feedback regarding this issue to date and am unaware of any changes to the recipe or manufacturing processes. Could you please provide the batch numbers for both bags?",
+    "useful_context": [
+      "Current food and main protein"
+    ],
+    "follow_up_questions": [
+      "bag you have just received?"
+    ],
+    "all_good_guidance": "Please see the reply from the company below in the interim, *[NAME REDACTED]*: Natural variations in the raw ingredients can lead to differences in the final product. For example, the colour of grains or vegetables used in the kibble might vary slightly from batch to *[NAME REDACTED]*: Changes in manufacturing conditions, such as",
+    "reasoning": "variations due to equipment calibration or other minor adjustments in the",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "ingredients",
+      "redacted",
+      "batch",
+      "kibble",
+      "differences",
+      "conditions",
+      "might",
+      "colour",
+      "changes"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000018",
+    "category": "diarrhoea_and_stool_changes",
+    "customer_question": "The customer was going to reach out again so its good to see this today. The pup on the kangaroo is finally putting on weight though she still has diarrhea daily so Im not sure if the customer will stay on it long term. The pup on the salmon is doing really well, and the dog on the grain free has seen no change on her itchiness so may have to try something else.",
+    "situation": "The customer was going to reach out again so its good to see this today. The pup on the kangaroo is finally putting on weight though she still has diarrhea daily so Im not sure if the customer will stay on it long term. The pup on the salmon is doing really well, and the dog on the grain free has seen no change on her itchiness so may have to try something else.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "them on probiotics/ prebiotics etc?"
+    ],
+    "all_good_guidance": "Hi,for the update, just confirming, the dog with Diarrhea- have you had them on probiotics/ prebiotics etc? Unless diagnosed by a vet with a G.I issue there is no reason they should be having the continual tummy issues. A few things to note- on their next bag- swap them onto the Le Lamb as it is a bit milder in flavour and on their tummies.",
+    "reasoning": "I would also recommend It may be worth a try- diarrhea etc because they are actually not equipped with the gut health to",
+    "relevant_product_names": [],
+    "safety_notes": "Unless diagnosed by a vet with a G.I",
+    "tags": [
+      "diarrhoea-and-stool-changes",
+      "them",
+      "food",
+      "will",
+      "dogs",
+      "grain",
+      "health",
+      "redacted",
+      "thanks"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000019",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks [NAME REDACTED] its a frustation for sure as the two with skin issues are displaying different symptoms, the other two seem fine. Good to know re beef mince - they dont get it often and only nibbles off the edges, its from a local farm so no additives and purely grass fed.",
+    "situation": "Thanks [NAME REDACTED] its a frustation for sure as the two with skin issues are displaying different symptoms, the other two seem fine. Good to know re beef mince - they dont get it often and only nibbles off the edges, its from a local farm so no additives and purely grass fed.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "You are very welcome. Just so you are aware, even if the beef is organic, it will still cause allergies :) Thanks so much, *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "You could also try the Biopet Skin which you pop",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "skin",
+      "redacted",
+      "email",
+      "just",
+      "salmon",
+      "beef",
+      "mince",
+      "which"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000021",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks for the prompt reply \u2013 thanks be good to chat if and when you feel market is more open to new lines. All is going great here, hope all is good your side too. [cid:image001.png@01DCB858.EF46F530] [cid:image002.png@01DCB858.EF46F530]",
+    "situation": "Thanks for the prompt reply \u2013 thanks be good to chat if and when you feel market is more open to new lines. All is going great here, hope all is good your side too. [cid:image001.png@01DCB858.EF46F530] [cid:image002.png@01DCB858.EF46F530]",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "Are you direct to consumer and to other Pet stores etc?",
+      "are your thoughts?"
+    ],
+    "all_good_guidance": "Sounds great thanks. Yes all is going well this side, besides Dropkicks trying to break into my external dog wash. Thanks so much, *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "advice or delay in seeking it because of something you have read on this",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "description",
+      "automatically",
+      "generated",
+      "email",
+      "medical",
+      "advice",
+      "01db29f9"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000022",
+    "category": "skin_and_itching",
+    "customer_question": "Sorry for the delay in replying. It's interesting to see what the manufacturer had to say about the products. Unfortunately, without doing extensive research into the ingredients with the oxygen absorbers it's hard to know what to think when the vet treated it as very serious and treated aggressively.",
+    "situation": "Sorry for the delay in replying. It's interesting to see what the manufacturer had to say about the products. Unfortunately, without doing extensive research into the ingredients with the oxygen absorbers it's hard to know what to think when the vet treated it as very serious and treated aggressively.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for the update, sorry to hear they are not excited about the Itch Buster! I was going to suggest our top sellers for fussy dogs is the Addiction range, so I am very surprised to hear they did not take to that either! Do let me know if you would like to try a few more samples of them as they are Hypoallergenic [ in the right flavours] and pretty much fussy dog proof.",
+    "reasoning": "I was going to suggest our top sellers for fussy dogs is the Addiction Do let me know if you would like to try a few more samples of them as they no risk of poisoning to humans or dogs due to the state of the iron.",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "them",
+      "dogs",
+      "much",
+      "manufacturer",
+      "oxygen",
+      "know",
+      "very",
+      "food"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000023",
+    "category": "ingredients",
+    "customer_question": "There Luanne, the customer is now enquiring about dog biscuits. Currently the customer is buying Purina One True Instinct dog food which is an amazing product for my dogs because they are full without all the additional grains etc.",
+    "situation": "There Luanne, the customer is now enquiring about dog biscuits. Currently the customer is buying Purina One True Instinct dog food which is an amazing product for my dogs because they are full without all the additional grains etc.",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for thinking of us, so if we average your cost of dog food at $49 per 3.36kg, that comes out at a cost of $14.58 per kg. Here are a few really great options for you, buying in bulk is always going to be your best value option so I will give you both options. bag will last you 28 days roughly going on your previous food, it may be longer though as they are also really clean :)",
+    "reasoning": "We can send you some samples to try on any of the above once you decide",
+    "relevant_product_names": [
+      "Natura Maintenance"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "ingredients",
+      "buying",
+      "food",
+      "redacted",
+      "product",
+      "dogs",
+      "cost",
+      "options",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000024",
+    "category": "skin_and_itching",
+    "customer_question": "You so much for your reply. the customer is glad to hear that it is non-toxic and thanks for your explanation, it totally makes sense. The batch number is 250619.",
+    "situation": "You so much for your reply. the customer is glad to hear that it is non-toxic and thanks for your explanation, it totally makes sense. The batch number is 250619.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,you so much for getting in touch, we really appreciate your concern and letting us know! mould issue occur. We did have a batch a few months back where a courier unfortunately left a pallet in the sun, which can cause the product to sweat, and that moisture can lead to mould.",
+    "reasoning": "This can occasionally happen because we choose not to use chemical",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "much",
+      "food",
+      "mould",
+      "there",
+      "batch",
+      "thank",
+      "been",
+      "please"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000027",
+    "category": "skin_and_itching",
+    "customer_question": "The customer are [NAME REDACTED]. the customer have run Memtzar Kennels as a White Shepherd Breeder since 2005.",
+    "situation": "The customer are [NAME REDACTED]. the customer have run Memtzar Kennels as a White Shepherd Breeder since 2005.",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "social media?"
+    ],
+    "all_good_guidance": "I have asked for a breeders review of our Itch Buster, and said that we will cross promote them in our socials. Please find the review below and create a social media post for it- tagging them in it . We then also need it added to the itch buster review page and the General review page.",
+    "reasoning": "testing done without conclusive results so finally the Vet recommend we",
+    "relevant_product_names": [],
+    "safety_notes": "testing done without conclusive results so finally the Vet recommend we",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "redacted",
+      "white",
+      "then",
+      "memtzar",
+      "shepherd",
+      "since",
+      "litters"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000028",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you. [NAME REDACTED] give probiotics and hypoallergenic food (itch buster) a try.",
+    "situation": "Thank you. [NAME REDACTED] give probiotics and hypoallergenic food (itch buster) a try.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "That is great, I am very sure you will see a change if they have food allergies. Also I would highly recommend the Washbar Itch Soothe Topical Spray to give them instant relief when they are having a bad itch :) It helps calm it all down and makes them more comfortable. Let us know if you have any other questions, or if we can help in any way.",
+    "reasoning": "Also I would highly recommend the Washbar Itch Soothe Topical",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "itch",
+      "will",
+      "give",
+      "food",
+      "them",
+      "thank",
+      "probiotics"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000030",
+    "category": "skin_and_itching",
+    "customer_question": "With the short weeks the customer\u2019ve had to go get food for them. the customer\u2019ve put Tank back onto the propane sensitive stomach and skin and Banna on to Pheonix Kangaroo x barramundi for now. the customer\u2019ll get their tummy\u2019s settled back down then the customer will look at trying again.",
+    "situation": "With the short weeks the customer\u2019ve had to go get food for them. the customer\u2019ve put Tank back onto the propane sensitive stomach and skin and Banna on to Pheonix Kangaroo x barramundi for now. the customer\u2019ll get their tummy\u2019s settled back down then the customer will look at trying again.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "licking just 1 foot, on the top or bottom of it, and how old are they?"
+    ],
+    "all_good_guidance": "Ha ha, yeah cats \ud83e\udd23 no good rhyme or reason, they make the rules and we just need to figure them out as we go lol. Glad the dogs have improved, so it is a definite food allergy, on the next bag we will work on a preferred flavour! The foot licking/ chewing could be a contact allergy as well, wipe it down every evening to try remove the grass sap an see how they get on.",
+    "reasoning": "every evening to try remove the grass sap an see how they get on.",
+    "relevant_product_names": [
+      "Natura Itch Buster",
+      "Natura Grain Be Gone"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "skin",
+      "redacted",
+      "then",
+      "banna",
+      "will",
+      "both",
+      "thanks"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000036",
+    "category": "skin_and_itching",
+    "customer_question": "Hope you\u2019re having a good week. Our Poppy has been enjoying her new Itch Buster kibble thanks. the customer\u2019re still on Apoquel but the customer\u2019m keeping on trying \ud83d\ude42",
+    "situation": "Hope you\u2019re having a good week. Our Poppy has been enjoying her new Itch Buster kibble thanks. the customer\u2019re still on Apoquel but the customer\u2019m keeping on trying \ud83d\ude42",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I am so glad to hear they are enjoying the food, my apologies for the delayed response! I have not heard of that particular spray, it does look like it would do a good job, but potentially before that you could try our alternative which is natural, anti fungal, anti bacterial , anti inflammatory, itch relieving, used for hotspots etc as well.",
+    "reasoning": "good job, but potentially before that you could try our alternative which",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "anti",
+      "good",
+      "enjoying",
+      "itch",
+      "thanks",
+      "apoquel",
+      "heard"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000037",
+    "category": "skin_and_itching",
+    "customer_question": "Please visit billing to manage your plan and payment. \u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00a0\u2026",
+    "situation": "Please visit billing to manage your plan and payment. \u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u2007\u034f \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00ad \u00a0\u2026",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "This is a bit early for this isn't it?! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "You are receiving this transactional email because you are listed as the",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "klaviyo",
+      "billing",
+      "plan",
+      "email",
+      "image",
+      "please",
+      "visit"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000039",
+    "category": "weight_management",
+    "customer_question": "The customer was just deleting emails when the customer saw this and was wondering if a refund ( less postage) had been sent. the customer had forgotten about it and have just checked my visa statement in case the customer",
+    "situation": "The customer was just deleting emails when the customer saw this and was wondering if a refund ( less postage) had been sent. the customer had forgotten about it and have just checked my visa statement in case the customer",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for letting us know how they have been getting on. they have been on it for a while. Some dogs do get bored of the taste after a while, as it is quite rich. I am happy to get the unopened bags back. All I need from you is the box",
+    "reasoning": "samples for them to try, I will also send a return label for the Brain Be Gone, so that will be nice and easy to get returned.",
+    "relevant_product_names": [],
+    "safety_notes": "way healthier than the vet options.",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "been",
+      "will",
+      "some",
+      "food",
+      "give",
+      "happy",
+      "send"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "kb_000041",
+    "category": "weight_management",
+    "customer_question": "Thnks so much for your reply. My Chihuahua is very food orientated. see if it's possible to cut the stick in half.",
+    "situation": "Thnks so much for your reply. My Chihuahua is very food orientated. see if it's possible to cut the stick in half.",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi, they can be cut reasonably easily with small garden secateurs, also an alternative product is the Bully Stick Bites, it is the same meat but the small offcuts [ more bite size ] so that could work a bit better. [URL REDACTED] Have a great day! Great to hear that they loved them!",
+    "reasoning": "small offcuts [ more bite size ] so that could work a bit better.",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "them",
+      "stick",
+      "redacted",
+      "great",
+      "email",
+      "thnks",
+      "much",
+      "food"
+    ],
+    "source_count": 1,
+    "confidence": "high"
+  },
+  {
+    "id": "candidate_000027",
+    "category": "weight_management",
+    "customer_question": "Way to go! Sounds like you deserve some recognition. You can tell a lot about a person by the way they treat their animals",
+    "situation": "Way to go! Sounds like you deserve some recognition. You can tell a lot about a person by the way they treat their animals",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Legend, yeah we punch way above our weight that is for sure for a humble little business in the middle of nowhere but we are playing with the big boys nationally lol. Have an amazing day & long weekend! *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "email",
+      "sounds",
+      "like",
+      "deserve",
+      "some",
+      "recognition",
+      "tell"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000104",
+    "category": "protein_selection",
+    "customer_question": "Vivienne Torr here. the customer keep getting the attached email every day. Is there a",
+    "situation": "Vivienne Torr here. the customer keep getting the attached email every day. Is there a",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I have tried doing it from my side, but you pay through Shop Pay which I do not have access to. Please see supports below reply reply Thank you so much for sharing the screenshot. It appears that Shopify does not provide the option to remove a saved card directly for customers using Shop Pay.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "address",
+      "card",
+      "please",
+      "vivienne",
+      "email",
+      "which",
+      "subscription"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000121",
+    "category": "skin_and_itching",
+    "customer_question": "Hasn't improved with hypo food and he doesnt have ang other food ot Dame with pro biotic. He has always liked but things got a lot worse over summer and has just",
+    "situation": "Hasn't improved with hypo food and he doesnt have ang other food ot Dame with pro biotic. He has always liked but things got a lot worse over summer and has just",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "could make them react to?",
+      "Did you notice any improvement on the Hypo food?",
+      "Do they itcy all year around or is it seasonal?",
+      "Does he have a yucky smell to him or is he gassy ?",
+      "Does he get ear infections / yeast infections?"
+    ],
+    "all_good_guidance": "OK, so the fact that he is increasing in the Summer leads me to believe it is a contact and /or a seasonal allergy. With the yeasty smell, they are best on a raw food diet as this reduces the carbs that convert to sugar and feed the yeast. If you cannot go onto full Raw, then a good quality Grain",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "food",
+      "email",
+      "could",
+      "smell",
+      "phone",
+      "does",
+      "yeast"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000129",
+    "category": "skin_and_itching",
+    "customer_question": "The customer have had a chat on the phone about her before, ridgeback with skin issues, using your itch buster and took her off meat, then started reintroducing chicken but each time the customer try and reduce the Aqupel she starts it hi g again. the customer\u2019m now trying a new non yeast pre and probiotic. the customer over ordered it h sister so have paused it, while introduce a different meat \ud83d\ude44",
+    "situation": "The customer have had a chat on the phone about her before, ridgeback with skin issues, using your itch buster and took her off meat, then started reintroducing chicken but each time the customer try and reduce the Aqupel she starts it hi g again. the customer\u2019m now trying a new non yeast pre and probiotic. the customer over ordered it h sister so have paused it, while introduce a different meat \ud83d\ude44",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thank you for letting us know. That sounds like a great idea to see how they get on. Keep us posted if you have any queries or questions. We are more than happy",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "meat",
+      "chat",
+      "phone",
+      "before",
+      "ridgeback",
+      "skin",
+      "issues",
+      "using"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000137",
+    "category": "skin_and_itching",
+    "customer_question": "How much of this product do you think that you might be able to sell? The product requires a full ACVM registration, so this process with require a considerable amount of time and work (cost) in order to work through this process. Local trial work may also be required also.",
+    "situation": "How much of this product do you think that you might be able to sell? The product requires a full ACVM registration, so this process with require a considerable amount of time and work (cost) in order to work through this process. Local trial work may also be required also.",
+    "useful_context": [
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "in looking into?"
+    ],
+    "all_good_guidance": "It is difficult for me to assess the quantities that would be sold as it is a new product. I am the middle man asking on behalf of someone else who is looking to get it in. They have had great success with it, but have not found anyone who could consider importing it.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "message",
+      "information",
+      "intended",
+      "email",
+      "help",
+      "product",
+      "work",
+      "contain"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000177",
+    "category": "puppies",
+    "customer_question": "My lab is now 9mths old and has been on Black Hawk puppy food. Ok to swab her over now rather then wait to she is 1yr.",
+    "situation": "My lab is now 9mths old and has been on Black Hawk puppy food. Ok to swab her over now rather then wait to she is 1yr.",
+    "useful_context": [
+      "Age or life stage"
+    ],
+    "follow_up_questions": [
+      "Which range were you wanting to move them onto?"
+    ],
+    "all_good_guidance": "Hi,is best to keep large breeds on puppy until 12 months old, unless you move them onto a good quality food for all life stages. Which range were you wanting to move them onto?",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "puppies",
+      "puppy",
+      "food",
+      "move",
+      "them",
+      "onto",
+      "9mths",
+      "been",
+      "black"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000192",
+    "category": "skin_and_itching",
+    "customer_question": "[NAME REDACTED] is the name the customer have used and the customer pay the Itch Buster every 4 months and the 7.5 kg size. Cheers and thanks,",
+    "situation": "[NAME REDACTED] is the name the customer have used and the customer pay the Itch Buster every 4 months and the 7.5 kg size. Cheers and thanks,",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [
+      "size, the 2.5, the 7.5 or the 20Kg?",
+      "Also how often does the bag last you?"
+    ],
+    "all_good_guidance": "Hi,and Heather I am happy to assist you in getting this set up for you, I cannot see the name on our system that you buy under so could not confirm the bag sizes that you get. Please confirm that you are after the Natura Itch Buster and in which bag size, the 2.5, the 7.5 or the 20Kg?",
+    "reasoning": "",
+    "relevant_product_names": [
+      "Natura Itch Buster"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "john",
+      "name",
+      "itch",
+      "buster",
+      "size",
+      "thanks",
+      "confirm",
+      "mcgregor"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000205",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you [NAME REDACTED]. One question - how much do you reckon the customer feed her on the potato tuna?",
+    "situation": "Thank you [NAME REDACTED]. One question - how much do you reckon the customer feed her on the potato tuna?",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "allergies so, do they get fed in a plastic bowl by chance?",
+      "that the only dog you have been feeding this food?",
+      "them on this food?",
+      "meat/ tins etc?"
+    ],
+    "all_good_guidance": "Thanks for that info, chin and eyes are quite commonly pollen/ seasonal allergies so, do they get fed in a plastic bowl by chance? Feet itching is commonly a grass allergy [ fresh cut grass is the worst, then long grass then wet grass- so very hard to remove, but wiping them down with a facecloth at the end of the day may help get the sap off of them that",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "itching",
+      "email",
+      "then",
+      "feet",
+      "them",
+      "grass",
+      "tuna"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000214",
+    "category": "protein_selection",
+    "customer_question": "Thankyou the customer will give some thought to that .At present Hugo is having episodes of sickness so will take vet advice as well Cheers [NAME REDACTED] for Android<[URL REDACTED]",
+    "situation": "Thankyou the customer will give some thought to that .At present Hugo is having episodes of sickness so will take vet advice as well Cheers [NAME REDACTED] for Android<[URL REDACTED]",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,problem at all. If you are happy to discuss a bit about their issues, we can see if there is anything we can do to help. Thanks so much, have a great day! *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "natura",
+      "email",
+      "dogs",
+      "lamb",
+      "liver",
+      "treats",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000237",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you so much for organising this for us! The food has just arrived Have a great day",
+    "situation": "Thank you so much for organising this for us! The food has just arrived Have a great day",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "That's great, thanks for letting me know! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "great",
+      "much",
+      "food",
+      "thanks",
+      "kangaroo",
+      "kibble",
+      "craig"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000268",
+    "category": "skin_and_itching",
+    "customer_question": "The customer just received my package of samples from you and am very impressed! It does look like nice food that my dogs will enjoy. My dogs are all itchy dogs.",
+    "situation": "The customer just received my package of samples from you and am very impressed! It does look like nice food that my dogs will enjoy. My dogs are all itchy dogs.",
+    "useful_context": [
+      "Current food and main protein",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "That is great to hear, I am so pleased that they enjoyed them! The Itch Buster is only available in that size, so may be too big for all The good news is that all of the samples we sent were Hypoallergenic, so the Addiction Le Lamb that they all liked would be a great choice :) The Addiction biscuits are a great size for them, and you can swap between different flavours if you would like to as well.",
+    "reasoning": "",
+    "relevant_product_names": [
+      "Addiction Le Lamb"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "dogs",
+      "itchy",
+      "them",
+      "samples",
+      "smaller",
+      "size",
+      "those",
+      "biscuit"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000291",
+    "category": "protein_selection",
+    "customer_question": "The Addiction Le Lamb for small dogs come in a bigger size bag? the lamb marshmallow lung do they have many calories, just wondering how many to give as treats.",
+    "situation": "The Addiction Le Lamb for small dogs come in a bigger size bag? the lamb marshmallow lung do they have many calories, just wondering how many to give as treats.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [
+      "Also is it okay to feed the dental chew treats everyday?",
+      "Lamb small biscuits?"
+    ],
+    "all_good_guidance": "Hi, In the Small Breed it is only the 1.5kg bag available, however in the normal Addiction range, the same flavour Le Lamb is available in a 1.8kg, a 9kg or a 15Kg option. The biscuits are maybe only double the size of the small breed so are still small enough for them to eat without any problems. With regards to the Lamb Lung, it is generally considered low in fat, so",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "email",
+      "small",
+      "feed",
+      "lamb",
+      "louise",
+      "size",
+      "biscuits"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000303",
+    "category": "protein_selection",
+    "customer_question": "Oh sorry it says \u2018ask questions\u2019 below product so assumed it would somehow be attached, the customer\u2019m not very techno savvy my apologies! It\u2019s the Addiction Dog Viva La Venison, specifically 15kg. the customer know they do a viva la venison entree as well and wonder if the ingredients have been muddled between these very similar products?",
+    "situation": "Oh sorry it says \u2018ask questions\u2019 below product so assumed it would somehow be attached, the customer\u2019m not very techno savvy my apologies! It\u2019s the Addiction Dog Viva La Venison, specifically 15kg. the customer know they do a viva la venison entree as well and wonder if the ingredients have been muddled between these very similar products?",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,spotted a mistake no one else has- you are correct the ingredients list was incorrect! I have updated it to display correctly now, so yes, as mentioned there is no potato in the recipe. The correct list is below- Venison, Venison Meal, Green Peas, Tapioca, Coconut Oil, Pea Protein,",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "vitamin",
+      "dried",
+      "acid",
+      "supplement",
+      "venison",
+      "amino",
+      "complex",
+      "calcium"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000305",
+    "category": "skin_and_itching",
+    "customer_question": "The customer just noticed that the subscription discount isn't applying? This order was 219 previously, but it's gone through as 249!",
+    "situation": "The customer just noticed that the subscription discount isn't applying? This order was 219 previously, but it's gone through as 249!",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thank you so much for getting hold of us, we sent out an email as well as shared on social media about 6 weeks ago that we were having a price increase on the Natura Range. This is the first price increase on that range in many years and as we are not willing to reduce our quality, we have absorbed as much as we can over the years but have had to make a price movement to keep up with the rising",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "email",
+      "price",
+      "katie",
+      "hoogerbrug",
+      "2025",
+      "redacted",
+      "wrote",
+      "much"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000353",
+    "category": "allergies_and_sensitivities",
+    "customer_question": "Can you send me a price list on your pet food and biscuit please On Fri, 7 Aug 2026, 11:19\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]>",
+    "situation": "Can you send me a price list on your pet food and biscuit please On Fri, 7 Aug 2026, 11:19\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]>",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I don't have a price list, as we have so many options. I have attached the prices on the food that you took when you were here. The Addiction Salmon [image: image.png] The Le Lamb flavour is also available for the same price as the Salmon Bleu.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "allergies-and-sensitivities",
+      "redacted",
+      "price",
+      "list",
+      "food",
+      "please",
+      "luanne",
+      "vacy",
+      "lyle"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000363",
+    "category": "skin_and_itching",
+    "customer_question": "The customer has had a look at your website and am considering a raw diet. He has suffered from belly, groin, arm pit and under neck skin for years. Now the customer are dealing with chronic ear infections.",
+    "situation": "The customer has had a look at your website and am considering a raw diet. He has suffered from belly, groin, arm pit and under neck skin for years. Now the customer are dealing with chronic ear infections.",
+    "useful_context": [
+      "Current food and main protein",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "What flavour of the Acana do you feed?",
+      "experiencing?"
+    ],
+    "all_good_guidance": "I have just looked at those ingredients, and they are all hypoallergenic, so should not cause skin issues. So what they are eating is not contributing to their remaining itching. So you may as well stay on what you are or swap to an alternative food brand that is also Hypoallergenic.",
+    "reasoning": "Try to keep your dog off freshly cut grass for about 24 hours. Try to avoid it, or again, wipe them down",
+    "relevant_product_names": [],
+    "safety_notes": "medication or steroids:",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "grass",
+      "help",
+      "skin",
+      "website",
+      "them",
+      "will",
+      "helps"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000401",
+    "category": "allergies_and_sensitivities",
+    "customer_question": "Definitely varies with seasons, spring and summer are worst. Didn\u2019t have any issues over the winter. Generally it is his legs or around his lefts or belly that gets affected then he kicks and scratches until it\u2019s red raw.",
+    "situation": "Definitely varies with seasons, spring and summer are worst. Didn\u2019t have any issues over the winter. Generally it is his legs or around his lefts or belly that gets affected then he kicks and scratches until it\u2019s red raw.",
+    "useful_context": [
+      "Current food and main protein",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thanks for getting back to me with those answers. Spring/Summer flare-ups on legs/belly with no issues over winter sounds very typical for environmental allergies. Most likely a grass allergy. we cannot remove grass/ contact allergies, we can help with some handy tips and amazing products to help ease their discomfort.",
+    "reasoning": "I would highly recommend putting him on a hypoallergenic food that will not I would recommend Looking at I would also recommend getting them onto a probiotic to start replanting recommend, changing food, adding probiotics, following the below advise on Try to keep your dog off freshly cut grass for about 24 hours. Try to avoid it, or again, wipe them down",
+    "relevant_product_names": [
+      "Natura Itch Buster",
+      "Addiction Le Lamb"
+    ],
+    "safety_notes": "3- They at some stage have had stress / medication / poor start to life [ie medication or steroids:",
+    "tags": [
+      "allergies-and-sensitivities",
+      "grass",
+      "redacted",
+      "help",
+      "health",
+      "food",
+      "allergies",
+      "some",
+      "immune"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000422",
+    "category": "skin_and_itching",
+    "customer_question": "Wonderful thanks Luanne. the customer look forward to hearing from you once they get back to you.",
+    "situation": "Wonderful thanks Luanne. the customer look forward to hearing from you once they get back to you.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thanks so much, I think fortunately it has swung a bit so we will get the winds but not the big hit, that's moved down to Auckland and the east Chat soon, *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "luanne",
+      "thanks",
+      "vacy",
+      "lyle",
+      "back",
+      "2026"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000426",
+    "category": "product_comparisons",
+    "customer_question": "Yes exactly and even the stock handling would be a nightmare. the customer is popping in today to pay the short dollars! Si sorry \ud83e\udd2a.",
+    "situation": "Yes exactly and even the stock handling would be a nightmare. the customer is popping in today to pay the short dollars! Si sorry \ud83e\udd2a.",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hey,don't worry about the few dollars difference, I wasn't saying that so you pay the difference lol, I was just saying that they were the numbers I was working off to see if I could help. Thanks so much for pushing our treats- we appreciate it :) *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "product-comparisons",
+      "redacted",
+      "treats",
+      "stock",
+      "dollars",
+      "training",
+      "difference",
+      "saying",
+      "exactly"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000498",
+    "category": "puppies",
+    "customer_question": "Thanks for reaching out. Oscar is not food driven so its been a slow adjustment but he is liking it now \ud83d\ude42 Also, Oscar is a Golden Doodle, half poodle half golden retriever.",
+    "situation": "Thanks for reaching out. Oscar is not food driven so its been a slow adjustment but he is liking it now \ud83d\ude42 Also, Oscar is a Golden Doodle, half poodle half golden retriever.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [
+      "Just wanting to follow up and see how they are getting on with the new food?"
+    ],
+    "all_good_guidance": "Just wanting to follow up and see how they are getting on with the new food?",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "puppies",
+      "food",
+      "oscar",
+      "jennifer",
+      "golden",
+      "half",
+      "puppy",
+      "just",
+      "redacted"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000501",
+    "category": "skin_and_itching",
+    "customer_question": "The customer is sorry for late reply, but your mail ended up in the Junk folder. the customer just thought you preferred not to get involved. In the meantime the customer had to buy food and bought some Addiction Mega.",
+    "situation": "The customer is sorry for late reply, but your mail ended up in the Junk folder. the customer just thought you preferred not to get involved. In the meantime the customer had to buy food and bought some Addiction Mega.",
+    "useful_context": [
+      "Current food and main protein",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [
+      "the same food or are you happy for Meggy to get her own food?",
+      "are the other dogs ?"
+    ],
+    "all_good_guidance": "Hi,I am so sorry for the delay in reply! Please confirm what size of bags you are referring to and do you have any preference of flavour/ brand at this stage. Did you want the dogs to be on the same food or are you happy for Meggy to get her own food? What sizes",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "bags",
+      "some",
+      "dogs",
+      "product",
+      "plan",
+      "hello",
+      "sorry"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000511",
+    "category": "puppies",
+    "customer_question": "Received my order and have been sent Addiction dog food instead of puppy food. [NAME REDACTED]",
+    "situation": "Received my order and have been sent Addiction dog food instead of puppy food. [NAME REDACTED]",
+    "useful_context": [
+      "Duration of the concern",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for letting us know, our sincere apologies! I am happy to send a replacement bag and a return ticket for the other bag, however the adult dog is actually also suitable for puppies, the only real difference being a slightly smaller biscuit size. That being said you could use it without any problem at all, as it is tested for \"Dogs of all life",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "puppies",
+      "redacted",
+      "food",
+      "phone",
+      "know",
+      "being",
+      "received",
+      "order",
+      "been"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000527",
+    "category": "protein_selection",
+    "customer_question": "Thanks for coming back to me and the other product suggestions. the customer\u2019ll try the suggestion to cut out the dog roll and just feed her Primal Ocean Fish to see if it is diet related. Will report back in a month.",
+    "situation": "Thanks for coming back to me and the other product suggestions. the customer\u2019ll try the suggestion to cut out the dog roll and just feed her Primal Ocean Fish to see if it is diet related. Will report back in a month.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Fantastic, we will chat then! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "thanks",
+      "back",
+      "will",
+      "coming",
+      "other",
+      "product",
+      "suggestions"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000532",
+    "category": "skin_and_itching",
+    "customer_question": "How are you doing? This is wendy from Sweetpet who offers professional pet accessory product with more than 10 years manufacturing experience and fast&excellent after-sale service and flexible MOQ. the customer is wondering whether you are interested in below product which small MOQ and fast delivery?",
+    "situation": "How are you doing? This is wendy from Sweetpet who offers professional pet accessory product with more than 10 years manufacturing experience and fast&excellent after-sale service and flexible MOQ. the customer is wondering whether you are interested in below product which small MOQ and fast delivery?",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,thank you *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "product",
+      "fast",
+      "hello",
+      "doing",
+      "wendy",
+      "sweetpet",
+      "offers"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000551",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you very much, the customer've updated my new cards details and it should have processed now. Thanks again,",
+    "situation": "Thank you very much, the customer've updated my new cards details and it should have processed now. Thanks again,",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "edit that at all?"
+    ],
+    "all_good_guidance": "Brilliant, thanks so much :) That left yesterday, so you should have it early next week. Are you happy with the current 12-week delivery cycle, or would you like to edit that at all? I am happy to help with that if needed. Thanks again, have a wonderful day.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "thanks",
+      "email",
+      "order",
+      "much",
+      "luanne",
+      "thank",
+      "details"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000554",
+    "category": "protein_selection",
+    "customer_question": "Sorry for the late reply! Thank you for looking into this for me. the customer\u2019m glad you were able to figure it out :)",
+    "situation": "Sorry for the late reply! Thank you for looking into this for me. the customer\u2019m glad you were able to figure it out :)",
+    "useful_context": [
+      "Current food and main protein"
+    ],
+    "follow_up_questions": [
+      "grind it finer?"
+    ],
+    "all_good_guidance": "Thanks so much, and to you too! Hi,a lovely holiday holiday so far \ud83d\udc9a Just thought I should show you this, we had a new customer send through They assumed it was plastic and were mortified. We know it is in fact fish bones from the fish meal, but again this is really not great to be",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "know",
+      "fish",
+      "thank",
+      "meal",
+      "were",
+      "2024",
+      "casi",
+      "bulkeley"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000562",
+    "category": "skin_and_itching",
+    "customer_question": "You can remember the customer came into your shop early part of the week and purchased some joint supplement biscuits for my old dog with bad back legs. All the customer can say is WOW what a difference it has made for him.",
+    "situation": "You can remember the customer came into your shop early part of the week and purchased some joint supplement biscuits for my old dog with bad back legs. All the customer can say is WOW what a difference it has made for him.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "dog by any chance?"
+    ],
+    "all_good_guidance": "That is such a nice review! Can you email him and ask for a photo of his dog by any chance? There is also this one that is pending (attached) from [EMAIL REDACTED] *[NAME REDACTED]*",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "week",
+      "thanks",
+      "best",
+      "2025",
+      "wrote",
+      "remember"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000565",
+    "category": "skin_and_itching",
+    "customer_question": "On Thu, 24 Apr 2025, 10:23\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hi,tends to lick her paws and her crotch area mostly. She rolls on her",
+    "situation": "On Thu, 24 Apr 2025, 10:23\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hi,tends to lick her paws and her crotch area mostly. She rolls on her",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "does it come and go or is it consistent?"
+    ],
+    "all_good_guidance": "Nopeoblem at all :) *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "I would recommend going onto a Grain Free Diet in order to help starve off",
+    "relevant_product_names": [
+      "Addiction Le Lamb",
+      "Addiction Salmon Bleu"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "addiction",
+      "help",
+      "will",
+      "yeast",
+      "washbar",
+      "itch"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000567",
+    "category": "skin_and_itching",
+    "customer_question": "THe dog called [PET NAME REDACTED] is a staffy cross. A lean black dog aged about 10 He is a rescue dog.",
+    "situation": "THe dog called [PET NAME REDACTED] is a staffy cross. A lean black dog aged about 10 He is a rescue dog.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "What type/ Breed are they?",
+      "How long have they been itching for and where do they itch?",
+      "Does it vary with the Seasons?",
+      "What are they currently eating, food and treat wise?",
+      "Finally, have you tried any food elimination diets up until now?"
+    ],
+    "all_good_guidance": "Thank you so much for the info, I've got terriers as well, unfortunately they can be prone to both food and contact allergies. I am leaning towards the majority of the itching coming from potential food allergies. If it was grass [ the most common contact allergy] I would expect it under the feet and belly as well.",
+    "reasoning": "I would highly recommend the *Best [NAME REDACTED] Buster* as this will",
+    "relevant_product_names": [
+      "Natura Itch Buster",
+      "Natura Grain Be Gone",
+      "Addiction Le Lamb",
+      "Addiction Salmon Bleu"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "food",
+      "will",
+      "allergies",
+      "then",
+      "contact",
+      "itching",
+      "itch"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000619",
+    "category": "protein_selection",
+    "customer_question": "** the customer\u2019d love your review \ud83d\udc3e ------------------------------------------------------------ Thank you for choosing ROAR as your trusted local raw pet food butcher.",
+    "situation": "** the customer\u2019d love your review \ud83d\udc3e ------------------------------------------------------------ Thank you for choosing ROAR as your trusted local raw pet food butcher.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "Want to change how you receive these emails?"
+    ],
+    "all_good_guidance": "Just got this email, that is really nice, that I'd like to replicate- highlighting the awards / our service etc and then asking for a review if ' we.ve helped you' *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "food",
+      "roar",
+      "email",
+      "review",
+      "address",
+      "love",
+      "view"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000640",
+    "category": "skin_and_itching",
+    "customer_question": "The customer has just ordered some Addiction Venison for Peanut as she wouldn't eat the Itch Buster this morning so obviously needs a change. the customer went to use Shop Pay for first time on the checkout to make it more",
+    "situation": "The customer has just ordered some Addiction Venison for Peanut as she wouldn't eat the Itch Buster this morning so obviously needs a change. the customer went to use Shop Pay for first time on the checkout to make it more",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,you for your email, yes the Addiction range has a much smaller biscuit and is great for smaller dogs. There are a few flavours that are Hypoallergenic that you can use and swap between flavours to keep them interested. They do a Small Breed Range but that is designed for dogs up to about 4.5 kgs, their normal range biscuits are perfectly sized for small dogs so you",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "range",
+      "itch",
+      "just",
+      "addiction",
+      "help",
+      "email",
+      "venison",
+      "peanut"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000645",
+    "category": "weight_management",
+    "customer_question": "Thank you for the free bag the customer are very great full. Having no nasties in the boys food is the big reason the customer buy All Good Petfood, they real enjoy eating",
+    "situation": "Thank you for the free bag the customer are very great full. Having no nasties in the boys food is the big reason the customer buy All Good Petfood, they real enjoy eating",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "You are very welcome- they are so cute! Have a wonderful weekend *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "This can occasionally happen because we choose not to use chemical",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "food",
+      "email",
+      "which",
+      "much",
+      "thank",
+      "2026",
+      "luanne"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000651",
+    "category": "ingredients",
+    "customer_question": "No worries. Thank you! Hi,Pet Food team,",
+    "situation": "No worries. Thank you! Hi,Pet Food team,",
+    "useful_context": [
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "No thanks. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED] [ADDRESS REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "ingredients",
+      "redacted",
+      "food",
+      "could",
+      "scene",
+      "product",
+      "films",
+      "worries"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000666",
+    "category": "weight_management",
+    "customer_question": "Sorry awfully confusing!! If it has some in it for this one you\u2019re sending, then let\u2019s just start the subscription again 30th Dec? Thanks so much!!",
+    "situation": "Sorry awfully confusing!! If it has some in it for this one you\u2019re sending, then let\u2019s just start the subscription again 30th Dec? Thanks so much!!",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,is no problem at all, that has been updated to the 30th. Thanks so much- have a wonderful day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "30th",
+      "thanks",
+      "much",
+      "georgina",
+      "email",
+      "sorry",
+      "awfully"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000676",
+    "category": "skin_and_itching",
+    "customer_question": "The animal healer / communicator said either addiction Kanagaroo or black Hawke fish and potato. She said salmon was natural / slightly beneficial , so not to much . the customer will look into both the ingredients on the 2 you have suggested.",
+    "situation": "The animal healer / communicator said either addiction Kanagaroo or black Hawke fish and potato. She said salmon was natural / slightly beneficial , so not to much . the customer will look into both the ingredients on the 2 you have suggested.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,problem at all :) Have a great day, *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "said",
+      "animal",
+      "healer",
+      "communicator",
+      "either",
+      "addiction",
+      "kanagaroo"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000704",
+    "category": "skin_and_itching",
+    "customer_question": "Tracking | NZ Post Tracking | NZ Post Hello there\u00a0the customer has had an email saying my parcel has been delivered but it hasn\u2019t been.",
+    "situation": "Tracking | NZ Post Tracking | NZ Post Hello there\u00a0the customer has had an email saying my parcel has been delivered but it hasn\u2019t been.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,I am so sorry for the confusion, the local depo appears to have hired extra staff for the Christmas rush, and they have been scanning them as delivered by mistake. Do not worry, they are still on their way to you! Let us know if you do not receive them in the next few days. Have a great day!",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "been",
+      "tracking",
+      "post",
+      "there",
+      "delivered",
+      "address"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000709",
+    "category": "skin_and_itching",
+    "customer_question": "You for your emails they are so good and informative - Im guessing she is normal to medium she is a miniature poodle but way overweight",
+    "situation": "You for your emails they are so good and informative - Im guessing she is normal to medium she is a miniature poodle but way overweight",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thank you so much for your feedback, we appreciate it! Have you placed the order yet, I cannot see it as coming up under this email address as of yet. Those are great food options, I would just add in the Addiction Kangaroo & Apple as this has the lowest fat in the Addiction Range [ besides the Zen Vegetarian]",
+    "reasoning": "and hold out because they know mum will get them something tastier lol. down, they will eventually eat because they are hungry.",
+    "relevant_product_names": [
+      "Natura Itch Buster",
+      "Addiction Viva La Venison"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "addiction",
+      "food",
+      "luanne",
+      "vacy",
+      "lyle",
+      "will"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000722",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks so much for that. the customer did try the sample of the kangaroo and apple and it seemed to help digestion and her stool.",
+    "situation": "Thanks so much for that. the customer did try the sample of the kangaroo and apple and it seemed to help digestion and her stool.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,is no problem at all, we can swap it to either flavour, both are considered gentle on the tummy so would work. I can update the product once confirmed and it will automatically change the charge price, so that is nice and easy! The Le Lamb 15Kg is $183.34 and the Kangaro & Apple 15kg is $214.69 [ with",
+    "reasoning": "confirmed and it will automatically change the charge price, so that is",
+    "relevant_product_names": [
+      "Natura Itch Buster"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "will",
+      "redacted",
+      "kangaroo",
+      "much",
+      "lamb",
+      "dogs",
+      "thanks",
+      "sample"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000739",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks [NAME REDACTED] for your reply. Yes - Mali is well known to the local vet. She sees the vet regularly as they also have a doggy day care / camp there.",
+    "situation": "Thanks [NAME REDACTED] for your reply. Yes - Mali is well known to the local vet. She sees the vet regularly as they also have a doggy day care / camp there.",
+    "useful_context": [
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "That's great to hear! Let me know of I can help with anything else:) *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "If all goes well at the vets, then I would suggest feeding them a bit",
+    "relevant_product_names": [],
+    "safety_notes": "suddenly a lot more thirsty than normal, I would look at seeing a vet for So, the first port of call is a vet.",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "luanne",
+      "there",
+      "email",
+      "thanks",
+      "well",
+      "great",
+      "know"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000740",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you so much Chris & Team for the fabulous extra dog food samples. Our dog Bear is a Cavoodle and was beside himself when introduced to some of these treats today. Thank you again",
+    "situation": "Thank you so much Chris & Team for the fabulous extra dog food samples. Our dog Bear is a Cavoodle and was beside himself when introduced to some of these treats today. Thank you again",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "That's fantastic news! We're so glad Bear enjoyed the samples. know if he has a favourite and if you would like to move to it as a new food, I am sure we can offer you a wee discount as a show of appreciation. Thanks again for your continued support, have an amazing day.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "thank",
+      "food",
+      "samples",
+      "bear",
+      "much",
+      "chris",
+      "team",
+      "fabulous"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000742",
+    "category": "skin_and_itching",
+    "customer_question": "The customer\u2019m currently looking to switch the customer's dog, Ziggy, onto a new food and came across your brand while researching options here in New Zealand. Ziggy is a 9-year-old pug, so the customer\u2019m a bit mindful of his diet as he\u2019s getting",
+    "situation": "The customer\u2019m currently looking to switch the customer's dog, Ziggy, onto a new food and came across your brand while researching options here in New Zealand. Ziggy is a 9-year-old pug, so the customer\u2019m a bit mindful of his diet as he\u2019s getting",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for getting hold of us. We have some great sample options for Ziggy- all natural, clean and super tasty! You can get samples from us on the link below- [URL REDACTED] You can select the small-med fussy dog option or the hypoallergenic option",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "ziggy",
+      "options",
+      "much",
+      "samples",
+      "looking",
+      "onto",
+      "getting"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000745",
+    "category": "skin_and_itching",
+    "customer_question": "Good morning, the customer're running very low on Itch Buster kibble. Yesterday the customer went into our subscription and requested that the food be sent yesterday instead of the 25th June and my Visa has been charged, all good.",
+    "situation": "Good morning, the customer're running very low on Itch Buster kibble. Yesterday the customer went into our subscription and requested that the food be sent yesterday instead of the 25th June and my Visa has been charged, all good.",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,for letting us know, I apologize for the delay in response, but the Subscription has been updated and will send them as you require. Thanks so much for your continued support, we appreciate you! Have a wonderful day, *[NAME REDACTED]* [EMAIL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "yesterday",
+      "sent",
+      "been",
+      "good",
+      "subscription",
+      "25th",
+      "email"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000746",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you for your info, the customer do avoid beef and wheat. the customer will keep in mind the other treats you mentioned.",
+    "situation": "Thank you for your info, the customer do avoid beef and wheat. the customer will keep in mind the other treats you mentioned.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,sorry for the delay! I am very sure it will help, do keep us posted on their progress! In regards to bathing, you could bath them twice weekly if you felt it was really helping, however, you should be able to rely on the Washbar Itch Soothe Topical Spray to keep on top of the itching for the most part.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "will",
+      "food",
+      "thank",
+      "keep",
+      "bath",
+      "itchy",
+      "itch",
+      "great"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000750",
+    "category": "protein_selection",
+    "customer_question": "Thank you for reaching out to us. the customer are definitely interested in discussing the possibility of supplying your breeding kennel and pet store",
+    "situation": "Thank you for reaching out to us. the customer are definitely interested in discussing the possibility of supplying your breeding kennel and pet store",
+    "useful_context": [
+      "Current food and main protein"
+    ],
+    "follow_up_questions": [
+      "How did you get on with the samples we sent?"
+    ],
+    "all_good_guidance": "Hi,I am so sorry for the delay in reply, we have just been waiting for freight costs etc. How did you get on with the samples we sent? *2 x new Dog, and 2 x new cat ranges* Looking at the new Natura Grain Free Lamb, we are able to offer you a 30% margin from our already discounted current 10% off special, which we will",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "redacted",
+      "natura",
+      "food",
+      "email",
+      "store",
+      "lamb",
+      "pallet",
+      "phone"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000761",
+    "category": "protein_selection",
+    "customer_question": "Thanks [NAME REDACTED] seems to be mostly itchy on her feet but also under her arms and on her belly.",
+    "situation": "Thanks [NAME REDACTED] seems to be mostly itchy on her feet but also under her arms and on her belly.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried",
+      "Other symptoms"
+    ],
+    "follow_up_questions": [
+      "improvement in Nora's itchiness since you took her off beef and chicken?",
+      "Where about do they itch?",
+      "Have you tried a food elimination diet on them?",
+      "Do they have yeasty feet/ ears?",
+      "Are they gassy/ issues with stools being too soft/hard?"
+    ],
+    "all_good_guidance": "I am so sorry- I have just realized I have missed your email to reply to- my apologies! Thanks so much for this detailed update on Nora. It's really helpful! It's great that you've moved away from chicken and beef. Just a heads-up,",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "chicken",
+      "nora",
+      "food",
+      "feet",
+      "beef",
+      "redacted",
+      "itchy",
+      "email"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000774",
+    "category": "skin_and_itching",
+    "customer_question": "Perfect Luanne Thank you so much for your generous contribution to our prize pool the customer will definitely send you the winners photos of the dogs who have won",
+    "situation": "Perfect Luanne Thank you so much for your generous contribution to our prize pool the customer will definitely send you the winners photos of the dogs who have won",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "I hope the show went well, do you have any pics etc of the event?",
+      "ring or in total?"
+    ],
+    "all_good_guidance": "I hope the show went well, do you have any pics etc of the event? Hi,will be leaving for you by Tuesday next week, I have given a 20KG Itch Buster for BIS -great for dogs with Itching, Sensitive tummies, G.I Issues , pancreatitis, Impaired liver function as well as NORMAL dogs too. Bull breeds can have skin issues, so this is a great product for them. A 7.5KG of our Maintenance Buttons for RBIS- another great food for",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "email",
+      "luanne",
+      "will",
+      "dogs",
+      "2025",
+      "vacy",
+      "lyle"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000775",
+    "category": "weight_management",
+    "customer_question": "The customer have already received Poppy\u2019s food and the treats you included this morning Thank you again for everything Best wishes",
+    "situation": "The customer have already received Poppy\u2019s food and the treats you included this morning Thank you again for everything Best wishes",
+    "useful_context": [],
+    "follow_up_questions": [
+      "Did you intend to include the Natura Veal Crunchies as a gift for her\u2026?"
+    ],
+    "all_good_guidance": "Hi,could you send Anne Cooper her short sent ceal crunchies. * Please confirm once done :) Thanks so much, *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "poppy",
+      "thanks",
+      "much",
+      "crunchies",
+      "anne",
+      "craig",
+      "very"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000801",
+    "category": "skin_and_itching",
+    "customer_question": "Ya, thanks for getting back to me. No thanks, the customer just sorted it a different way. Next the customer're trying to figure out a subscription for it.",
+    "situation": "Ya, thanks for getting back to me. No thanks, the customer just sorted it a different way. Next the customer're trying to figure out a subscription for it.",
+    "useful_context": [],
+    "follow_up_questions": [
+      "[ADDRESS REDACTED] address, are you wanting 2 bags?"
+    ],
+    "all_good_guidance": "I see Aaron Mateara has just placed an order for the same food going to the [ADDRESS REDACTED] address, are you wanting 2 bags? *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "address",
+      "email",
+      "phone",
+      "thanks",
+      "just",
+      "luanne",
+      "vacy"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000834",
+    "category": "skin_and_itching",
+    "customer_question": "\u2013 sorry the customer are not allowed any more signage here. The Council have been very strict with what the customer are allowed. Hi,the customer hope all is going well on your end.",
+    "situation": "\u2013 sorry the customer are not allowed any more signage here. The Council have been very strict with what the customer are allowed. Hi,the customer hope all is going well on your end.",
+    "useful_context": [],
+    "follow_up_questions": [
+      "wondered if you would be open to doing it at the Packhouse?"
+    ],
+    "all_good_guidance": "Hi,I hope all is going well on your end. A quick question, I am looking for a space to put up a roadside advert and wondered if you would be open to doing it at the Packhouse? There would be a monthly 'rental' fee paid in money or dog food lol, if you were happy to go ahead. I was thinking on either the top or bottom of your",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "looking",
+      "allowed",
+      "hope",
+      "going",
+      "well",
+      "quick",
+      "question",
+      "space"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000850",
+    "category": "weight_management",
+    "customer_question": "All good \ud83d\ude0a. Thanks for replying. the customer\u2019m really happy with the Natura maintenance \ud83e\udd17",
+    "situation": "All good \ud83d\ude0a. Thanks for replying. the customer\u2019m really happy with the Natura maintenance \ud83e\udd17",
+    "useful_context": [
+      "Duration of the concern",
+      "Current and ideal weight"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Fantastic :) Have a wonderful day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "The reason being is that the Maintenance Buttons that you ordered is the",
+    "relevant_product_names": [
+      "Natura Maintenance"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "email",
+      "thanks",
+      "maintenance",
+      "luanne",
+      "natura",
+      "food",
+      "them"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000862",
+    "category": "skin_and_itching",
+    "customer_question": "Here\u2019s another photo, ( Ellie\u2019s ears tend to flip inside out, funny dog.) Fine to use their photo in your social media.",
+    "situation": "Here\u2019s another photo, ( Ellie\u2019s ears tend to flip inside out, funny dog.) Fine to use their photo in your social media.",
+    "useful_context": [],
+    "follow_up_questions": [],
+    "all_good_guidance": "Please find attached pics of dogs who love our food :) Could pop it as a quick social somehow. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED] [URL REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "photo",
+      "redacted",
+      "social",
+      "here",
+      "another",
+      "ellie",
+      "ears",
+      "tend"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000893",
+    "category": "protein_selection",
+    "customer_question": "Team, Thanks again for the speedy delivery as always! Ollie enjoys his packages",
+    "situation": "Team, Thanks again for the speedy delivery as always! Ollie enjoys his packages",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Thank you, [NAME REDACTED]. That is so kind of you. I really appreciate the offer, but please keep them at no charge as a show of our appreciation for your continued support and feed back. Give Ollie a pet from us and have a wonderful day!",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "protein-selection",
+      "ollie",
+      "missing",
+      "items",
+      "green",
+      "lipped",
+      "please",
+      "ezra",
+      "team"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000905",
+    "category": "skin_and_itching",
+    "customer_question": "Thank you so much for your advice! the customer use some of the Biopet products already and will give the Itch Buter good a try. Thanks again",
+    "situation": "Thank you so much for your advice! the customer use some of the Biopet products already and will give the Itch Buter good a try. Thanks again",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,so much for your message, I am so glad to hear they have done well on the food, the products are very similar in regards to quality and being hypoallergenic. The main difference is that the Kangaroo is grain free while the Itch Buster is wheat free. This should not be an issue as 99/9%",
+    "reasoning": "Also for the grass allergies, if you can try keep them off of fresh cut",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "itch",
+      "redacted",
+      "will",
+      "dogs",
+      "kangaroo",
+      "kibble",
+      "buster",
+      "much"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000918",
+    "category": "skin_and_itching",
+    "customer_question": "Not sure if you got my special instructions when the customer was purchasing but can you please donate the primal cans to the BOI animal rescue. For next time the customer also wanted to purchase just sample bags of the itch buster if possible. the customer don\u2019t want a big bag the customer just like to add in a few to each meal.",
+    "situation": "Not sure if you got my special instructions when the customer was purchasing but can you please donate the primal cans to the BOI animal rescue. For next time the customer also wanted to purchase just sample bags of the itch buster if possible. the customer don\u2019t want a big bag the customer just like to add in a few to each meal.",
+    "useful_context": [],
+    "follow_up_questions": [
+      "Animal Rescue?",
+      "directly to trial?"
+    ],
+    "all_good_guidance": "Hi,team did not see that note, fortunately the parcel is still here, so I have pulled it back. Just to confirm, you want this order to go to BOI Animal Rescue? Also, to confirm, you would like a sample of the Itch Busters sent to you directly to trial?",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "redacted",
+      "just",
+      "sample",
+      "animal",
+      "rescue",
+      "purchase",
+      "bags",
+      "itch"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000921",
+    "category": "allergies_and_sensitivities",
+    "customer_question": "The customer sit on the fence a little with the cray cray stuff lol Yep they are but the healer has said one cant have most proteins lol so would have loved something more solid. the customer will look into it.",
+    "situation": "The customer sit on the fence a little with the cray cray stuff lol Yep they are but the healer has said one cant have most proteins lol so would have loved something more solid. the customer will look into it.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [
+      "testing first?"
+    ],
+    "all_good_guidance": "Hi,them onto the Addiction Salmon Bleu or Le Lamb- you will see a result/ improvement within a week if they have food allergies. They you can start narrowing down the issues as we will be working from a clean slate. know your thoughts :) We are happy to help,",
+    "reasoning": "",
+    "relevant_product_names": [
+      "Addiction Salmon Bleu"
+    ],
+    "safety_notes": "",
+    "tags": [
+      "allergies-and-sensitivities",
+      "redacted",
+      "testing",
+      "cray",
+      "allergy",
+      "healer",
+      "will",
+      "melissa",
+      "phone"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000935",
+    "category": "weight_management",
+    "customer_question": "Thank you [NAME REDACTED], 1 Apr 2025, 10:00\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hi,the customer will be ordering some more addiction food this week and was looking on",
+    "situation": "Thank you [NAME REDACTED], 1 Apr 2025, 10:00\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> Hi,the customer will be ordering some more addiction food this week and was looking on",
+    "useful_context": [
+      "Duration of the concern"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi,problem at all, when you find the product you would like- scroll down a bit and on the Right hand side you will see two options to click. the second one as per the attached image. It will then ask you how often you would like to order etc so you can just follow the prompts. Let me know if you need any help.",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "weight-management",
+      "redacted",
+      "luanne",
+      "email",
+      "will",
+      "vacy",
+      "lyle",
+      "find",
+      "thanks"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000937",
+    "category": "skin_and_itching",
+    "customer_question": "Thanks [NAME REDACTED] for getting back to me. Always feed itch buster and then added some of the other products to make it more interesting as Murphy seemed to get a bit bored with the same thing",
+    "situation": "Thanks [NAME REDACTED] for getting back to me. Always feed itch buster and then added some of the other products to make it more interesting as Murphy seemed to get a bit bored with the same thing",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Current and ideal weight",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Yes that can be an issue with the littelies- they get bored quickly! can add a few things to help keep the variety, to mix in the foods the following options are great- To mix in with their food these options below are all low in fat, and super Wet food Recommendations: Primal Range - Ocean Fish 2.5% fat",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "food",
+      "dogs",
+      "help",
+      "itch",
+      "buster",
+      "some",
+      "same",
+      "email"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000948",
+    "category": "skin_and_itching",
+    "customer_question": "Yes, of course you can. On Thu, 11 Jul 2024, 11:40\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> This is an up date on our little dog Cuda since the customer came in.",
+    "situation": "Yes, of course you can. On Thu, 11 Jul 2024, 11:40\u202fam Luanne Vacy-Lyle, <[EMAIL REDACTED]> This is an up date on our little dog Cuda since the customer came in.",
+    "useful_context": [
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [
+      "online review?"
+    ],
+    "all_good_guidance": "That's great, thank you so much! I have popped it under the micromed :) Hi,is so wonderful to see, we really appreciate the feedback and are so glad that Cuda has had such an improvement! Would you be happy for me to place your comment and picture as an online review?",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "skin-and-itching",
+      "really",
+      "much",
+      "know",
+      "cuda",
+      "micromed",
+      "chat",
+      "review",
+      "just"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000959",
+    "category": "ingredients",
+    "customer_question": "Ok thanks for that the customer is limited with what the customer can feed her because of the ibd she's allergic to so much the customer can only do vension wallaby hare possum but has to be single protein and only those proteins thanks for getting back to me..",
+    "situation": "Ok thanks for that the customer is limited with what the customer can feed her because of the ibd she's allergic to so much the customer can only do vension wallaby hare possum but has to be single protein and only those proteins thanks for getting back to me..",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Hi, not the ideal news we wanted but here is their reply- We changed the formula around December of last year. Most of the ingredients are the same, but the new formula has a few changes and has a higher moisture. *Old Ingredients List:*",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "ingredients",
+      "natural",
+      "thanks",
+      "much",
+      "only",
+      "list",
+      "changed",
+      "formula"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000960",
+    "category": "puppies",
+    "customer_question": "Thank you for your consideration, it was more that the customer was annoyed at myself that the customer had forgotten \ud83d\ude42 The box arrived today, thank you so much! It was full of treats and Poppy has already had a few lamb marshmallows that she loved.",
+    "situation": "Thank you for your consideration, it was more that the customer was annoyed at myself that the customer had forgotten \ud83d\ude42 The box arrived today, thank you so much! It was full of treats and Poppy has already had a few lamb marshmallows that she loved.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "Fantastic, I am so pleased they enjoyed the marshmallows- we lovingly call that Puppy Crack! Keep us posted, have a wonderful day! *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "puppies",
+      "redacted",
+      "thank",
+      "marshmallows",
+      "wonderful",
+      "consideration",
+      "more",
+      "annoyed",
+      "myself"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  },
+  {
+    "id": "candidate_000970",
+    "category": "allergies_and_sensitivities",
+    "customer_question": "Thanks for the tips Luanne. the customer'd be grateful if you could send a sample of the Natura Itch Buster to me. Address is [ADDRESS REDACTED], Eketahuna 4900.",
+    "situation": "Thanks for the tips Luanne. the customer'd be grateful if you could send a sample of the Natura Itch Buster to me. Address is [ADDRESS REDACTED], Eketahuna 4900.",
+    "useful_context": [
+      "Current food and main protein",
+      "Duration of the concern",
+      "Age or life stage",
+      "Foods or proteins previously tried"
+    ],
+    "follow_up_questions": [],
+    "all_good_guidance": "I am just clearing my emails and realised I have missed your email! Your samples will be leaving today, with some hypoallergenic treat samples. Thanks again, chat soon. *[NAME REDACTED]* [EMAIL REDACTED] [PHONE REDACTED]",
+    "reasoning": "",
+    "relevant_product_names": [],
+    "safety_notes": "",
+    "tags": [
+      "allergies-and-sensitivities",
+      "redacted",
+      "chicken",
+      "address",
+      "food",
+      "thanks",
+      "luanne",
+      "hypoallergenic",
+      "samples"
+    ],
+    "source_count": 1,
+    "confidence": "medium"
+  }
+]

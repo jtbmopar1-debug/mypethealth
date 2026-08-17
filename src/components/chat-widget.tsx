@@ -188,7 +188,7 @@ export function ChatWidget() {
     try {
       await apiConversationStore.save(normalized);
       const cloudItems = await apiConversationStore.list();
-      setHistory((current) => {
+      setHistory(() => {
         const merged = [normalized, ...cloudItems.filter((item) => item.id !== normalized.id)];
         return merged.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
       });

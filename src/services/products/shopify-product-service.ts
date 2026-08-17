@@ -289,6 +289,23 @@ export class ShopifyProductService implements ProductService {
     return (await this.products()).find((product) => product.id === id || product.id === normalizedId) ?? null;
   }
 
+  async getProductByUrl(value: string) {
+    try {
+      const requested = new URL(value);
+      const handle = requested.pathname.match(/^\/products\/([^/]+)/)?.[1]?.toLowerCase();
+      if (!handle) return null;
+      return (await this.products()).find((product) => {
+        try {
+          return new URL(product.url).pathname.match(/^\/products\/([^/]+)/)?.[1]?.toLowerCase() === handle;
+        } catch {
+          return false;
+        }
+      }) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   async getProductsByTag(tag: string) {
     return (await this.products()).filter((product) => product.availability === "in_stock" && product.tags.includes(tag.toLowerCase()));
   }

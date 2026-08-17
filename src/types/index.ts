@@ -86,5 +86,6 @@ export interface KnowledgeEntry {
   safetyNotes: string[];
   tags: string[];
   relevantProductTags: string[];
+  recommendedProductUrls?: string[];
   enabled: boolean;
 }
