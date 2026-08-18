@@ -3,6 +3,8 @@ import "server-only";
 import { serverConfig } from "@/config/env";
 import type { Product, ProductRecommendation } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
+import { productMatchesSpecies } from "./product-relevance";
+import { expandProductSearchAliases } from "./product-search-aliases";
 
 interface ShopifyProductNode {
   id: string;
@@ -439,9 +441,12 @@ export class ShopifyProductService implements ProductService {
     return (await this.products()).filter((product) => product.availability === "in_stock" && product.tags.includes(tag.toLowerCase()));
   }
 
-  async recommendProducts(tags: string[], limit = 2, options: { includeTreatAddon?: boolean; availableOnly?: boolean; allowFallback?: boolean; requiredTerms?: string[] } = {}): Promise<ProductRecommendation[]> {
-    const products = (await this.products()).filter((product) => options.availableOnly === false || product.availability === "in_stock");
-    const normalizedTags = tags.map((tag) => tag.toLowerCase()).filter(Boolean);
+  async recommendProducts(tags: string[], limit = 2, options: { includeTreatAddon?: boolean; availableOnly?: boolean; allowFallback?: boolean; requiredTerms?: string[]; species?: "dog" | "cat" | null } = {}): Promise<ProductRecommendation[]> {
+    const products = (await this.products()).filter((product) => (
+      (options.availableOnly === false || product.availability === "in_stock")
+      && productMatchesSpecies(product, options.species ?? null)
+    ));
+    const normalizedTags = expandProductSearchAliases(tags.map((tag) => tag.toLowerCase()).filter(Boolean));
     const requiredTerms = (options.requiredTerms || []).map((term) => term.toLowerCase()).filter(Boolean);
     const ranked = products
       .filter((product) => {

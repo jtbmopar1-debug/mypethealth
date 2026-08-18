@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
+import { productMatchesSpecies } from "@/services/products/product-relevance";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
@@ -161,6 +162,11 @@ function purchasesRelevantToQuestion<T extends { title: string; productType: str
   }).slice(0, 5);
 }
 
+function mentionedActivePet<T extends { name: string; status: string }>(message: string, pets: T[]) {
+  return pets.find((pet) => pet.status === "active"
+    && new RegExp(`\\b${pet.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(message));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const customerSession = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
@@ -196,6 +202,15 @@ export async function POST(request: NextRequest) {
     }
     const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
+    const recentPetContext = userMessages.slice(-3).join(" ");
+    const targetPet = [...userMessages].slice(-3).reverse()
+      .map((message) => mentionedActivePet(message, customerPets))
+      .find((pet) => Boolean(pet));
+    const explicitlyRequestedSpecies = /\b(?:cat|kitten|feline)\b/i.test(recentPetContext) ? "cat" as const
+      : /\b(?:dog|puppy|pup|canine)\b/i.test(recentPetContext) ? "dog" as const
+      : null;
+    const targetSpecies = targetPet?.species ?? explicitlyRequestedSpecies;
+    const petNameTerms = new Set(customerPets.flatMap((pet) => productSearchTerms(pet.name)));
     const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
     const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
     const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
@@ -259,7 +274,8 @@ export async function POST(request: NextRequest) {
       const searchSource = useBroadCategorySearch
         ? broadCategorySearch
         : latestHasProductIntent ? latestUserMessage : latestProductRequest;
-      const directTerms = productSearchTerms(searchSource);
+      const directTerms = productSearchTerms(searchSource).filter((term) => !petNameTerms.has(term));
+      if (targetSpecies && !directTerms.includes(targetSpecies)) directTerms.push(targetSpecies);
       const categoryRequiredTerms = useBroadCategorySearch
         ? [...new Set(broadCategoryMessages.flatMap(productSearchTerms).filter((term) => term !== "food"))]
         : [];
@@ -270,8 +286,9 @@ export async function POST(request: NextRequest) {
         : [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], limit, {
           includeTreatAddon: recommendationContextReady,
           availableOnly: !discoveryOnly,
-          allowFallback: !discoveryOnly,
+          allowFallback: !discoveryOnly && !targetSpecies,
           requiredTerms: categoryRequiredTerms.length > 0 ? categoryRequiredTerms : undefined,
+          species: targetSpecies,
         });
 
       const linkedUrls = [...new Set(knowledge.flatMap((entry) => entry.recommendedProductUrls ?? []))];
@@ -279,6 +296,7 @@ export async function POST(request: NextRequest) {
         const linkedRecommendations = (await Promise.all(linkedUrls.slice(0, 6).map((url) => productService.getProductByUrl(url))))
           .filter((product): product is NonNullable<typeof product> => product !== null)
           .filter((product) => product.availability === "in_stock")
+          .filter((product) => productMatchesSpecies(product, targetSpecies))
           .map((product) => ({ product, reason: "Staff-reviewed product linked to this guidance." }));
         recommendations = [
           ...linkedRecommendations,
