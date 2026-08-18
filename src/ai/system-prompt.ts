@@ -34,6 +34,9 @@ interface GroundingOptions {
   productsDisplayed?: boolean;
   discoveryOnly?: boolean;
   selectionNeedsVetting?: boolean;
+  specialsRequested?: boolean;
+  matchingSpecialsFound?: boolean;
+  regularAlternativesForSpecials?: boolean;
   recentPurchases?: CustomerPurchase[];
   primaryPurchaseTitles?: string[];
   purchaseHistoryDisplayed?: boolean;
@@ -45,7 +48,7 @@ interface GroundingOptions {
 }
 
 export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products: Product[], options: GroundingOptions = {}) {
-  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
+  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
   const knowledgeText = knowledge.length
     ? knowledge.map((entry) => `### ${entry.title}\n${entry.content.slice(0, 1400)}\nFollow-up options: ${entry.followUpQuestions.slice(0, 3).join("; ")}\nSafety: ${entry.safetyNotes.slice(0, 3).join("; ") || "None supplied"}`).join("\n\n")
     : "No directly relevant My Pet Health knowledge was found.";
@@ -90,7 +93,13 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     : products.length > 0
       ? "The store carries matching products, but every matching product supplied is currently out of stock."
       : "No matching products were found in the current catalogue.";
-  const presentationText = discoveryOnly
+  const presentationText = regularAlternativesForSpecials
+    ? "No matching discounted special was found. Matching in-stock products at their regular current prices will be shown below. Say this clearly and concisely, then offer the regular options shown below. Never describe these alternatives as specials or discounted products, and do not repeat names or prices from the cards."
+    : specialsRequested && matchingSpecialsFound
+    ? "Matching, genuine current specials will be shown below. Confirm that matching specials are available and shown below, without repeating product names or prices from the cards."
+    : specialsRequested
+    ? "No matching current special or matching regular alternative was found. Say so accurately and do not suggest an unrelated product."
+    : discoveryOnly
     ? `The customer is only checking whether a broad product category is stocked. ${categoryAvailability} Answer that availability question accurately, but do not list individual products or prices and do not make a recommendation yet. Ask concise questions about pet species, age or life stage, size, current diet, relevant sensitivities, and what they want from the product.`
     : purchaseHistoryDisplayed
     ? "Current product cards corresponding to recent purchases will be shown below. Describe them as recent purchases, not recommendations. Do not repeat their exact names, variants or prices in the written reply because the cards contain those details. Never infer which pet uses an item from the purchase alone; use conditional wording such as 'if this is for your puppy'. Confirm which product the customer means if more than one could apply."

@@ -495,7 +495,7 @@ export class ShopifyProductService implements ProductService {
     return recommendations;
   }
 
-  async getSpecials(limit = 6): Promise<ProductRecommendation[]> {
+  async getSpecials(limit = 6, searchTerms: string[] = []): Promise<ProductRecommendation[]> {
     // The store prefixes promoted product titles with "SALE". Query those
     // directly so specials are not missed when the catalogue contains more
     // than the first 100 alphabetically sorted products.
@@ -503,13 +503,29 @@ export class ShopifyProductService implements ProductService {
       console.error("[shopify-products] specials query failed", error instanceof Error ? error.message : "Unknown error");
       return [];
     });
-    const products = saleTitleProducts.length > 0 ? saleTitleProducts : await this.products();
+    const allProducts = await this.products();
+    const products = [...new Map([...saleTitleProducts, ...allProducts]
+      .map((product) => [product.id, product])).values()];
+    const requestedSpecies = searchTerms.includes("cat") ? "cat" as const
+      : searchTerms.includes("dog") ? "dog" as const
+      : null;
     const specials = products.filter((product) => product.availability === "in_stock" && (
       (product.compareAtPrice !== undefined && product.compareAtPrice > product.price)
       || /\b(?:sale|special|discount)\b/i.test(`${product.title} ${product.description}`)
       || product.tags.some((tag) => /^(sale|special|specials|on-sale|discount)/i.test(tag))
-    ));
-    return specials.slice(0, limit).map((product) => ({
+    ) && productMatchesSpecies(product, requestedSpecies));
+    const normalizedTerms = expandProductSearchAliases(searchTerms);
+    const rankedSpecials = specials.map((product) => {
+      const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
+      const description = product.description.toLowerCase();
+      const score = normalizedTerms.reduce((total, term) => (
+        total + (titleAndTags.includes(term) ? 3 : description.includes(term) ? 1 : 0)
+      ), 0);
+      return { product, score };
+    }).filter(({ score }) => normalizedTerms.length === 0 || score > 0)
+      .sort((left, right) => right.score - left.score);
+
+    return rankedSpecials.slice(0, limit).map(({ product }) => ({
       product,
       reason: product.compareAtPrice && product.compareAtPrice > product.price
         ? `On special now: was ${product.currency} ${product.compareAtPrice.toFixed(2)}.`

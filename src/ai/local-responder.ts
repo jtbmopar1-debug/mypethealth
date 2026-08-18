@@ -19,7 +19,12 @@ function detailsPresent(messages: ChatMessage[]) {
 export function createLocalResponse(
   messages: ChatMessage[],
   knowledge: KnowledgeEntry[],
-  recommendations: ProductRecommendation[]
+  recommendations: ProductRecommendation[],
+  options: {
+    specialsRequested?: boolean;
+    matchingSpecialsFound?: boolean;
+    regularAlternativesForSpecials?: boolean;
+  } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
   const conversationTopic = messages
@@ -29,6 +34,28 @@ export function createLocalResponse(
     .toLowerCase();
   const enoughContext = detailsPresent(messages);
   const safeRecommendations = enoughContext ? recommendations : [];
+
+  if (options.specialsRequested) {
+    if (options.matchingSpecialsFound && recommendations.length > 0) {
+      return {
+        content: "Yes — matching current specials are shown below.",
+        recommendations,
+        mode: "local-demo",
+      };
+    }
+    if (options.regularAlternativesForSpecials && recommendations.length > 0) {
+      return {
+        content: "There aren’t any matching specials at the moment, but we do have matching in-stock products at their regular prices, shown below.",
+        recommendations,
+        mode: "local-demo",
+      };
+    }
+    return {
+      content: "There aren’t any matching specials or in-stock regular alternatives in the catalogue at the moment.",
+      recommendations: [],
+      mode: "local-demo",
+    };
+  }
 
   if (/itch|scratch|skin|coat|allerg/.test(conversationTopic)) {
     if (!enoughContext) {

@@ -23,6 +23,9 @@ export async function answerCustomer(
     productsDisplayed?: boolean;
     discoveryOnly?: boolean;
     selectionNeedsVetting?: boolean;
+    specialsRequested?: boolean;
+    matchingSpecialsFound?: boolean;
+    regularAlternativesForSpecials?: boolean;
     recentPurchases?: CustomerPurchase[];
     primaryPurchaseTitles?: string[];
     purchaseHistoryDisplayed?: boolean;
@@ -71,7 +74,7 @@ export async function answerCustomer(
   }
 
   if (!serverConfig.geminiApiKey) {
-    return createLocalResponse(messages, knowledge, recommendations);
+    return createLocalResponse(messages, knowledge, recommendations, options);
   }
 
   const firstUserIndex = messages.findIndex((message) => message.role === "user");
@@ -102,7 +105,7 @@ export async function answerCustomer(
     const fallbackModel = serverConfig.geminiFallbackModel;
     if (!fallbackModel || fallbackModel === activeModel) {
       console.warn("[chat] model unavailable; using local response", error instanceof Error ? error.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations);
+      return createLocalResponse(messages, knowledge, recommendations, options);
     }
     console.warn("[chat] primary model unavailable; trying configured fallback", { primaryModel: activeModel, fallbackModel });
     try {
@@ -110,7 +113,7 @@ export async function answerCustomer(
       response = await generate(activeModel, 0.25);
     } catch (fallbackError) {
       console.warn("[chat] fallback model unavailable; using local response", fallbackError instanceof Error ? fallbackError.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations);
+      return createLocalResponse(messages, knowledge, recommendations, options);
     }
   }
 
@@ -124,13 +127,13 @@ export async function answerCustomer(
       content = response.text || "";
     } catch (error) {
       console.warn("[chat] model regeneration failed; using local response", error instanceof Error ? error.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations);
+      return createLocalResponse(messages, knowledge, recommendations, options);
     }
   }
 
   if (!content || candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) {
     console.warn("[chat] rejecting incomplete model response", { finishReason: candidateFinishReason(response), length: content.length });
-    return createLocalResponse(messages, knowledge, recommendations);
+    return createLocalResponse(messages, knowledge, recommendations, options);
   }
 
   return {

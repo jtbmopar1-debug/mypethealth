@@ -75,8 +75,8 @@ function wantsProductSuggestion(message: string) {
 function productSearchTerms(message: string) {
   const stopWords = new Set([
     "a", "an", "and", "any", "are", "about", "better", "can", "choose", "could", "do", "find", "for", "have",
-    "carry", "got", "guy", "guys", "help", "i", "in", "is", "it", "looking", "me", "need", "of", "or", "please",
-    "product", "products", "recommend", "sell", "show", "some", "stock", "suggest", "the", "to", "want", "what", "which", "with", "you",
+    "at", "carry", "current", "currently", "deal", "deals", "discount", "discounted", "got", "guy", "guys", "help", "i", "in", "is", "it", "looking", "me", "moment", "need", "now", "of", "on", "or", "please",
+    "product", "products", "recommend", "sale", "sales", "sell", "show", "some", "special", "specials", "stock", "suggest", "the", "to", "want", "what", "which", "with", "you",
   ]);
   return message.toLowerCase().split(/[^a-z0-9]+/)
     .filter((term) => term.length > 1 && !stopWords.has(term))
@@ -84,6 +84,7 @@ function productSearchTerms(message: string) {
 }
 
 function wantsSpecials(message: string) {
+  if (/\b(?:specials|on\s+special|sale|discounted?|deals?)\b/i.test(message)) return true;
   return /\b(?:this\s+week(?:'s|’s)?\s+specials?|weekly\s+specials?|sale\s+items?|special\s+offers?)\b/i.test(message);
 }
 
@@ -203,9 +204,12 @@ export async function POST(request: NextRequest) {
     const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
     const recentPetContext = userMessages.slice(-3).join(" ");
-    const targetPet = [...userMessages].slice(-3).reverse()
+    const latestNamedPet = mentionedActivePet(latestUserMessage, customerPets);
+    const startsNewProductSearch = /\b(?:looking for|do you (?:have|sell|stock|carry)|have you got|show me|find me|recommend|specials|on special|sale)\b/i.test(latestUserMessage);
+    const recentNamedPet = [...userMessages].slice(-3).reverse()
       .map((message) => mentionedActivePet(message, customerPets))
       .find((pet) => Boolean(pet));
+    const targetPet = latestNamedPet ?? (startsNewProductSearch ? undefined : recentNamedPet);
     const explicitlyRequestedSpecies = /\b(?:cat|kitten|feline)\b/i.test(recentPetContext) ? "cat" as const
       : /\b(?:dog|puppy|pup|canine)\b/i.test(recentPetContext) ? "dog" as const
       : null;
@@ -229,7 +233,8 @@ export async function POST(request: NextRequest) {
       && activeBroadCategoryRequest
       && latestHasProductIntent
       && latestDirectTerms.length === 0;
-    const catalogueOnlyTurn = (wantsSpecials(latestUserMessage)
+    const specialsRequested = wantsSpecials(latestUserMessage);
+    const catalogueOnlyTurn = (specialsRequested
       || broadCategoryQuestion
       || refiningBroadCategory
       || genericBroadContinuation)
@@ -258,11 +263,32 @@ export async function POST(request: NextRequest) {
       && earlierProductIntent
       && (previousProductIds.length <= 1 || activeBroadCategoryRequest)
       && (recommendationContextReady || refiningBroadCategory);
-    let recommendations = wantsSpecials(latestUserMessage)
-      ? await productService.getSpecials(6)
+    const specialSearchTerms = [
+      ...productSearchTerms(latestUserMessage).filter((term) => !petNameTerms.has(term)),
+      ...(targetSpecies ? [targetSpecies] : []),
+    ];
+    let recommendations = specialsRequested
+      ? await productService.getSpecials(6, specialSearchTerms)
       : [];
+    const matchingSpecialsFound = specialsRequested && recommendations.length > 0;
+    let regularAlternativesForSpecials = false;
 
-    if (!wantsSpecials(latestUserMessage) && (latestHasProductIntent || continuingSelection)) {
+    if (specialsRequested && recommendations.length === 0 && specialSearchTerms.length > 0) {
+      recommendations = (await productService.recommendProducts([
+        specialSearchTerms.join(" "),
+        ...specialSearchTerms,
+      ], 3, {
+        availableOnly: true,
+        allowFallback: false,
+        species: targetSpecies,
+      })).map((recommendation) => ({
+        ...recommendation,
+        reason: "A matching in-stock option at its current regular price; it is not on special.",
+      }));
+      regularAlternativesForSpecials = recommendations.length > 0;
+    }
+
+    if (!specialsRequested && (latestHasProductIntent || continuingSelection)) {
       const broadCategoryMessages = broadCategoryIndex >= 0
         ? userMessages.slice(broadCategoryIndex).filter((message, index) => index === 0 || isShortCategoryRefinement(message))
         : [];
@@ -360,6 +386,9 @@ export async function POST(request: NextRequest) {
       productsDisplayed: displayRecommendations.length > 0,
       discoveryOnly,
       selectionNeedsVetting,
+      specialsRequested,
+      matchingSpecialsFound,
+      regularAlternativesForSpecials,
       recentPurchases: recentPurchases.slice(0, 10),
       primaryPurchaseTitles: relevantPurchases.map((purchase) => purchase.title),
       purchaseHistoryDisplayed,

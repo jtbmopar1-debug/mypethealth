@@ -24,6 +24,19 @@ const recommendation = {
 } satisfies ProductRecommendation;
 
 describe("local assistant guardrails", () => {
+  it("offers regular alternatives when a requested category has no specials", () => {
+    const result = createLocalResponse(
+      [user("Do you have any shampoo specials?")],
+      [],
+      [recommendation],
+      { specialsRequested: true, regularAlternativesForSpecials: true },
+    );
+
+    expect(result.content).toContain("aren’t any matching specials");
+    expect(result.content).toContain("regular prices");
+    expect(result.recommendations).toHaveLength(1);
+  });
+
   it("asks follow-up questions instead of recommending from a vague itching message", () => {
     const result = createLocalResponse([user("My dog is itchy")], [], [recommendation]);
     expect(result.content).toContain("What food");
