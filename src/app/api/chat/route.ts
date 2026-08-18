@@ -115,8 +115,13 @@ function explicitlyWantsPurchaseHistory(message: string) {
   return /\b(?:order history|purchase history|previous(?:ly)? (?:bought|ordered)|last (?:bought|ordered|purchase|order)|bought last|ordered last|usual (?:food|order|product)|reorder|re-order|buy (?:it|that|them) again|what did i (?:buy|order))\b/i.test(message);
 }
 
+function reportsHealthChange(message: string) {
+  return /\b(?:itch(?:y|ing)?|scratch(?:ing)?|lick(?:ing)?|rash|redness|skin|coat|hair loss|yeast|ear (?:issue|infection|irritation)|cough(?:ing)?|sneez(?:e|ing)|wheez(?:e|ing)|breath(?:ing)?|vomit(?:ing)?|diarrh(?:ea|eal)|loose stools?|constipat(?:ed|ion)|gas|appetite|weight (?:loss|gain)|losing weight|gaining weight|letharg(?:y|ic)|tired|limp(?:ing)?|urinary|urinat(?:e|ing|ion)|drinking more|thirst(?:y)?|unwell|sick|symptoms?)\b/i.test(message);
+}
+
 function purchaseHistoryCouldAnswer(message: string) {
   return explicitlyWantsPurchaseHistory(message)
+    || reportsHealthChange(message)
     || /\b(?:how much|feeding amount|portion|daily amount)\b[\s\S]{0,60}\b(?:feed|food|give|eat)\b/i.test(message)
     || /\b(?:feed|give)\b[\s\S]{0,40}\bhow much\b/i.test(message);
 }
@@ -137,15 +142,15 @@ function purchasesRelevantToQuestion<T extends { title: string; productType: str
   const asksAboutKitten = /\bkitten\b/i.test(message);
   const asksAboutDog = asksAboutPuppy || /\bdog\b/i.test(message);
   const asksAboutCat = asksAboutKitten || /\bcat\b/i.test(message);
-  const foodProducts = purchases.filter((purchase) => {
+  const potentiallyRelevantProducts = purchases.filter((purchase) => {
     const searchable = `${purchase.title} ${purchase.productType || ""}`;
-    if (!/\b(?:food|feed|diet|kibble|raw|meal|puppy|kitten)\b/i.test(searchable)) return false;
+    if (!/\b(?:food|feed|diet|kibble|raw|meal|puppy|kitten|treat|chew|supplement|oil|shampoo|conditioner|balm|salve|spray|skin|coat|flea|worm)\b/i.test(searchable)) return false;
     if (asksAboutDog && /\bcat\b/i.test(searchable) && !/\bdog\b/i.test(searchable)) return false;
     if (asksAboutCat && /\bdog\b/i.test(searchable) && !/\bcat\b/i.test(searchable)) return false;
     return true;
   });
 
-  return foodProducts.sort((left, right) => {
+  return potentiallyRelevantProducts.sort((left, right) => {
     const leftText = `${left.title} ${left.productType || ""}`;
     const rightText = `${right.title} ${right.productType || ""}`;
     const leftLifeStageMatch = asksAboutPuppy && /\b(?:puppy|junior)\b/i.test(leftText)
@@ -219,7 +224,10 @@ export async function POST(request: NextRequest) {
       ? `${previousUserMessage} ${latestUserMessage}`
       : latestUserMessage;
     const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
-    const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(latestUserMessage);
+    // Include a small amount of recent conversation so a short follow-up such as
+    // "it started last week" can still be related to the symptom just discussed.
+    const recentPurchaseContext = userMessages.slice(-3).join(" ");
+    const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(recentPurchaseContext);
     let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
     let purchaseHistoryUnavailable = false;
     if (purchaseHistoryRelevant && customerSession.accessToken) {
@@ -230,7 +238,7 @@ export async function POST(request: NextRequest) {
         console.warn("[chat] purchase history unavailable", error instanceof Error ? error.message : "Unknown error");
       }
     }
-    const relevantPurchases = purchasesRelevantToQuestion(latestUserMessage, recentPurchases);
+    const relevantPurchases = purchasesRelevantToQuestion(recentPurchaseContext, recentPurchases);
     const continuingSelection = !latestHasProductIntent
       && earlierProductIntent
       && (previousProductIds.length <= 1 || activeBroadCategoryRequest)

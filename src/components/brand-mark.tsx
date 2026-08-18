@@ -1,5 +1,4 @@
 import Image from "next/image";
-import allGoodLogo from "../../logo/allgood.png";
 
 export function BrandMark() {
   return (
@@ -38,8 +37,10 @@ export function AllGoodLogo() {
     <a className="allgood-header-logo" href="https://allgoodpetfood.co.nz" aria-label="Visit All Good Petfood">
       <Image
         className="allgood-logo-image"
-        src={allGoodLogo}
+        src="/brand/allgood.png"
         alt="All Good Petfood - love your pet? So do we!"
+        width={367}
+        height={128}
         sizes="(max-width: 800px) 118px, 164px"
         loading="eager"
       />
