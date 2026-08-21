@@ -13,4 +13,7 @@ export const serverConfig = {
   shopifyStorefrontApiVersion: process.env.SHOPIFY_STOREFRONT_API_VERSION || "2026-07",
   shopifyAppClientId: process.env.SHOPIFY_APP_CLIENT_ID,
   shopifyAppClientSecret: process.env.SHOPIFY_APP_CLIENT_SECRET,
+  resendApiKey: process.env.RESEND_API_KEY,
+  resendFromEmail: process.env.RESEND_FROM_EMAIL,
+  restockEnquiryToEmail: process.env.RESTOCK_ENQUIRY_TO_EMAIL,
 };

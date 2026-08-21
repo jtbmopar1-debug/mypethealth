@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  confirmsRestockEnquiry,
   isProductSearchRetry,
   productSearchAnchors,
   productFamilySearchAnchors,
   productSearchTerms,
   wantsProductStockStatus,
   wantsProductSuggestion,
+  wantsProductAlternatives,
+  wantsRestockEnquiryStatus,
 } from "./product-query";
 
 describe("product catalogue query parsing", () => {
@@ -32,5 +35,21 @@ describe("product catalogue query parsing", () => {
     expect(terms).toEqual(["1kg", "venison", "crunchy", "treat"]);
     expect(productSearchAnchors(terms)).toEqual(["1kg", "venison"]);
     expect(productFamilySearchAnchors(terms)).toEqual(["venison"]);
+  });
+
+  it("requires an explicit email offer before treating a reply as consent", () => {
+    const offer = "Would you like me to email All Good Petfood about this out-of-stock product?";
+    expect(confirmsRestockEnquiry("yes please", offer)).toBe(true);
+    expect(confirmsRestockEnquiry("yes please", "Would you like alternatives?")).toBe(false);
+  });
+
+  it("recognises a request to see alternatives", () => {
+    expect(wantsProductAlternatives("yes, show me similar options")).toBe(true);
+    expect(wantsProductAlternatives("no thanks")).toBe(false);
+  });
+
+  it("recognises a request for the enquiry audit status", () => {
+    expect(wantsRestockEnquiryStatus("when was the email sent?")).toBe(true);
+    expect(wantsRestockEnquiryStatus("show me treats")).toBe(false);
   });
 });

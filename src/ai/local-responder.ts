@@ -26,6 +26,7 @@ export function createLocalResponse(
     regularAlternativesForSpecials?: boolean;
     stockStatusRequested?: boolean;
     productClarificationRequired?: boolean;
+    stockEnquiryAvailable?: boolean;
   } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
@@ -58,7 +59,7 @@ export function createLocalResponse(
     return {
       content: match.availability === "in_stock"
         ? "That item is currently in stock at the price shown below. The catalogue doesn’t include future promotion plans, so I can’t confirm whether it will be on special later."
-        : "That item is currently out of stock. The catalogue doesn’t include a restock date or future promotion plans, so I can’t reliably promise when it will return or whether it will be on special. Would you like me to check closely related options that are currently in stock?",
+        : `That item is currently out of stock. The catalogue doesn’t include a restock date or future promotion plans, so I can’t reliably promise when it will return or whether it will be on special. Would you like me to check closely related options that are currently in stock?${options.stockEnquiryAvailable ? "\n\nWould you like me to email All Good Petfood about this out-of-stock product?" : ""}`,
       recommendations,
       mode: "local-demo",
     };

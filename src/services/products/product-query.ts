@@ -67,3 +67,17 @@ export function productSearchAnchors(terms: string[]) {
 export function productFamilySearchAnchors(terms: string[]) {
   return productSearchAnchors(terms).filter((term) => !/^\d+(?:\.\d+)?(?:g|kg|ml|l|cm)$/.test(term));
 }
+
+export function confirmsRestockEnquiry(message: string, previousAssistantMessage = "") {
+  return /\b(?:yes|yep|yeah|sure|please|email|send|contact|ask them)\b/i.test(message)
+    && /email All Good Petfood about (?:this|the) out-of-stock product/i.test(previousAssistantMessage);
+}
+
+export function wantsProductAlternatives(message: string) {
+  return /\b(?:show|find|check|see|what about|yes|please)\b[\s\S]{0,35}\b(?:alternatives?|substitutes?|similar (?:products?|options?))\b/i.test(message)
+    || /^(?:alternatives?|substitutes?)\??$/i.test(message.trim());
+}
+
+export function wantsRestockEnquiryStatus(message: string) {
+  return /\b(?:did you send|was (?:the|my) (?:email|enquiry) sent|when (?:was|did).*(?:email|enquiry)|stock enquiry status|what time.*(?:email|enquiry))\b/i.test(message);
+}

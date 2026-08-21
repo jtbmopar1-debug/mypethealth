@@ -1,16 +1,20 @@
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
+import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry } from "@/services/enquiries/restock-enquiry-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { productMatchesSpecies } from "@/services/products/product-relevance";
 import {
   isProductSearchRetry,
+  confirmsRestockEnquiry,
   productFamilySearchAnchors,
   productSearchAnchors,
   productSearchTerms,
   wantsProductStockStatus,
   wantsProductSuggestion,
+  wantsProductAlternatives,
+  wantsRestockEnquiryStatus,
 } from "@/services/products/product-query";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
@@ -151,6 +155,112 @@ export async function POST(request: NextRequest) {
     }
     const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
+    const enquiryContextAssistant = [...messages].reverse().find((message) => message.role === "assistant"
+      && message.productIds?.length === 1
+      && /email All Good Petfood about (?:this|the) out-of-stock product/i.test(message.content));
+    const sendEnquiry = confirmsRestockEnquiry(latestUserMessage, enquiryContextAssistant?.content);
+    const showAlternatives = wantsProductAlternatives(latestUserMessage);
+    const requestedProductIds = enquiryContextAssistant?.productIds ?? previousProductIds;
+
+    if (wantsRestockEnquiryStatus(latestUserMessage)) {
+      try {
+        const enquiry = await getLatestRestockEnquiry(customerSession.customerId, requestedProductIds[0]);
+        const message = !enquiry
+          ? "I don’t have a recorded stock enquiry for this account."
+          : enquiry.status === "sent" && enquiry.sent_at
+            ? `The stock enquiry for ${enquiry.product_title} was sent on ${new Intl.DateTimeFormat("en-NZ", { dateStyle: "medium", timeStyle: "short", timeZone: "Pacific/Auckland" }).format(new Date(enquiry.sent_at))}.`
+            : enquiry.status === "sending"
+              ? `The stock enquiry for ${enquiry.product_title} is still being processed and is not yet recorded as sent.`
+              : `The attempted stock enquiry for ${enquiry.product_title} was not sent successfully.`;
+        return Response.json({ message, products: [], resetProductContext: false, pets: customerPets, mode: "restock-enquiry-status" });
+      } catch (error) {
+        console.warn("[restock-enquiry] history unavailable", error instanceof Error ? error.message : "Unknown error");
+        return Response.json({
+          message: "I can’t check the stock-enquiry history right now. Please try again shortly.",
+          products: [],
+          resetProductContext: false,
+          pets: customerPets,
+          mode: "restock-enquiry-status",
+        });
+      }
+    }
+
+    if ((sendEnquiry || showAlternatives) && requestedProductIds.length === 1) {
+      const requestedProduct = await productService.getProduct(requestedProductIds[0]);
+      if (requestedProduct) {
+        let enquiryMessage = "";
+        if (sendEnquiry) {
+          if (requestedProduct.availability === "in_stock") {
+            enquiryMessage = "Good news—the product is currently showing as in stock, so I haven’t sent a restock enquiry.";
+          } else if (!customerSession.email) {
+            enquiryMessage = "I can’t send the enquiry because this signed-in account doesn’t include an email address.";
+          } else if (!restockEnquiryConfigured()) {
+            enquiryMessage = "I can’t send the enquiry because the store email service isn’t available right now.";
+          } else {
+            try {
+              const sent = await sendRestockEnquiry({
+                shopifyCustomerId: customerSession.customerId,
+                customerEmail: customerSession.email,
+                customerName: [customerSession.firstName, customerSession.lastName].filter(Boolean).join(" "),
+                product: requestedProduct,
+                question: userMessages.slice(-4, -1).join("\n").slice(0, 4000),
+              });
+              const sentAt = sent.sentAt ? new Intl.DateTimeFormat("en-NZ", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Pacific/Auckland",
+              }).format(new Date(sent.sentAt)) : "earlier today";
+              enquiryMessage = sent.alreadySent
+                ? `That stock enquiry was already sent on ${sentAt}. Staff can reply directly to your account email.`
+                : `Done—I sent the stock enquiry on ${sentAt}. Staff can reply directly to your account email.`;
+            } catch (error) {
+              console.warn("[restock-enquiry] send failed", error instanceof Error ? error.message : "Unknown error");
+              enquiryMessage = error instanceof Error && error.message === "Stock enquiry daily limit reached"
+                ? "You’ve reached the stock-enquiry limit for today. Please try again tomorrow or contact All Good Petfood directly."
+                : "I couldn’t send the stock enquiry just now. Nothing was falsely marked as sent—please try again shortly.";
+            }
+          }
+        }
+
+        let alternatives = [] as Awaited<ReturnType<ShopifyProductService["recommendProducts"]>>;
+        if (showAlternatives) {
+          const searchable = `${requestedProduct.title} ${requestedProduct.tags.join(" ")}`.toLowerCase();
+          const protein = ["venison", "lamb", "beef", "chicken", "turkey", "salmon", "fish", "pork", "rabbit", "goat", "possum", "kangaroo"]
+            .find((term) => searchable.includes(term));
+          const categoryTerms = ["raw", "food", "chew", "treat", "dental"].filter((term) => searchable.includes(term));
+          alternatives = (await productService.recommendProducts(
+            [...new Set([protein, ...categoryTerms].filter((term): term is string => Boolean(term)))],
+            5,
+            {
+              availableOnly: true,
+              allowFallback: false,
+              requiredTerms: protein ? [protein] : undefined,
+              species: /\bcat\b/i.test(searchable) ? "cat" : /\bdog\b/i.test(searchable) ? "dog" : null,
+            },
+          )).filter(({ product }) => product.id !== requestedProduct.id).slice(0, 3);
+        }
+
+        if (!sendEnquiry && requestedProduct.availability === "out_of_stock"
+          && customerSession.email && restockEnquiryConfigured()) {
+          enquiryMessage = "Would you also like me to email All Good Petfood about this out-of-stock product?";
+        }
+
+        if (sendEnquiry || showAlternatives) {
+          const alternativesMessage = showAlternatives
+            ? alternatives.length > 0
+              ? "I’ve also shown the closest related options that are currently in stock."
+              : "I couldn’t find a closely related in-stock alternative without broadening the search too far."
+            : "Would you also like me to show closely related options that are currently in stock?";
+          return Response.json({
+            message: [enquiryMessage, alternativesMessage].filter(Boolean).join("\n\n"),
+            products: alternatives,
+            resetProductContext: false,
+            pets: customerPets,
+            mode: "restock-enquiry",
+          });
+        }
+      }
+    }
     const recentPetContext = userMessages.slice(-3).join(" ");
     const latestNamedPet = mentionedActivePet(latestUserMessage, customerPets);
     const startsNewProductSearch = /\b(?:looking for|do you (?:have|sell|stock|carry)|have you got|show me|find me|recommend|specials|on special|sale)\b/i.test(latestUserMessage);
@@ -373,6 +483,7 @@ export async function POST(request: NextRequest) {
       regularAlternativesForSpecials,
       stockStatusRequested: effectiveStockStatusRequested,
       productClarificationRequired,
+      stockEnquiryAvailable: restockEnquiryConfigured() && Boolean(customerSession.email),
       recentPurchases: recentPurchases.slice(0, 10),
       primaryPurchaseTitles: relevantPurchases.map((purchase) => purchase.title),
       purchaseHistoryDisplayed,

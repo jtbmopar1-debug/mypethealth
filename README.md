@@ -11,6 +11,7 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Natural follow-up behaviour and medical/veterinary guardrails
 - Seven reviewed built-in knowledge entries plus admin-managed Supabase Q&A
 - Live Shopify catalogue search, purchase history and stock-aware product cards
+- Customer-approved out-of-stock enquiries sent through Resend with a Supabase audit timestamp
 - Recommendation cards with price, product links and add-to-cart controls
 - Gemini API integration that stays entirely server-side
 - Fully functional local demo responder when no Gemini key is configured
@@ -27,6 +28,7 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - npm
 - A Supabase project for cross-device chat history
 - A Gemini API key is optional
+- A verified Resend sending domain is optional and enables Buddy's stock-enquiry emails
 
 ## Install and run
 
@@ -50,6 +52,9 @@ If `.env.local` already exists, edit it instead of copying over it. Without `GEM
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
 | `SUPABASE_URL` | Supabase project URL | Server only |
 | `SUPABASE_SECRET_KEY` | Supabase secret key for the protected server API | Server only; never expose in the browser |
+| `RESEND_API_KEY` | Sends customer-approved stock enquiries | Server only |
+| `RESEND_FROM_EMAIL` | Verified Resend sender used by Buddy | Server configuration |
+| `RESTOCK_ENQUIRY_TO_EMAIL` | Staff inbox that receives stock enquiries | Server configuration |
 | `SHOPIFY_STORE_DOMAIN` | Shopify store domain | Server configuration |
 | `SHOPIFY_STORE_URL` | All Good Petfood base URL used to create product links | Server configuration |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Storefront API product access | Server only |
@@ -126,6 +131,14 @@ To enable chat persistence:
 
 The migration enables Row Level Security, denies browser roles, and permits the server role only. Application endpoints first verify the encrypted Shopify session and constrain every database operation to its Shopify customer ID. Never place `SUPABASE_SECRET_KEY` in a variable beginning with `NEXT_PUBLIC_`.
 
+## Stock enquiry emails
+
+When Buddy has identified an exact out-of-stock product, it can ask the signed-in customer for consent to email All Good Petfood. The email is sent only after an explicit yes, uses the customer's Shopify email as `Reply-To`, and includes the confirmed product link and recent question context. Staff can reply to the customer directly from the inbox.
+
+Run [`supabase/migrations/202608210001_create_restock_enquiries.sql`](supabase/migrations/202608210001_create_restock_enquiries.sql) once before enabling the feature. The server stores the enquiry audit fields needed to report whether and when it was sent. Duplicate requests for the same product are idempotent for the day, and each customer is limited to three new enquiries per 24 hours.
+
+Configure `RESEND_API_KEY`, a domain-verified `RESEND_FROM_EMAIL`, and `RESTOCK_ENQUIRY_TO_EMAIL` locally and in Vercel. These values must remain server-only.
+
 ## Shopify integration
 
 The standalone My Pet Health URL and Shopify widget will share the hosted backend and chat component. The target flow is:
@@ -148,7 +161,7 @@ Before public launch, add rate limiting, origin controls for the Shopify embed, 
 
 ## Logging and security
 
-The chat route logs message length rather than message content, retrieved entry IDs, returned product IDs, response mode and sanitised error summaries. It never logs keys. API keys are imported only by modules marked `server-only`.
+The chat route logs message length rather than message content, retrieved entry IDs, returned product IDs, response mode and sanitised error summaries. Stock enquiries record their status and send timestamp in Supabase; customer questions and email addresses are not written to application logs. The app never logs keys, and API keys are imported only by modules marked `server-only`.
 
 Customer messages can still contain sensitive data. Production logging, analytics and conversation retention must therefore be minimised and covered by the final privacy policy.
 

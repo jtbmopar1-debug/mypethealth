@@ -41,6 +41,7 @@ interface GroundingOptions {
   regularAlternativesForSpecials?: boolean;
   stockStatusRequested?: boolean;
   productClarificationRequired?: boolean;
+  stockEnquiryAvailable?: boolean;
   recentPurchases?: CustomerPurchase[];
   primaryPurchaseTitles?: string[];
   purchaseHistoryDisplayed?: boolean;
@@ -52,7 +53,7 @@ interface GroundingOptions {
 }
 
 export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products: Product[], options: GroundingOptions = {}) {
-  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, stockStatusRequested = false, productClarificationRequired = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
+  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, stockStatusRequested = false, productClarificationRequired = false, stockEnquiryAvailable = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
   const knowledgeText = knowledge.length
     ? knowledge.map((entry) => `### ${entry.title}\n${entry.content.slice(0, 1400)}\nFollow-up options: ${entry.followUpQuestions.slice(0, 3).join("; ")}\nSafety: ${entry.safetyNotes.slice(0, 3).join("; ") || "None supplied"}`).join("\n\n")
     : "No directly relevant My Pet Health knowledge was found.";
@@ -101,7 +102,7 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     ? "Several catalogue products could match what the customer described. Do not choose one, answer its stock status, or show a product card yet. Ask one concise clarification question that distinguishes the candidates by relevant product type, pet species, size, or variant. You may mention a few exact candidate names when that makes the ambiguity clearer."
     : stockStatusRequested
     ? products.length > 0
-      ? "The customer asked about the stock, restock timing, or future special price of a named product. State its supplied current availability accurately. A current catalogue card will be shown below. If they asked about a future restock date or future promotion, clearly say the catalogue does not provide that schedule and do not guess. If the confirmed item is out of stock, offer to check closely related in-stock alternatives, but do not display substitutes until the customer accepts."
+      ? `The customer asked about the stock, restock timing, or future special price of a named product. State its supplied current availability accurately. A current catalogue card will be shown below. If they asked about a future restock date or future promotion, clearly say the catalogue does not provide that schedule and do not guess. If the confirmed item is out of stock, offer to check closely related in-stock alternatives, but do not display substitutes until the customer accepts.${stockEnquiryAvailable ? ' End with exactly: "Would you like me to email All Good Petfood about this out-of-stock product?"' : " Do not offer to send an email because the email facility is unavailable."}`
       : "The customer asked about the stock, restock timing, or future special price of a named product, but no matching catalogue record was found. Say that it could not be verified and do not substitute unrelated products or guess a date or promotion."
     : regularAlternativesForSpecials
     ? "No matching discounted special was found. Matching in-stock products at their regular current prices will be shown below. Say this clearly and concisely, then offer the regular options shown below. Never describe these alternatives as specials or discounted products, and do not repeat names or prices from the cards."

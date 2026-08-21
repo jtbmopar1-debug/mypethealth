@@ -28,6 +28,7 @@ export async function answerCustomer(
     regularAlternativesForSpecials?: boolean;
     stockStatusRequested?: boolean;
     productClarificationRequired?: boolean;
+    stockEnquiryAvailable?: boolean;
     recentPurchases?: CustomerPurchase[];
     primaryPurchaseTitles?: string[];
     purchaseHistoryDisplayed?: boolean;
