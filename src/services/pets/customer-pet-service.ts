@@ -87,7 +87,7 @@ function profileFacts(message: string) {
   const ageWithoutUnitMatch = message.match(/\b(?:he|she|they|it|[A-Za-z][A-Za-z'-]{0,39})\s+(?:is|was)\s+(\d{1,2})(?!\s*(?:kg|weeks?|wks?|months?|mths?|mos?|years?|yrs?|yo))\b/i);
   const ageMatch = explicitAgeMatch ?? ageWithoutUnitMatch;
   const weightMatch = message.match(/\b(\d+(?:\.\d+)?)\s*(?:kg|kilos?|kilograms?)\b/i);
-  const explicitBreed = message.match(/\b(american staffy|american staffordshire terrier|staffordshire bull terrier|staffy|labrador|golden retriever|german shepherd|border collie|cavoodle|poodle|chihuahua|jack russell|shih tzu|rottweiler|greyhound|beagle|bulldog|french bulldog|pug|maine coon|ragdoll|burmese|siamese|domestic short ?hair|domestic long ?hair)\b/i);
+  const explicitBreed = message.match(/\b(american staffy|american staffordshire terrier|staffordshire bull terrier|staffy|labrador|golden retriever|german shepherd|border collie|cavoodle|poodle|pomeranian|japanese spitz|chihuahua|jack russell|shih tzu|rottweiler|greyhound|beagle|bulldog|french bulldog|pug|maine coon|ragdoll|burmese|siamese|domestic short ?hair|domestic long ?hair)\b/i);
   const foodMatch = message.match(/\b(?:currently (?:eating|on)|current food is|eats|i (?:feed|am feeding) (?:him|her|them)?)\s+([^.!?]{2,120})/i);
   const sensitivityMatch = message.match(/\b(?:allergic|sensitive|intolerant)\s+to\s+([A-Za-z][A-Za-z -]{1,80})/i);
   const explicitlyNoSensitivities = /\b(?:no|doesn't have any|does not have any)\s+(?:known\s+)?(?:allergies|sensitivities|intolerances)\b/i.test(message);

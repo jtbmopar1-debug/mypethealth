@@ -3,6 +3,16 @@ export interface NamedPetMention {
   species: "dog" | "cat" | null;
 }
 
+interface PetNameConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ContextualNamedPetMention extends NamedPetMention {
+  messageIndex: number;
+  contextStartIndex: number;
+}
+
 function cleanName(value: string) {
   const cleaned = value.trim().replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, "").slice(0, 80);
   return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : "";
@@ -30,6 +40,41 @@ export function namedPets(message: string) {
     }
   }
   return matches;
+}
+
+export function contextualNamedPetReply(messages: PetNameConversationMessage[]): ContextualNamedPetMention | null {
+  for (let index = messages.length - 1; index > 0; index -= 1) {
+    const message = messages[index];
+    const previous = messages[index - 1];
+    if (message.role !== "user" || previous.role !== "assistant") continue;
+    const asksForPetName = /\b(?:pet|dog|cat|puppy|kitten|companion|they|them|he|him|she|her)\b[\s\S]{0,100}\bname\b/i.test(previous.content)
+      || /\bname\b[\s\S]{0,100}\b(?:pet|dog|cat|puppy|kitten|companion|they|them|he|him|she|her)\b/i.test(previous.content);
+    if (!asksForPetName || !/\?|\b(?:tell|hear|know)\b/i.test(previous.content)) continue;
+
+    const rawName = message.content.trim();
+    if (!/^[A-Za-z][A-Za-z'-]{0,39}(?:\s+[A-Za-z][A-Za-z'-]{0,39})?$/.test(rawName)) continue;
+    if (/^(?:yes|no|okay|ok|sure|unknown|unsure|maybe|none)$/i.test(rawName)) continue;
+
+    const name = rawName.split(/\s+/).map(cleanName).filter(Boolean).join(" ");
+    if (!name) continue;
+    let contextStartIndex = Math.max(0, index - 8);
+    for (let contextIndex = index - 2; contextIndex >= contextStartIndex; contextIndex -= 1) {
+      const candidate = messages[contextIndex];
+      if (candidate.role === "user" && /\b(?:pet|dog|puppy|pup|cat|kitten)\b/i.test(candidate.content)) {
+        contextStartIndex = contextIndex;
+        break;
+      }
+    }
+    const earlierUserText = messages.slice(contextStartIndex, index + 1).reverse()
+      .filter((item) => item.role === "user")
+      .map((item) => item.content)
+      .join(" ");
+    const species = /\b(?:cat|kitten)\b/i.test(earlierUserText) ? "cat"
+      : /\b(?:dog|puppy|pup)\b/i.test(earlierUserText) ? "dog"
+        : null;
+    return { name, species, messageIndex: index, contextStartIndex };
+  }
+  return null;
 }
 
 export function explicitlyRequestsPetSave(message: string) {

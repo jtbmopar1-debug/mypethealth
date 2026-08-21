@@ -36,7 +36,7 @@ export function ProductCard({ recommendation }: { recommendation: ProductRecomme
       <div className="product-content">
         <span className="eyebrow">From {product.retailer}</span>
         <h3>{product.title}</h3>
-        <p>{reason}</p>
+        {reason && <p>{reason}</p>}
         {recommendation.priceNote && <p className="product-price-note">{recommendation.priceNote}</p>}
         <div className="product-price">${product.price.toFixed(2)} <small>{product.currency}</small></div>
         <div className="product-actions">

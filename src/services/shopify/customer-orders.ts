@@ -63,6 +63,7 @@ export async function fetchRecentCustomerPurchases(accessToken: string): Promise
       variables: { ordersFirst: 5, lineItemsFirst: 20 },
     }),
     cache: "no-store",
+    signal: AbortSignal.timeout(6000),
   });
   if (!response.ok) throw new Error(`Shopify order history query failed (${response.status})`);
 

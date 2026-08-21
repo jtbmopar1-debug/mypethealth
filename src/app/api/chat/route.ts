@@ -5,20 +5,27 @@ import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry }
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { productMatchesSpecies } from "@/services/products/product-relevance";
+import { productTextMatchesSearchTerm } from "@/services/products/product-search-aliases";
 import {
   isProductSearchRetry,
+  confirmsProductIdentity,
   confirmsRestockEnquiry,
-  productFamilySearchAnchors,
+  normalizeShopifyResourceId,
   productSearchAnchors,
+  productStockSearchAnchors,
+  rejectsProductIdentity,
   productSearchTerms,
   wantsProductStockStatus,
   wantsProductSuggestion,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
+  wantsAddToCart,
+  acknowledgesInStockProduct,
 } from "@/services/products/product-query";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
+import { contextualNamedPetReply } from "@/services/pets/pet-message-parser";
 
 const messageSchema = z.object({
   id: z.string(),
@@ -137,14 +144,30 @@ export async function POST(request: NextRequest) {
     const latestUserMessage = userMessages.at(-1) ?? "";
     const conversationQuery = userMessages.join(" ");
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    const contextualPet = contextualNamedPetReply(messages);
+    const contextualPetMessage = contextualPet
+      ? [
+        `My ${contextualPet.species ?? "pet"} is named ${contextualPet.name}.`,
+        ...messages.slice(contextualPet.contextStartIndex, contextualPet.messageIndex + 1).reverse()
+          .filter((message) => message.role === "user")
+          .map((message) => message.content),
+      ].join(" ")
+      : undefined;
+    const latestMessageIsContextualPetName = contextualPet?.messageIndex === messages.length - 1;
     const confirmsProposedPet = confirmsPetProfile(latestUserMessage, previousAssistant?.content);
-    const confirmedProposalMessage = confirmsProposedPet ? userMessages.at(-2) : undefined;
+    const confirmedProposalMessage = confirmsProposedPet
+      ? contextualPetMessage ?? userMessages.at(-2)
+      : undefined;
     let customerPets: Awaited<ReturnType<typeof rememberCustomerPets>>["pets"] = [];
     let petProfileProposals: string[] = [];
     let savedPetNames: string[] = [];
     let updatedPetNames: string[] = [];
     try {
-      const petMemory = await rememberCustomerPets(customerSession.customerId, latestUserMessage, confirmedProposalMessage);
+      const petMemory = await rememberCustomerPets(
+        customerSession.customerId,
+        latestMessageIsContextualPetName && contextualPetMessage ? contextualPetMessage : latestUserMessage,
+        confirmedProposalMessage,
+      );
       customerPets = petMemory.pets;
       petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
       savedPetNames = petMemory.savedPetNames;
@@ -155,12 +178,71 @@ export async function POST(request: NextRequest) {
     }
     const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
-    const enquiryContextAssistant = [...messages].reverse().find((message) => message.role === "assistant"
-      && message.productIds?.length === 1
-      && /email All Good Petfood about (?:this|the) out-of-stock product/i.test(message.content));
+    const confirmedProductIdentity = confirmsProductIdentity(latestUserMessage, previousAssistant?.content);
+    const rejectedProductIdentity = rejectsProductIdentity(latestUserMessage, previousAssistant?.content);
+    const enquiryContextAssistant = previousAssistant?.productIds?.length === 1
+      && /email All Good Petfood about (?:this|the) out-of-stock product/i.test(previousAssistant.content)
+      ? previousAssistant
+      : undefined;
     const sendEnquiry = confirmsRestockEnquiry(latestUserMessage, enquiryContextAssistant?.content);
     const showAlternatives = wantsProductAlternatives(latestUserMessage);
     const requestedProductIds = enquiryContextAssistant?.productIds ?? previousProductIds;
+    const rejectedProductIds = new Set(messages.flatMap((message, index) => {
+      if (message.role !== "assistant" || !message.productIds?.length) return [];
+      const reply = messages[index + 1];
+      return reply?.role === "user" && rejectsProductIdentity(reply.content, message.content)
+        ? message.productIds.map(normalizeShopifyResourceId)
+        : [];
+    }));
+
+    if (confirmedProductIdentity && previousProductIds.length === 1) {
+      const confirmedProduct = await productService.getProduct(previousProductIds[0]);
+      if (confirmedProduct) {
+        const originalStockQuestion = [...userMessages].reverse().find(wantsProductStockStatus) ?? "";
+        const askedAboutSpecial = wantsSpecials(originalStockQuestion);
+        const currentlyOnSpecial = Boolean(confirmedProduct.compareAtPrice && confirmedProduct.compareAtPrice > confirmedProduct.price)
+          || /\b(?:sale|special|discount)\b/i.test(`${confirmedProduct.title} ${confirmedProduct.tags.join(" ")}`);
+        const availabilityMessage = confirmedProduct.availability === "in_stock"
+          ? `${confirmedProduct.title} is currently showing as in stock.`
+          : `${confirmedProduct.title} is currently out of stock, and the catalogue does not provide a future restock date.`;
+        const specialMessage = askedAboutSpecial
+          ? currentlyOnSpecial
+            ? "It is currently listed on special, but I can’t confirm whether that price will still apply later."
+            : "It is not currently marked as a special, and I can’t confirm future promotion plans."
+          : "";
+        const nextSteps = confirmedProduct.availability === "out_of_stock"
+          ? `Would you like me to check closely related in-stock alternatives?${customerSession.email && restockEnquiryConfigured() ? "\n\nWould you like me to email All Good Petfood about this out-of-stock product?" : ""}`
+          : "";
+        return Response.json({
+          message: [availabilityMessage, specialMessage, nextSteps].filter(Boolean).join("\n\n"),
+          products: [{ product: confirmedProduct, reason: "" }],
+          resetProductContext: false,
+          pets: customerPets,
+          mode: "product-confirmed",
+        });
+      }
+    }
+
+    const previousAssistantConfirmedInStock = /currently showing as in stock/i.test(previousAssistant?.content ?? "");
+    if (previousProductIds.length === 1 && wantsAddToCart(latestUserMessage)) {
+      return Response.json({
+        message: "You can simply click the Add to cart button above to purchase online, or pop into the All Good Petfood store.",
+        products: [],
+        resetProductContext: false,
+        pets: customerPets,
+        mode: "cart-guidance",
+      });
+    }
+    if (previousProductIds.length === 1 && previousAssistantConfirmedInStock
+      && acknowledgesInStockProduct(latestUserMessage)) {
+      return Response.json({
+        message: "Great—it’s currently showing as in stock. You can simply click the Add to cart button above to purchase online, or pop into the All Good Petfood store.",
+        products: [],
+        resetProductContext: false,
+        pets: customerPets,
+        mode: "stock-acknowledgement",
+      });
+    }
 
     if (wantsRestockEnquiryStatus(latestUserMessage)) {
       try {
@@ -277,7 +359,8 @@ export async function POST(request: NextRequest) {
     const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
     const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
       && !latestHasProductIntent
-      && !needsHealthKnowledge(latestUserMessage);
+      && !needsHealthKnowledge(latestUserMessage)
+      && !latestMessageIsContextualPetName;
     const recommendationContextReady = hasRecommendationContext(conversationQuery);
     const latestProductRequest = [...userMessages].reverse()
       .find((message) => wantsProductSuggestion(message) && !isProductSearchRetry(message)) ?? latestUserMessage;
@@ -298,8 +381,7 @@ export async function POST(request: NextRequest) {
       && stockStatusIndex >= Math.max(0, userMessages.length - 3)
       && stockStatusIndex < userMessages.length - 1
       && !startsNewProductSearch
-      && latestDirectTerms.length > 0
-      && latestDirectTerms.length <= 4;
+      && (rejectedProductIdentity || (latestDirectTerms.length > 0 && latestDirectTerms.length <= 4));
     const effectiveStockStatusRequested = stockStatusRequested || continuingProductDefinition;
     const specialsRequested = wantsSpecials(latestUserMessage) && !stockStatusRequested;
     const catalogueOnlyTurn = (specialsRequested
@@ -316,7 +398,8 @@ export async function POST(request: NextRequest) {
     // Include a small amount of recent conversation so a short follow-up such as
     // "it started last week" can still be related to the symptom just discussed.
     const recentPurchaseContext = userMessages.slice(-3).join(" ");
-    const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(recentPurchaseContext);
+    const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(recentPurchaseContext)
+      || (effectiveStockStatusRequested && !rejectedProductIdentity);
     let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
     let purchaseHistoryUnavailable = false;
     if (purchaseHistoryRelevant && customerSession.accessToken) {
@@ -368,7 +451,9 @@ export async function POST(request: NextRequest) {
         || genericBroadContinuation
         || (activeBroadCategoryRequest && continuingSelection);
       const statusRequest = stockStatusIndex >= 0 ? userMessages[stockStatusIndex] : "";
-      const searchSource = continuingProductDefinition
+      const searchSource = rejectedProductIdentity
+        ? statusRequest
+        : continuingProductDefinition
         ? `${statusRequest} ${latestUserMessage}`
         : retryingProductSearch
         ? latestProductRequest
@@ -379,8 +464,8 @@ export async function POST(request: NextRequest) {
       const directAnchorTerms = productSearchAnchors(directTerms);
       const statusRequiredTerms = effectiveStockStatusRequested
         ? [...new Set([
-          ...productFamilySearchAnchors(productSearchTerms(statusRequest || latestUserMessage)),
-          ...(continuingProductDefinition ? latestDirectTerms : []),
+          ...productStockSearchAnchors(productSearchTerms(statusRequest || latestUserMessage)),
+          ...(continuingProductDefinition && !rejectedProductIdentity ? latestDirectTerms : []),
         ])]
         : [];
       if (targetSpecies && !directTerms.includes(targetSpecies)) directTerms.push(targetSpecies);
@@ -405,6 +490,25 @@ export async function POST(request: NextRequest) {
             : directAnchorTerms.length > 0 ? directAnchorTerms : undefined,
           species: targetSpecies,
         });
+
+      if (rejectedProductIdentity && previousProductIds.length > 0) {
+        recommendations = recommendations.filter(({ product }) => !rejectedProductIds.has(normalizeShopifyResourceId(product.id))
+          && !rejectedProductIds.has(normalizeShopifyResourceId(product.variantId)));
+      }
+
+      if (effectiveStockStatusRequested && relevantPurchases.length > 0) {
+        const purchaseMatchAnchors = productStockSearchAnchors(productSearchTerms(statusRequest || latestUserMessage));
+        const matchingPurchasedProductIds = new Set(relevantPurchases
+          .filter((purchase) => purchase.productId && purchaseMatchAnchors.every((term) => productTextMatchesSearchTerm(
+            `${purchase.title} ${purchase.variantTitle || ""} ${purchase.productType || ""}`,
+            term,
+          )))
+          .map((purchase) => normalizeShopifyResourceId(purchase.productId)));
+        recommendations = [...recommendations].sort((left, right) => (
+          Number(matchingPurchasedProductIds.has(normalizeShopifyResourceId(right.product.id)))
+          - Number(matchingPurchasedProductIds.has(normalizeShopifyResourceId(left.product.id)))
+        ));
+      }
 
       const linkedUrls = [...new Set(knowledge.flatMap((entry) => entry.recommendedProductUrls ?? []))];
       if (linkedUrls.length > 0 && !discoveryOnly) {
@@ -455,8 +559,27 @@ export async function POST(request: NextRequest) {
       ? recommendations
       : referencedProducts.length > 0
         ? referencedProducts
-        : purchasedProducts;
+      : purchasedProducts;
     const discoveryOnly = broadCategoryQuestion;
+    if (effectiveStockStatusRequested && recommendations.length > 0) {
+      const candidate = recommendations[0];
+      return Response.json({
+        message: `I found ${candidate.product.title}. Is this the product you mean?`,
+        products: [candidate],
+        resetProductContext: false,
+        pets: customerPets,
+        mode: "product-clarification",
+      });
+    }
+    if (rejectedProductIdentity) {
+      return Response.json({
+        message: "Thanks—that isn’t the one. I couldn’t identify another reliable catalogue match yet. What exact wording, brand, pack size, or product type appears on the product?",
+        products: [],
+        resetProductContext: true,
+        pets: customerPets,
+        mode: "product-clarification",
+      });
+    }
     const productClarificationRequired = effectiveStockStatusRequested && recommendations.length > 1;
     const selectionNeedsVetting = (refiningBroadCategory || genericBroadContinuation) && !recommendationContextReady;
     const purchaseHistoryDisplayed = wantsPurchasedProductCards(latestUserMessage) && purchasedProducts.length > 0;
@@ -495,6 +618,11 @@ export async function POST(request: NextRequest) {
       updatedPetNames,
       petProfileOnlyTurn,
     });
+    if (latestMessageIsContextualPetName && petProfileProposals.length > 0
+      && !/\badd\b[\s\S]{0,80}\bMy Pets\b/i.test(result.content)) {
+      const names = petProfileProposals.join(" and ");
+      result.content = `${result.content.trim()}\n\nShall I add ${names} to My Pets? This helps me remember their details between conversations and make future guidance and product suggestions more relevant.`;
+    }
     console.info("[chat] assistant response", { mode: result.mode, length: result.content.length });
 
     return Response.json({

@@ -12,3 +12,7 @@ export function productMatchesSpecies(product: Product, species: "dog" | "cat" |
     ? !mentionsDog || mentionsCat
     : !mentionsCat || mentionsDog;
 }
+
+export function isPrivateCustomOrderProduct(product: Product) {
+  return /\bcustom[\s_-]*orders?\b/i.test(`${product.title} ${product.tags.join(" ")}`);
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/types";
-import { productMatchesSpecies } from "./product-relevance";
+import { isPrivateCustomOrderProduct, productMatchesSpecies } from "./product-relevance";
 
 function product(title: string, description = "", tags: string[] = []): Product {
   return {
@@ -30,5 +30,11 @@ describe("productMatchesSpecies", () => {
   it("allows matching and species-neutral products", () => {
     expect(productMatchesSpecies(product("Tuna Cat Treats"), "cat")).toBe(true);
     expect(productMatchesSpecies(product("Paw Balm"), "cat")).toBe(true);
+  });
+
+  it("identifies customer-specific custom-order products", () => {
+    expect(isPrivateCustomOrderProduct(product("Venison Marshmallows 1kg - Custom order Becky Mills"))).toBe(true);
+    expect(isPrivateCustomOrderProduct(product("Venison Marshmallows 1kg", "", ["custom order"]))).toBe(true);
+    expect(isPrivateCustomOrderProduct(product("Venison Marshmallows 1kg"))).toBe(false);
   });
 });

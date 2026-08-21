@@ -1,3 +1,5 @@
+import { containsProductSearchAlias } from "./product-search-aliases";
+
 const stopWords = new Set([
   "a", "an", "and", "any", "are", "about", "again", "at", "better", "can", "carry", "catalog", "catalogue",
   "back", "be", "check", "choose", "could", "current", "currently", "deal", "deals", "discount", "discounted", "do", "find", "for",
@@ -56,7 +58,7 @@ export function wantsProductStockStatus(message: string) {
 }
 
 const nonIdentifyingProductTerms = new Set([
-  "cat", "dog", "pet", "food", "feed", "kibble", "diet", "meal", "treat", "chew", "ear", "bite", "snack", "jerky",
+  "cat", "dog", "pet", "food", "feed", "kibble", "diet", "meal", "ear", "bite", "snack", "jerky",
   "reward", "crunchy", "natural", "option", "bag", "pack",
 ]);
 
@@ -68,9 +70,28 @@ export function productFamilySearchAnchors(terms: string[]) {
   return productSearchAnchors(terms).filter((term) => !/^\d+(?:\.\d+)?(?:g|kg|ml|l|cm)$/.test(term));
 }
 
+export function productStockSearchAnchors(terms: string[]) {
+  const exactAnchors = productSearchAnchors(terms);
+  return containsProductSearchAlias(terms) ? exactAnchors : productFamilySearchAnchors(terms);
+}
+
 export function confirmsRestockEnquiry(message: string, previousAssistantMessage = "") {
   return /\b(?:yes|yep|yeah|sure|please|email|send|contact|ask them)\b/i.test(message)
     && /email All Good Petfood about (?:this|the) out-of-stock product/i.test(previousAssistantMessage);
+}
+
+export function confirmsProductIdentity(message: string, previousAssistantMessage = "") {
+  return /^(?:yes|yes please|yep|yeah|correct|that(?:'s| is) (?:it|the one)|exactly)\b/i.test(message.trim())
+    && /is this the product you mean\?/i.test(previousAssistantMessage);
+}
+
+export function rejectsProductIdentity(message: string, previousAssistantMessage = "") {
+  return /^(?:no|nope|nah|not that|wrong (?:one|product)|that(?:'s| is) not it)\b/i.test(message.trim())
+    && /is this the product you mean\?/i.test(previousAssistantMessage);
+}
+
+export function normalizeShopifyResourceId(id: string | null | undefined) {
+  return id?.split("/").at(-1)?.trim() || "";
 }
 
 export function wantsProductAlternatives(message: string) {
@@ -80,4 +101,14 @@ export function wantsProductAlternatives(message: string) {
 
 export function wantsRestockEnquiryStatus(message: string) {
   return /\b(?:did you send|was (?:the|my) (?:email|enquiry) sent|when (?:was|did).*(?:email|enquiry)|stock enquiry status|what time.*(?:email|enquiry))\b/i.test(message);
+}
+
+export function wantsAddToCart(message: string) {
+  return /\b(?:add|put)\b[\s\S]{0,35}\b(?:it|that|this|product|item)\b[\s\S]{0,20}\b(?:cart|basket)\b/i.test(message)
+    || /\b(?:add|put)\s+(?:it|that|this)\s+to\s+(?:my|the)\s+(?:cart|basket)\b/i.test(message);
+}
+
+export function acknowledgesInStockProduct(message: string) {
+  return /\b(?:in stock|available)\b/i.test(message)
+    && /\b(?:oh|cool|great|good|nice|awesome|excellent|thanks?|thank you|sweet|perfect)\b/i.test(message);
 }

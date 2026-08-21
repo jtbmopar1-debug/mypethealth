@@ -43,12 +43,7 @@ export class MockProductService implements ProductService {
       .filter(({ score }) => tags.length === 0 || score > 0)
       .slice(0, limit);
 
-    return ranked.map(({ product, score }) => ({
-        product,
-        reason: score > 0
-          ? `Matches the ${tags.filter((tag) => product.tags.includes(tag)).join(" and ")} considerations we discussed.`
-          : "Available from the All Good Petfood catalogue for comparison."
-      }));
+    return ranked.map(({ product }) => ({ product, reason: "" }));
   }
 }
 

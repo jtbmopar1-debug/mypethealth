@@ -17,3 +17,13 @@ export function expandProductSearchAliases(terms: string[]) {
 
   return [...expanded];
 }
+
+export function containsProductSearchAlias(terms: string[]) {
+  const normalized = new Set(terms.map((term) => term.trim().toLowerCase()).filter(Boolean));
+  return aliasGroups.some((group) => group.some((alias) => normalized.has(alias)));
+}
+
+export function productTextMatchesSearchTerm(searchableText: string, term: string) {
+  const normalizedText = searchableText.toLowerCase();
+  return expandProductSearchAliases([term]).some((alias) => normalizedText.includes(alias));
+}

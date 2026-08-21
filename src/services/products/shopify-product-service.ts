@@ -3,8 +3,8 @@ import "server-only";
 import { serverConfig } from "@/config/env";
 import type { Product, ProductRecommendation } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
-import { productMatchesSpecies } from "./product-relevance";
-import { expandProductSearchAliases } from "./product-search-aliases";
+import { isPrivateCustomOrderProduct, productMatchesSpecies } from "./product-relevance";
+import { expandProductSearchAliases, productTextMatchesSearchTerm } from "./product-search-aliases";
 import { productSearchAnchors } from "./product-query";
 
 interface ShopifyProductNode {
@@ -349,7 +349,8 @@ export class ShopifyProductService implements ProductService {
 
   async searchProducts({ query = "", tags = [], availableOnly = true }: ProductSearchOptions) {
     const products = query ? await this.fetchProducts(query).catch(() => []) : await this.products();
-    return products.filter((product) => (!availableOnly || product.availability === "in_stock")
+    return products.filter((product) => !isPrivateCustomOrderProduct(product)
+      && (!availableOnly || product.availability === "in_stock")
       && (!tags.length || tags.some((tag) => product.tags.includes(tag.toLowerCase()))));
   }
 
@@ -430,7 +431,7 @@ export class ShopifyProductService implements ProductService {
       const requested = new URL(value);
       const handle = requested.pathname.match(/^\/products\/([^/]+)/)?.[1]?.toLowerCase();
       if (!handle) return null;
-      return (await this.products()).find((product) => {
+      return (await this.products()).filter((product) => !isPrivateCustomOrderProduct(product)).find((product) => {
         try {
           return new URL(product.url).pathname.match(/^\/products\/([^/]+)/)?.[1]?.toLowerCase() === handle;
         } catch {
@@ -443,12 +444,14 @@ export class ShopifyProductService implements ProductService {
   }
 
   async getProductsByTag(tag: string) {
-    return (await this.products()).filter((product) => product.availability === "in_stock" && product.tags.includes(tag.toLowerCase()));
+    return (await this.products()).filter((product) => !isPrivateCustomOrderProduct(product)
+      && product.availability === "in_stock" && product.tags.includes(tag.toLowerCase()));
   }
 
   async recommendProducts(tags: string[], limit = 2, options: { includeTreatAddon?: boolean; availableOnly?: boolean; allowFallback?: boolean; requiredTerms?: string[]; species?: "dog" | "cat" | null } = {}): Promise<ProductRecommendation[]> {
     const products = (await this.products()).filter((product) => (
-      (options.availableOnly === false || product.availability === "in_stock")
+      !isPrivateCustomOrderProduct(product)
+      && (options.availableOnly === false || product.availability === "in_stock")
       && productMatchesSpecies(product, options.species ?? null)
     ));
     const normalizedTags = expandProductSearchAliases(tags.map((tag) => tag.toLowerCase()).filter(Boolean));
@@ -457,7 +460,7 @@ export class ShopifyProductService implements ProductService {
       .filter((product) => {
         if (requiredTerms.length === 0) return true;
         const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
-        return requiredTerms.every((term) => titleAndTags.includes(term))
+        return requiredTerms.every((term) => productTextMatchesSearchTerm(titleAndTags, term))
           && (!requiredTerms.includes("raw") || /\braw\b/i.test(product.title));
       })
       .map((product) => ({
@@ -473,16 +476,7 @@ export class ShopifyProductService implements ProductService {
     const wantsTreat = normalizedTags.some((tag) => /\b(?:treat|chew|ear|snack)\b/i.test(tag));
     const primaryLimit = wantsTreat ? limit : Math.max(1, limit - 1);
     const selected = (matching.length > 0 ? matching : options.allowFallback === false ? [] : ranked).slice(0, primaryLimit);
-    const recommendations = selected.map(({ product, score }) => {
-      const searchable = `${product.title} ${product.description} ${product.tags.join(" ")}`.toLowerCase();
-      const matchedTerms = [...new Set(normalizedTags.filter((tag) => searchable.includes(tag)))];
-      return {
-        product,
-        reason: score > 0
-          ? `Matches the ${matchedTerms.join(" and ")} considerations we discussed.`
-          : "Available from the All Good Petfood catalogue for comparison.",
-      };
-    });
+    const recommendations = selected.map(({ product }) => ({ product, reason: "" }));
 
     if (options.includeTreatAddon && !wantsTreat && recommendations.length < limit) {
       const species = normalizedTags.find((tag) => tag === "dog" || tag === "cat");
@@ -514,7 +508,8 @@ export class ShopifyProductService implements ProductService {
     const requestedSpecies = searchTerms.includes("cat") ? "cat" as const
       : searchTerms.includes("dog") ? "dog" as const
       : null;
-    const specials = products.filter((product) => product.availability === "in_stock" && (
+    const specials = products.filter((product) => !isPrivateCustomOrderProduct(product)
+      && product.availability === "in_stock" && (
       (product.compareAtPrice !== undefined && product.compareAtPrice > product.price)
       || /\b(?:sale|special|discount)\b/i.test(`${product.title} ${product.description}`)
       || product.tags.some((tag) => /^(sale|special|specials|on-sale|discount)/i.test(tag))
