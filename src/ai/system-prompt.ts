@@ -7,6 +7,8 @@ Personality: friendly, practical, knowledgeable, calm, conversational, honest an
 Rules:
 - Base advice on the supplied All Good Petfood knowledge and product catalogue. Say when information is unavailable.
 - Never invent a product, ingredient, price, policy, delivery promise or health claim.
+- The catalogue supplies current stock and current prices only. It does not supply future restock dates or future promotion plans. Never predict or promise either; say when that information is unavailable.
+- After the exact requested product has been identified and confirmed out of stock, offer to check closely related in-stock alternatives. Do not substitute or display alternatives until the customer accepts, and keep a stock enquiry about the original product as a separate option when that facility is available.
 - Do not rush from a vague concern to a product. Ask one or two natural, useful follow-up questions first.
 - Never assume the customer has a dog. Refer to "your pet" unless the customer has identified their animal.
 - Never diagnose disease or a food allergy, replace veterinary treatment, or advise stopping medication.
@@ -37,6 +39,8 @@ interface GroundingOptions {
   specialsRequested?: boolean;
   matchingSpecialsFound?: boolean;
   regularAlternativesForSpecials?: boolean;
+  stockStatusRequested?: boolean;
+  productClarificationRequired?: boolean;
   recentPurchases?: CustomerPurchase[];
   primaryPurchaseTitles?: string[];
   purchaseHistoryDisplayed?: boolean;
@@ -48,7 +52,7 @@ interface GroundingOptions {
 }
 
 export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products: Product[], options: GroundingOptions = {}) {
-  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
+  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, stockStatusRequested = false, productClarificationRequired = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
   const knowledgeText = knowledge.length
     ? knowledge.map((entry) => `### ${entry.title}\n${entry.content.slice(0, 1400)}\nFollow-up options: ${entry.followUpQuestions.slice(0, 3).join("; ")}\nSafety: ${entry.safetyNotes.slice(0, 3).join("; ") || "None supplied"}`).join("\n\n")
     : "No directly relevant My Pet Health knowledge was found.";
@@ -93,7 +97,13 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     : products.length > 0
       ? "The store carries matching products, but every matching product supplied is currently out of stock."
       : "No matching products were found in the current catalogue.";
-  const presentationText = regularAlternativesForSpecials
+  const presentationText = productClarificationRequired
+    ? "Several catalogue products could match what the customer described. Do not choose one, answer its stock status, or show a product card yet. Ask one concise clarification question that distinguishes the candidates by relevant product type, pet species, size, or variant. You may mention a few exact candidate names when that makes the ambiguity clearer."
+    : stockStatusRequested
+    ? products.length > 0
+      ? "The customer asked about the stock, restock timing, or future special price of a named product. State its supplied current availability accurately. A current catalogue card will be shown below. If they asked about a future restock date or future promotion, clearly say the catalogue does not provide that schedule and do not guess. If the confirmed item is out of stock, offer to check closely related in-stock alternatives, but do not display substitutes until the customer accepts."
+      : "The customer asked about the stock, restock timing, or future special price of a named product, but no matching catalogue record was found. Say that it could not be verified and do not substitute unrelated products or guess a date or promotion."
+    : regularAlternativesForSpecials
     ? "No matching discounted special was found. Matching in-stock products at their regular current prices will be shown below. Say this clearly and concisely, then offer the regular options shown below. Never describe these alternatives as specials or discounted products, and do not repeat names or prices from the cards."
     : specialsRequested && matchingSpecialsFound
     ? "Matching, genuine current specials will be shown below. Confirm that matching specials are available and shown below, without repeating product names or prices from the cards."

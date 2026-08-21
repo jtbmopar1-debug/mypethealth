@@ -5,6 +5,7 @@ import type { Product, ProductRecommendation } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
 import { productMatchesSpecies } from "./product-relevance";
 import { expandProductSearchAliases } from "./product-search-aliases";
+import { productSearchAnchors } from "./product-query";
 
 interface ShopifyProductNode {
   id: string;
@@ -335,7 +336,11 @@ export class ShopifyProductService implements ProductService {
 
   private async products() {
     try {
-      return await this.fetchProducts();
+      // The public feed is the canonical customer-visible catalogue. It is
+      // paged through to completion and includes the descriptions and tags
+      // needed for reliable matching. Storefront API publications can expose
+      // a smaller subset and previously made products effectively invisible.
+      return await this.fetchPublicProducts();
     } catch (error) {
       console.error("[shopify-products] catalogue query failed", error instanceof Error ? error.message : "Unknown error");
       return [];
@@ -515,14 +520,16 @@ export class ShopifyProductService implements ProductService {
       || product.tags.some((tag) => /^(sale|special|specials|on-sale|discount)/i.test(tag))
     ) && productMatchesSpecies(product, requestedSpecies));
     const normalizedTerms = expandProductSearchAliases(searchTerms);
+    const requiredTerms = productSearchAnchors(searchTerms);
     const rankedSpecials = specials.map((product) => {
       const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
       const description = product.description.toLowerCase();
       const score = normalizedTerms.reduce((total, term) => (
         total + (titleAndTags.includes(term) ? 3 : description.includes(term) ? 1 : 0)
       ), 0);
-      return { product, score };
-    }).filter(({ score }) => normalizedTerms.length === 0 || score > 0)
+      return { product, score, titleAndTags };
+    }).filter(({ score, titleAndTags }) => (normalizedTerms.length === 0 || score > 0)
+      && requiredTerms.every((term) => titleAndTags.includes(term)))
       .sort((left, right) => right.score - left.score);
 
     return rankedSpecials.slice(0, limit).map(({ product }) => ({

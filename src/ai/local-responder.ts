@@ -24,6 +24,8 @@ export function createLocalResponse(
     specialsRequested?: boolean;
     matchingSpecialsFound?: boolean;
     regularAlternativesForSpecials?: boolean;
+    stockStatusRequested?: boolean;
+    productClarificationRequired?: boolean;
   } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
@@ -34,6 +36,33 @@ export function createLocalResponse(
     .toLowerCase();
   const enoughContext = detailsPresent(messages);
   const safeRecommendations = enoughContext ? recommendations : [];
+
+  if (options.productClarificationRequired) {
+    const examples = recommendations.slice(0, 4).map(({ product }) => product.title).join(", ");
+    return {
+      content: `I found several possible catalogue matches${examples ? `, including ${examples}` : ""}. Which exact type do you mean—for example raw food, dog or cat food, or chews/treats—and which size or variant? Once that’s clear I can check the correct item’s current stock and price.`,
+      recommendations: [],
+      mode: "local-demo",
+    };
+  }
+
+  if (options.stockStatusRequested) {
+    const match = recommendations[0]?.product;
+    if (!match) {
+      return {
+        content: "I couldn’t verify that exact product in the current catalogue, so I can’t give you a reliable restock date or future special price.",
+        recommendations: [],
+        mode: "local-demo",
+      };
+    }
+    return {
+      content: match.availability === "in_stock"
+        ? "That item is currently in stock at the price shown below. The catalogue doesn’t include future promotion plans, so I can’t confirm whether it will be on special later."
+        : "That item is currently out of stock. The catalogue doesn’t include a restock date or future promotion plans, so I can’t reliably promise when it will return or whether it will be on special. Would you like me to check closely related options that are currently in stock?",
+      recommendations,
+      mode: "local-demo",
+    };
+  }
 
   if (options.specialsRequested) {
     if (options.matchingSpecialsFound && recommendations.length > 0) {

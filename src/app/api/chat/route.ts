@@ -4,6 +4,14 @@ import { answerCustomer } from "@/ai/assistant-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { productMatchesSpecies } from "@/services/products/product-relevance";
+import {
+  isProductSearchRetry,
+  productFamilySearchAnchors,
+  productSearchAnchors,
+  productSearchTerms,
+  wantsProductStockStatus,
+  wantsProductSuggestion,
+} from "@/services/products/product-query";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
@@ -21,66 +29,6 @@ const bodySchema = z.object({ messages: z.array(messageSchema).min(1).max(40) })
 function confirmsPetProfile(message: string, previousAssistantMessage = "") {
   const affirmative = /^(?:yes|yes please|yep|yeah|sure|okay|ok|please do|go ahead|add (?:him|her|them|it)|please add (?:him|her|them|it))\b/i.test(message.trim());
   return affirmative && /(?:add|save|remember).{0,120}(?:profile|my pets)/i.test(previousAssistantMessage);
-}
-
-function wantsProductSuggestion(message: string) {
-  const text = message.toLowerCase();
-  const explicitPhrases = [
-    "product suggestion",
-    "product recommendations",
-    "recommend a product",
-    "recommend products",
-    "suggest a product",
-    "suggest products",
-    "help me choose a product",
-    "help me pick a product",
-    "what product should i",
-    "which product should i",
-    "what should i buy",
-    "what should i feed",
-    "what food should i buy",
-    "what food do you recommend",
-    "what would you recommend",
-    "show me products",
-    "show me some products",
-    "best product",
-    "best food",
-    "best dog food",
-    "best cat food",
-    "product for",
-    "food for",
-    "do you have",
-    "do you guys do",
-    "do you sell",
-    "do you stock",
-    "do you carry",
-    "have you got",
-    "got any",
-    "what about",
-    "show me treats",
-    "find treats",
-  ];
-
-  if (explicitPhrases.some((phrase) => text.includes(phrase))) return true;
-
-  // Customers do not always use the words “recommendation” or “product”.
-  // Requests such as “suggest a better food” and “is there a better option?”
-  // are still explicit product-shopping intent.
-  return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
-    || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text)
-    || /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i.test(text)
-    || /\b(?:do you(?: guys)? (?:do|sell|stock|carry)|have you got|got any)\b/i.test(text);
-}
-
-function productSearchTerms(message: string) {
-  const stopWords = new Set([
-    "a", "an", "and", "any", "are", "about", "better", "can", "choose", "could", "do", "find", "for", "have",
-    "at", "carry", "current", "currently", "deal", "deals", "discount", "discounted", "got", "guy", "guys", "help", "i", "in", "is", "it", "looking", "me", "moment", "need", "now", "of", "on", "or", "please",
-    "product", "products", "recommend", "sale", "sales", "sell", "show", "some", "special", "specials", "stock", "suggest", "the", "to", "want", "what", "which", "with", "you",
-  ]);
-  return message.toLowerCase().split(/[^a-z0-9]+/)
-    .filter((term) => term.length > 1 && !stopWords.has(term))
-    .map((term) => term.length > 3 && term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term);
 }
 
 function wantsSpecials(message: string) {
@@ -221,7 +169,8 @@ export async function POST(request: NextRequest) {
       && !latestHasProductIntent
       && !needsHealthKnowledge(latestUserMessage);
     const recommendationContextReady = hasRecommendationContext(conversationQuery);
-    const latestProductRequest = [...userMessages].reverse().find(wantsProductSuggestion) ?? latestUserMessage;
+    const latestProductRequest = [...userMessages].reverse()
+      .find((message) => wantsProductSuggestion(message) && !isProductSearchRetry(message)) ?? latestUserMessage;
     const broadCategoryQuestion = isBroadCategoryQuestion(latestUserMessage);
     const broadCategoryIndex = userMessages.findLastIndex(isBroadCategoryQuestion);
     const activeBroadCategoryRequest = broadCategoryIndex >= 0;
@@ -233,8 +182,18 @@ export async function POST(request: NextRequest) {
       && activeBroadCategoryRequest
       && latestHasProductIntent
       && latestDirectTerms.length === 0;
-    const specialsRequested = wantsSpecials(latestUserMessage);
+    const stockStatusRequested = wantsProductStockStatus(latestUserMessage);
+    const stockStatusIndex = userMessages.findLastIndex(wantsProductStockStatus);
+    const continuingProductDefinition = !stockStatusRequested
+      && stockStatusIndex >= Math.max(0, userMessages.length - 3)
+      && stockStatusIndex < userMessages.length - 1
+      && !startsNewProductSearch
+      && latestDirectTerms.length > 0
+      && latestDirectTerms.length <= 4;
+    const effectiveStockStatusRequested = stockStatusRequested || continuingProductDefinition;
+    const specialsRequested = wantsSpecials(latestUserMessage) && !stockStatusRequested;
     const catalogueOnlyTurn = (specialsRequested
+      || effectiveStockStatusRequested
       || broadCategoryQuestion
       || refiningBroadCategory
       || genericBroadContinuation)
@@ -259,10 +218,11 @@ export async function POST(request: NextRequest) {
       }
     }
     const relevantPurchases = purchasesRelevantToQuestion(recentPurchaseContext, recentPurchases);
-    const continuingSelection = !latestHasProductIntent
+    const retryingProductSearch = earlierProductIntent && isProductSearchRetry(latestUserMessage);
+    const continuingSelection = (!latestHasProductIntent || retryingProductSearch)
       && earlierProductIntent
       && (previousProductIds.length <= 1 || activeBroadCategoryRequest)
-      && (recommendationContextReady || refiningBroadCategory);
+      && (recommendationContextReady || refiningBroadCategory || retryingProductSearch);
     const specialSearchTerms = [
       ...productSearchTerms(latestUserMessage).filter((term) => !petNameTerms.has(term)),
       ...(targetSpecies ? [targetSpecies] : []),
@@ -288,7 +248,7 @@ export async function POST(request: NextRequest) {
       regularAlternativesForSpecials = recommendations.length > 0;
     }
 
-    if (!specialsRequested && (latestHasProductIntent || continuingSelection)) {
+    if (!specialsRequested && (latestHasProductIntent || continuingSelection || continuingProductDefinition)) {
       const broadCategoryMessages = broadCategoryIndex >= 0
         ? userMessages.slice(broadCategoryIndex).filter((message, index) => index === 0 || isShortCategoryRefinement(message))
         : [];
@@ -297,23 +257,42 @@ export async function POST(request: NextRequest) {
         || refiningBroadCategory
         || genericBroadContinuation
         || (activeBroadCategoryRequest && continuingSelection);
-      const searchSource = useBroadCategorySearch
+      const statusRequest = stockStatusIndex >= 0 ? userMessages[stockStatusIndex] : "";
+      const searchSource = continuingProductDefinition
+        ? `${statusRequest} ${latestUserMessage}`
+        : retryingProductSearch
+        ? latestProductRequest
+        : useBroadCategorySearch
         ? broadCategorySearch
         : latestHasProductIntent ? latestUserMessage : latestProductRequest;
       const directTerms = productSearchTerms(searchSource).filter((term) => !petNameTerms.has(term));
+      const directAnchorTerms = productSearchAnchors(directTerms);
+      const statusRequiredTerms = effectiveStockStatusRequested
+        ? [...new Set([
+          ...productFamilySearchAnchors(productSearchTerms(statusRequest || latestUserMessage)),
+          ...(continuingProductDefinition ? latestDirectTerms : []),
+        ])]
+        : [];
       if (targetSpecies && !directTerms.includes(targetSpecies)) directTerms.push(targetSpecies);
       const categoryRequiredTerms = useBroadCategorySearch
         ? [...new Set(broadCategoryMessages.flatMap(productSearchTerms).filter((term) => term !== "food"))]
         : [];
       const discoveryOnly = broadCategoryQuestion;
-      const limit = discoveryOnly ? 6 : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
+      const limit = effectiveStockStatusRequested ? 12
+        : discoveryOnly ? 6
+        : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
       recommendations = await productService.recommendProducts(directTerms.length > 0
         ? [directTerms.join(" "), ...directTerms]
         : [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], limit, {
           includeTreatAddon: recommendationContextReady,
-          availableOnly: !discoveryOnly,
-          allowFallback: !discoveryOnly && !targetSpecies,
-          requiredTerms: categoryRequiredTerms.length > 0 ? categoryRequiredTerms : undefined,
+          availableOnly: !discoveryOnly && !effectiveStockStatusRequested,
+          // Specific searches must never degrade into an unrelated card just
+          // because no exact product scored above zero.
+          allowFallback: directTerms.length === 0 && !discoveryOnly && !targetSpecies,
+          requiredTerms: categoryRequiredTerms.length > 0
+            ? categoryRequiredTerms
+            : statusRequiredTerms.length > 0 ? statusRequiredTerms
+            : directAnchorTerms.length > 0 ? directAnchorTerms : undefined,
           species: targetSpecies,
         });
 
@@ -368,10 +347,13 @@ export async function POST(request: NextRequest) {
         ? referencedProducts
         : purchasedProducts;
     const discoveryOnly = broadCategoryQuestion;
+    const productClarificationRequired = effectiveStockStatusRequested && recommendations.length > 1;
     const selectionNeedsVetting = (refiningBroadCategory || genericBroadContinuation) && !recommendationContextReady;
     const purchaseHistoryDisplayed = wantsPurchasedProductCards(latestUserMessage) && purchasedProducts.length > 0;
     const displayRecommendations = purchaseHistoryDisplayed
       ? purchasedProducts.slice(0, 3)
+      : productClarificationRequired
+      ? []
       : discoveryOnly
       ? []
       : continuingSelection
@@ -389,6 +371,8 @@ export async function POST(request: NextRequest) {
       specialsRequested,
       matchingSpecialsFound,
       regularAlternativesForSpecials,
+      stockStatusRequested: effectiveStockStatusRequested,
+      productClarificationRequired,
       recentPurchases: recentPurchases.slice(0, 10),
       primaryPurchaseTitles: relevantPurchases.map((purchase) => purchase.title),
       purchaseHistoryDisplayed,
