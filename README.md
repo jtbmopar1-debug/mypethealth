@@ -141,6 +141,10 @@ Configure `RESEND_API_KEY`, a domain-verified `RESEND_FROM_EMAIL`, and `RESTOCK_
 
 ## Shopify integration
 
+To make Buddy the primary route from the Shopify contact page while retaining
+a human fallback, install the progressive contact-form gate in
+[`docs/SHOPIFY_CONTACT_BUDDY_GATE.md`](docs/SHOPIFY_CONTACT_BUDDY_GATE.md).
+
 The standalone My Pet Health URL and Shopify widget will share the hosted backend and chat component. The target flow is:
 
 ```text

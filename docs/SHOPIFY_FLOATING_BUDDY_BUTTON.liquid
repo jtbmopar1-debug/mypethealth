@@ -1,0 +1,69 @@
+<a
+  class="buddy-floating-launch"
+  href="https://www.mypethealth.co.nz/api/auth/shopify/start?silent=1"
+  target="_blank"
+  rel="noopener"
+  aria-label="Chat with Buddy"
+>
+  <span class="buddy-floating-launch__paw" aria-hidden="true">🐾</span>
+  <span>Chat with Buddy</span>
+</a>
+
+<style>
+  .buddy-floating-launch {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 90;
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 18px 7px 8px;
+    border: 2px solid #17233e;
+    border-radius: 999px;
+    color: #17233e;
+    background: #99d5cf;
+    box-shadow: 0 10px 30px rgba(23, 35, 62, .22);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .buddy-floating-launch__paw {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 22px;
+  }
+
+  .buddy-floating-launch:hover {
+    color: #fff;
+    background: #993b96;
+    transform: translateY(-1px);
+  }
+
+  .buddy-floating-launch:focus-visible {
+    outline: 3px solid #8eb235;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 600px) {
+    .buddy-floating-launch {
+      right: 12px;
+      bottom: 12px;
+      min-height: 48px;
+      padding: 5px 14px 5px 6px;
+      font-size: 14px;
+    }
+
+    .buddy-floating-launch__paw {
+      width: 34px;
+      height: 34px;
+      font-size: 19px;
+    }
+  }
+</style>

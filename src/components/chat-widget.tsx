@@ -2,7 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUp, Clock3, Heart, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowUp, Clock3, ExternalLink, Heart, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
 import { ShopifyAccountControl, type ShopifyCustomer } from "./shopify-account-control";
 import { AllGoodLogo, BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
@@ -11,7 +11,17 @@ import { apiConversationStore } from "@/services/conversations/api-conversation-
 import type { ChatMessage, Conversation, CustomerPet, ProductRecommendation } from "@/types";
 
 const WELCOME = "I’m Buddy, All Good Petfood’s Pet Health and Shop Assistant. How can I help?";
-const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product", "This week’s specials"];
+const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product", "Promotions"];
+
+const ON_SALE_URL = "https://allgoodpetfood.co.nz/collections/on-sale";
+
+interface LatestNewsletter {
+  title: string;
+  url: string;
+  publishedAt: string;
+  description: string | null;
+  imageUrl: string | null;
+}
 
 interface PetDraft {
   name: string;
@@ -111,6 +121,10 @@ export function ChatWidget() {
   const [petFormSaving, setPetFormSaving] = useState(false);
   const [shopifyAuthState, setShopifyAuthState] = useState<"checking" | "authenticated" | "guest">("checking");
   const [storageNotice, setStorageNotice] = useState("");
+  const [specialsOpen, setSpecialsOpen] = useState(false);
+  const [newsletter, setNewsletter] = useState<LatestNewsletter | null>(null);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterError, setNewsletterError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -183,6 +197,15 @@ export function ChatWidget() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation.messages, isLoading]);
+
+  useEffect(() => {
+    if (!specialsOpen) return;
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setSpecialsOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [specialsOpen]);
 
   const hasCustomerMessage = useMemo(() => conversation.messages.some((message) => message.role === "user"), [conversation.messages]);
 
@@ -367,6 +390,23 @@ export function ChatWidget() {
     }
   }
 
+  async function openSpecials() {
+    setSpecialsOpen(true);
+    if (newsletter || newsletterLoading) return;
+    setNewsletterLoading(true);
+    setNewsletterError("");
+    try {
+      const response = await fetch("/api/shopify/latest-newsletter");
+      const data = await response.json() as { newsletter?: LatestNewsletter; error?: string };
+      if (!response.ok || !data.newsletter) throw new Error(data.error || "Newsletter unavailable");
+      setNewsletter(data.newsletter);
+    } catch {
+      setNewsletterError("The newsletter preview is temporarily unavailable, but you can still shop all current sale products.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  }
+
   if (shopifyAuthState !== "authenticated") {
     return (
       <main className="access-gate">
@@ -483,6 +523,35 @@ export function ChatWidget() {
         </div>
       )}
 
+      {specialsOpen && (
+        <div className="specials-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setSpecialsOpen(false);
+        }}>
+          <section className="specials-dialog" role="dialog" aria-modal="true" aria-labelledby="specials-dialog-title">
+            <button type="button" className="specials-close" onClick={() => setSpecialsOpen(false)} aria-label="Close promotions"><X size={19} /></button>
+            <span className="specials-kicker">All Good Petfood</span>
+            <h2 id="specials-dialog-title">Promotions</h2>
+            {newsletterLoading ? (
+              <p className="specials-loading">Loading the latest newsletter&hellip;</p>
+            ) : newsletter ? (
+              <article className="newsletter-preview">
+                {newsletter.imageUrl && <Image src={newsletter.imageUrl} alt="" width={720} height={360} sizes="(max-width: 600px) 90vw, 520px" />}
+                <div>
+                  <span>Latest newsletter &middot; {new Date(newsletter.publishedAt).toLocaleDateString("en-NZ", { month: "long", year: "numeric" })}</span>
+                  <h3>{newsletter.title}</h3>
+                  {newsletter.description && <p>{newsletter.description}</p>}
+                  <a href={newsletter.url} target="_blank" rel="noopener">Read current newsletter <ExternalLink size={15} /></a>
+                </div>
+              </article>
+            ) : (
+              <p className="specials-error">{newsletterError}</p>
+            )}
+            <a className="sale-products-button" href={ON_SALE_URL} target="_blank" rel="noopener"><ShoppingBag size={17} /> Shop all sale products</a>
+            <small>Products, prices and availability are shown live by All Good Petfood.</small>
+          </section>
+        </div>
+      )}
+
       <main className="chat-main">
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
@@ -504,7 +573,9 @@ export function ChatWidget() {
                   </div>
                   {index === 0 && !hasCustomerMessage && (
                     <div className="quick-prompts">
-                      {QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => void sendMessage(prompt)}>{prompt}</button>)}
+                      {QUICK_PROMPTS.map((prompt) => (
+                        <button key={prompt} onClick={() => prompt === "Promotions" ? void openSpecials() : void sendMessage(prompt)}>{prompt}</button>
+                      ))}
                     </div>
                   )}
                   {(message.products ?? recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} />)}

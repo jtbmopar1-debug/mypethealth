@@ -5,10 +5,10 @@ export function BrandMark() {
     <div className="brand-mark">
       <Image
         className="site-logo-image"
-        src="/brand/main-logo.png"
+        src="/brand/main-logo-allgood.png"
         alt="My Pet Health — Guidance, Care, Wellbeing"
-        width={950}
-        height={443}
+        width={1836}
+        height={856}
         sizes="224px"
         loading="eager"
       />

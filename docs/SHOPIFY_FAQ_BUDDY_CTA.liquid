@@ -1,0 +1,99 @@
+{% if request.page_type == 'page' and page.handle contains 'faq' %}
+<section id="buddy-faq-cta-{{ section.id }}" class="buddy-faq-cta" aria-labelledby="buddy-faq-title-{{ section.id }}">
+  <div class="buddy-faq-cta__mark" aria-hidden="true">🐾</div>
+  <div class="buddy-faq-cta__copy">
+    <p class="buddy-faq-cta__eyebrow">All Good Petfood assistant</p>
+    <h2 id="buddy-faq-title-{{ section.id }}">More questions?</h2>
+    <p>If you cannot find the answer you need, Buddy can help with products, current stock, feeding questions and finding the right option for your pet.</p>
+    <a
+      class="buddy-faq-cta__button"
+      href="https://www.mypethealth.co.nz/api/auth/shopify/start?silent=1"
+      target="_blank"
+      rel="noopener"
+    >Chat with Buddy</a>
+  </div>
+</section>
+
+<style>
+  #buddy-faq-cta-{{ section.id }} {
+    max-width: 760px;
+    margin: 36px auto;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+    border: 1px solid rgba(142, 178, 53, .28);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #fbfcf7 0%, #f5f0f8 100%);
+    box-shadow: 0 16px 42px rgba(30, 43, 65, .09);
+    color: #17233e;
+  }
+
+  #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__mark {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 8px 22px rgba(30, 43, 65, .10);
+    font-size: 32px;
+  }
+
+  #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__eyebrow {
+    margin: 0 0 5px;
+    color: #8eb235;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  #buddy-faq-cta-{{ section.id }} h2 {
+    margin: 0 0 8px;
+    color: #17233e;
+    font-size: clamp(26px, 4vw, 38px);
+    line-height: 1.1;
+  }
+
+  #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__copy > p:not(.buddy-faq-cta__eyebrow) {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__button {
+    min-height: 46px;
+    margin-top: 20px;
+    padding: 12px 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #993b96;
+    border-radius: 10px;
+    background: #993b96;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__button:hover {
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 600px) {
+    #buddy-faq-cta-{{ section.id }} {
+      margin: 24px 0;
+      padding: 22px;
+      grid-template-columns: 1fr;
+    }
+
+    #buddy-faq-cta-{{ section.id }} .buddy-faq-cta__button {
+      display: flex;
+      width: 100%;
+    }
+  }
+</style>
+{% endif %}

@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/s/files/**",
       },
+      {
+        protocol: "https",
+        hostname: "allgoodpetfood.co.nz",
+        port: "",
+        pathname: "/cdn/shop/**",
+      },
     ],
   },
 };
