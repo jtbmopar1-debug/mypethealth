@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
+import { guardPendingRecommendationCatalogueClaim } from "@/ai/catalogue-claim-guard";
 import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry } from "@/services/enquiries/restock-enquiry-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
@@ -66,6 +67,14 @@ function hasRecommendationContext(message: string) {
     || /\b(?:small|medium|large|giant)\b/i.test(message);
   const hasSensitivityContext = /\b(?:sensitive|allerg|intoleran|dietary|condition|no (?:issues?|allergies|sensitivities)|none)\b/i.test(message);
   return hasSpecies && hasLifeStage && hasSize && hasSensitivityContext;
+}
+
+function ambiguousFeedingNumber(message: string, previousAssistantMessage: string) {
+  const askedForAgeAndWeight = /\b(?:weigh|weight)\b/i.test(previousAssistantMessage)
+    && /\b(?:how old|age)\b/i.test(previousAssistantMessage);
+  const containsBareNumber = /(?:^|\s|,)\d+(?:\.\d+)?(?:\s|,|$)/.test(message);
+  const identifiesNumber = /\b\d+(?:\.\d+)?\s*(?:kg|kilos?|years?|months?|weeks?|yo)\b/i.test(message);
+  return askedForAgeAndWeight && containsBareNumber && !identifiesNumber;
 }
 
 function needsHealthKnowledge(message: string) {
@@ -144,6 +153,15 @@ export async function POST(request: NextRequest) {
     const latestUserMessage = userMessages.at(-1) ?? "";
     const conversationQuery = userMessages.join(" ");
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    if (previousAssistant && ambiguousFeedingNumber(latestUserMessage, previousAssistant.content)) {
+      const number = latestUserMessage.match(/\d+(?:\.\d+)?/)?.[0] ?? "that number";
+      return Response.json({
+        message: `Just to clarify: does ${number} mean ${number} years old or ${number} kg?`,
+        products: [],
+        resetProductContext: false,
+        mode: "feeding-clarification",
+      });
+    }
     const contextualPet = contextualNamedPetReply(messages);
     const contextualPetMessage = contextualPet
       ? [
@@ -618,6 +636,11 @@ export async function POST(request: NextRequest) {
       updatedPetNames,
       petProfileOnlyTurn,
     });
+    result.content = guardPendingRecommendationCatalogueClaim(
+      result.content,
+      targetSpecies,
+      (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
+    );
     if (latestMessageIsContextualPetName && petProfileProposals.length > 0
       && !/\badd\b[\s\S]{0,80}\bMy Pets\b/i.test(result.content)) {
       const names = petProfileProposals.join(" and ");

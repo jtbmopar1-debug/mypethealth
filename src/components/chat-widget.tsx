@@ -2,7 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUp, Clock3, ExternalLink, Heart, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
+import { ArrowUp, Clock3, ExternalLink, Heart, Mail, Menu, MessageCircleMore, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
 import { ShopifyAccountControl, type ShopifyCustomer } from "./shopify-account-control";
 import { AllGoodLogo, BrandMark, BuddyLogo } from "./brand-mark";
 import { ProductCard } from "./product-card";
@@ -125,6 +125,11 @@ export function ChatWidget() {
   const [newsletter, setNewsletter] = useState<LatestNewsletter | null>(null);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [newsletterError, setNewsletterError] = useState("");
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactSending, setContactSending] = useState(false);
+  const [contactError, setContactError] = useState("");
+  const [contactSentAt, setContactSentAt] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -199,13 +204,15 @@ export function ChatWidget() {
   }, [conversation.messages, isLoading]);
 
   useEffect(() => {
-    if (!specialsOpen) return;
+    if (!specialsOpen && !contactOpen) return;
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setSpecialsOpen(false);
+      if (event.key !== "Escape" || contactSending) return;
+      setSpecialsOpen(false);
+      setContactOpen(false);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [specialsOpen]);
+  }, [specialsOpen, contactOpen, contactSending]);
 
   const hasCustomerMessage = useMemo(() => conversation.messages.some((message) => message.role === "user"), [conversation.messages]);
 
@@ -228,6 +235,41 @@ export function ChatWidget() {
       setStorageNotice("This chat is saved on this device until cloud saving is available.");
     }
     return normalized;
+  }
+
+  function openContactTeam() {
+    setContactMessage("");
+    setContactError("");
+    setContactSentAt("");
+    setContactOpen(true);
+  }
+
+  async function contactTeam(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const customerMessage = contactMessage.trim();
+    if (!customerMessage || contactSending) return;
+    setContactSending(true);
+    setContactError("");
+    setContactSentAt("");
+
+    try {
+      const normalized = normalizeConversation(conversation);
+      await apiConversationStore.save(normalized);
+      setConversation(normalized);
+      const response = await fetch("/api/contact-team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId: normalized.id, customerMessage }),
+      });
+      const result = await response.json() as { sentAt?: string | null; error?: string };
+      if (!response.ok) throw new Error(result.error || "Your message could not be sent.");
+      setContactSentAt(result.sentAt || new Date().toISOString());
+      setStorageNotice("");
+    } catch (error) {
+      setContactError(error instanceof Error ? error.message : "Your message could not be sent.");
+    } finally {
+      setContactSending(false);
+    }
   }
 
   async function deleteConversation(idToDelete: string) {
@@ -552,6 +594,47 @@ export function ChatWidget() {
         </div>
       )}
 
+      {contactOpen && (
+        <div className="contact-team-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !contactSending) setContactOpen(false);
+        }}>
+          <section className="contact-team-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-team-title">
+            <button type="button" className="contact-team-close" onClick={() => setContactOpen(false)} disabled={contactSending} aria-label="Close contact form"><X size={19} /></button>
+            <span className="contact-team-kicker">All Good Petfood</span>
+            <h2 id="contact-team-title">Contact our team</h2>
+            {contactSentAt ? (
+              <div className="contact-team-success" role="status">
+                <strong>Your message has been sent.</strong>
+                <p>The team received your message and the complete current Buddy conversation. Their reply will go to your Shopify account email.</p>
+                <small>Sent {new Date(contactSentAt).toLocaleString("en-NZ", { dateStyle: "medium", timeStyle: "short" })}</small>
+                <button type="button" onClick={() => setContactOpen(false)}>Close</button>
+              </div>
+            ) : (
+              <form className="contact-team-form" onSubmit={contactTeam}>
+                <p>Tell the team what you still need help with. Sending this form emails your message and attaches the complete current Buddy chat to <strong>info@allgoodpetfood.co.nz</strong>.</p>
+                <label htmlFor="contact-team-message">Message to our team</label>
+                <textarea
+                  id="contact-team-message"
+                  required
+                  autoFocus
+                  rows={6}
+                  maxLength={2000}
+                  value={contactMessage}
+                  onChange={(event) => setContactMessage(event.target.value)}
+                  placeholder="Please explain what you would like the team to help with..."
+                />
+                <small>{contactMessage.length}/2000 characters</small>
+                {contactError && <p className="contact-team-error" role="alert">{contactError}</p>}
+                <div className="contact-team-actions">
+                  <button type="button" onClick={() => setContactOpen(false)} disabled={contactSending}>Cancel</button>
+                  <button type="submit" disabled={contactSending || !contactMessage.trim()}><Mail size={16} /> {contactSending ? "Sending..." : "Send message and chat"}</button>
+                </div>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
+
       <main className="chat-main">
         <header className="chat-header">
           <button className="icon-button mobile-only" aria-label="Open conversation menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
@@ -597,7 +680,10 @@ export function ChatWidget() {
             <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={4000} placeholder="Ask about food, feeding, or your pet…" aria-label="Your message" />
             <button type="submit" className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message"><ArrowUp size={20} /></button>
           </form>
-          <p>{storageNotice || "General pet-food guidance only. For urgent or ongoing health concerns, talk with your vet."}</p>
+          <div className="composer-support">
+            <p>{storageNotice || "General pet-food guidance only. For urgent or ongoing health concerns, talk with your vet."}</p>
+            <button type="button" onClick={openContactTeam} disabled={!hasCustomerMessage || isLoading} title={!hasCustomerMessage ? "Ask Buddy a question first" : undefined}><Mail size={17} /> Contact our team</button>
+          </div>
         </footer>
       </main>
     </div>

@@ -16,4 +16,5 @@ export const serverConfig = {
   resendApiKey: process.env.RESEND_API_KEY,
   resendFromEmail: process.env.RESEND_FROM_EMAIL,
   restockEnquiryToEmail: process.env.RESTOCK_ENQUIRY_TO_EMAIL,
+  contactTeamToEmail: process.env.CONTACT_TEAM_TO_EMAIL || "info@allgoodpetfood.co.nz",
 };

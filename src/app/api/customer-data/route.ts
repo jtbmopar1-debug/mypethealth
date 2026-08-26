@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   if (!session) return Response.json({ error: "Shopify sign-in required" }, { status: 401 });
 
   const supabase = getServerSupabaseClient();
-  const [conversations, pets] = await Promise.all([
+  const [conversations, pets, contactEnquiries] = await Promise.all([
     supabase
       .from("shopify_conversations")
       .select("id,title,messages,pet_profile,created_at,updated_at")
@@ -22,10 +22,15 @@ export async function GET(request: NextRequest) {
       .select("id,name,species,breed,age_value,age_unit,age_recorded_at,weight_kg,current_food_title,known_sensitivities,status,deceased_at,created_at,updated_at,last_mentioned_at")
       .eq("shopify_customer_id", session.customerId)
       .order("last_mentioned_at", { ascending: false }),
+    supabase
+      .from("buddy_contact_enquiries")
+      .select("id,conversation_id,conversation_title,customer_message,message_count,status,sent_at,created_at")
+      .eq("shopify_customer_id", session.customerId)
+      .order("created_at", { ascending: false }),
   ]);
 
-  if (conversations.error || pets.error) {
-    console.error("[customer-data] export failed", conversations.error?.message || pets.error?.message);
+  if (conversations.error || pets.error || contactEnquiries.error) {
+    console.error("[customer-data] export failed", conversations.error?.message || pets.error?.message || contactEnquiries.error?.message);
     return Response.json({ error: "Buddy data could not be exported" }, { status: 503 });
   }
 
@@ -40,6 +45,7 @@ export async function GET(request: NextRequest) {
     buddyData: {
       conversations: conversations.data,
       pets: pets.data,
+      contactEnquiries: contactEnquiries.data,
     },
     note: "Shopify orders, payment details and addresses are not stored by Buddy and are not included in this export.",
   });

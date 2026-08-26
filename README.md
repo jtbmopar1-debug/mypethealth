@@ -12,6 +12,7 @@ The same modular chat UI can later appear as a floating Shopify widget. The stan
 - Seven reviewed built-in knowledge entries plus admin-managed Supabase Q&A
 - Live Shopify catalogue search, purchase history and stock-aware product cards
 - Customer-approved out-of-stock enquiries sent through Resend with a Supabase audit timestamp
+- Customer-written team messages sent with the complete current Buddy chat attached
 - Recommendation cards with price, product links and add-to-cart controls
 - Gemini API integration that stays entirely server-side
 - Fully functional local demo responder when no Gemini key is configured
@@ -52,9 +53,10 @@ If `.env.local` already exists, edit it instead of copying over it. Without `GEM
 | `APP_BASE_URL` | Local, preview or production base URL | Server configuration |
 | `SUPABASE_URL` | Supabase project URL | Server only |
 | `SUPABASE_SECRET_KEY` | Supabase secret key for the protected server API | Server only; never expose in the browser |
-| `RESEND_API_KEY` | Sends customer-approved stock enquiries | Server only |
+| `RESEND_API_KEY` | Sends customer-approved stock and team-contact emails | Server only |
 | `RESEND_FROM_EMAIL` | Verified Resend sender used by Buddy | Server configuration |
 | `RESTOCK_ENQUIRY_TO_EMAIL` | Staff inbox that receives stock enquiries | Server configuration |
+| `CONTACT_TEAM_TO_EMAIL` | Staff inbox that receives customer messages and Buddy transcripts | Server configuration |
 | `SHOPIFY_STORE_DOMAIN` | Shopify store domain | Server configuration |
 | `SHOPIFY_STORE_URL` | All Good Petfood base URL used to create product links | Server configuration |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Storefront API product access | Server only |
@@ -138,6 +140,12 @@ When Buddy has identified an exact out-of-stock product, it can ask the signed-i
 Run [`supabase/migrations/202608210001_create_restock_enquiries.sql`](supabase/migrations/202608210001_create_restock_enquiries.sql) once before enabling the feature. The server stores the enquiry audit fields needed to report whether and when it was sent. Duplicate requests for the same product are idempotent for the day, and each customer is limited to three new enquiries per 24 hours.
 
 Configure `RESEND_API_KEY`, a domain-verified `RESEND_FROM_EMAIL`, and `RESTOCK_ENQUIRY_TO_EMAIL` locally and in Vercel. These values must remain server-only.
+
+## Contact our team emails
+
+After asking Buddy a question, a signed-in customer can select **Contact our team**, write a message, and explicitly send that message with their complete current Buddy conversation. The email goes to `CONTACT_TEAM_TO_EMAIL` (default `info@allgoodpetfood.co.nz`), uses the customer's Shopify email as `Reply-To`, and includes the transcript as a text attachment. The transcript is loaded server-side from the conversation owned by that authenticated customer rather than accepted from the browser.
+
+Run [`supabase/migrations/202608260001_create_buddy_contact_enquiries.sql`](supabase/migrations/202608260001_create_buddy_contact_enquiries.sql) before enabling the button in production. The audit table records the customer's covering message, conversation reference, delivery status and timestamp without storing another copy of the full transcript. Each customer is limited to three new contact emails per 24 hours.
 
 ## Shopify integration
 

@@ -33,7 +33,7 @@ export function wantsProductSuggestion(message: string) {
   const explicitPhrases = [
     "product suggestion", "product recommendations", "recommend a product", "recommend products", "suggest a product",
     "suggest products", "help me choose a product", "help me pick a product", "what product should i", "which product should i",
-    "what should i buy", "what should i feed", "what food should i buy", "what food do you recommend", "what would you recommend",
+    "what should i buy", "what should i feed", "what to feed", "unsure what to feed", "not sure what to feed", "what food should i buy", "what food do you recommend", "what would you recommend",
     "show me products", "show me some products", "best product", "best food", "best dog food", "best cat food", "product for",
     "food for", "do you have", "do you guys do", "do you sell", "do you stock", "do you carry", "have you got", "got any",
     "what about", "show me treats", "find treats", "looking for", "find me",
