@@ -48,6 +48,10 @@ export function wantsProductSuggestion(message: string) {
     || /\b(?:do you(?: guys)? (?:do|sell|stock|carry)|have you got|got any)\b/i.test(text);
 }
 
+export function isGenericProductHelpRequest(message: string) {
+  return /^(?:please\s+)?(?:help me (?:choose|pick)(?: a)? product|recommend(?: me)? a product|product recommendations?)\s*[.!?]*$/i.test(message.trim());
+}
+
 export function isProductSearchRetry(message: string) {
   return /\b(?:check|search|look)\b[\s\S]{0,40}\b(?:again|catalog(?:ue)?)\b/i.test(message)
     || /\b(?:check again|try again|search again)\b/i.test(message);

@@ -18,6 +18,7 @@ const petSchema = z.object({
   weightKg: z.number().positive().max(500).nullable(),
   currentFoodTitle: optionalText(500),
   knownSensitivities: z.array(z.string().trim().min(1).max(80)).max(20),
+  notes: optionalText(4000),
   status: z.enum(["active", "deceased", "archived"]),
 }).refine((pet) => pet.ageValue === null || pet.ageUnit !== null, {
   message: "Age unit is required when an age is provided",

@@ -32,6 +32,7 @@ interface PetDraft {
   weightKg: string;
   currentFoodTitle: string;
   knownSensitivities: string;
+  notes: string;
   status: CustomerPet["status"];
 }
 
@@ -44,6 +45,7 @@ const EMPTY_PET: PetDraft = {
   weightKg: "",
   currentFoodTitle: "",
   knownSensitivities: "",
+  notes: "",
   status: "active",
 };
 
@@ -58,6 +60,7 @@ function petDraft(pet?: CustomerPet): PetDraft {
     weightKg: pet.weightKg === null ? "" : String(pet.weightKg),
     currentFoodTitle: pet.currentFoodTitle ?? "",
     knownSensitivities: pet.knownSensitivities.join(", "),
+    notes: pet.notes ?? "",
     status: pet.status,
   };
 }
@@ -113,6 +116,7 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<Record<string, ProductRecommendation[]>>({});
+  const [petProfileOffers, setPetProfileOffers] = useState<Record<string, string[]>>({});
   const [shopifyCustomer, setShopifyCustomer] = useState<ShopifyCustomer | null>(null);
   const [customerPets, setCustomerPets] = useState<CustomerPet[]>([]);
   const [editingPetId, setEditingPetId] = useState<"new" | string | null>(null);
@@ -318,7 +322,7 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages })
       });
-      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; error?: string };
+      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; petProfileProposalNames?: string[]; error?: string };
       if (!response.ok || !data.message) throw new Error(data.error || "No response received");
       if (data.pets) setCustomerPets(data.pets);
 
@@ -336,6 +340,9 @@ export function ChatWidget() {
       };
       const completed = { ...nextConversation, updatedAt: new Date().toISOString(), messages: [...messages, assistantMessage] };
       setRecommendations((current) => ({ ...current, [assistantMessage.id]: data.products ?? [] }));
+      if (data.petProfileProposalNames?.length) {
+        setPetProfileOffers((current) => ({ ...current, [assistantMessage.id]: data.petProfileProposalNames ?? [] }));
+      }
       setConversation(completed);
       const persistedCompleted = await persist(completed);
       setConversation(persistedCompleted);
@@ -362,6 +369,7 @@ export function ChatWidget() {
       || "";
     setConversation(createConversation(shopifyName, customerPets));
     setRecommendations({});
+    setPetProfileOffers({});
     setSidebarOpen(false);
     setInput("");
   }
@@ -386,6 +394,7 @@ export function ChatWidget() {
       weightKg: petForm.weightKg === "" ? null : Number(petForm.weightKg),
       currentFoodTitle: petForm.currentFoodTitle.trim() || null,
       knownSensitivities: petForm.knownSensitivities.split(",").map((value) => value.trim()).filter(Boolean),
+      notes: petForm.notes.trim() || null,
       status: petForm.status,
     };
     try {
@@ -422,7 +431,21 @@ export function ChatWidget() {
   async function openConversation(item: Conversation) {
     setConversation(item);
     setRecommendations({});
+    setPetProfileOffers({});
     setSidebarOpen(false);
+  }
+
+  function dismissPetProfileOffer(messageId: string) {
+    setPetProfileOffers((current) => {
+      const next = { ...current };
+      delete next[messageId];
+      return next;
+    });
+  }
+
+  function acceptPetProfileOffer(messageId: string, names: string[]) {
+    dismissPetProfileOffer(messageId);
+    void sendMessage(`Yes, add ${names.join(" and ")} to My Pets`);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -557,6 +580,7 @@ export function ChatWidget() {
               <label>Status<select value={petForm.status} onChange={(event) => setPetForm((current) => ({ ...current, status: event.target.value as CustomerPet["status"] }))}><option value="active">Active</option><option value="deceased">Passed away</option><option value="archived">Archived</option></select></label>
               <label className="pet-form-wide">Current food<input maxLength={500} value={petForm.currentFoodTitle} onChange={(event) => setPetForm((current) => ({ ...current, currentFoodTitle: event.target.value }))} placeholder="Brand and recipe, if known" /></label>
               <label className="pet-form-wide">Sensitivities<input value={petForm.knownSensitivities} onChange={(event) => setPetForm((current) => ({ ...current, knownSensitivities: event.target.value }))} placeholder="Chicken, grain (separate with commas)" /></label>
+              <label className="pet-form-wide">Notes<textarea rows={4} maxLength={4000} value={petForm.notes} onChange={(event) => setPetForm((current) => ({ ...current, notes: event.target.value }))} placeholder="Anything else you want Buddy to remember about this pet" /></label>
               {petForm.status === "deceased" && <p className="pet-status-note">Buddy will retain this profile but will not mention this pet in greetings or make sales suggestions for them.</p>}
               {petFormError && <p className="pet-form-error" role="alert">{petFormError}</p>}
               <div className="pet-form-actions"><button type="button" onClick={() => setEditingPetId(null)} disabled={petFormSaving}>Cancel</button><button type="submit" disabled={petFormSaving || !petForm.name.trim()}>{petFormSaving ? "Saving…" : "Save pet"}</button></div>
@@ -659,9 +683,16 @@ export function ChatWidget() {
                       {QUICK_PROMPTS.map((prompt) => (
                         <button key={prompt} onClick={() => prompt === "Promotions" ? void openSpecials() : void sendMessage(prompt)}>{prompt}</button>
                       ))}
+                      {customerPets.length === 0 && <button className="quick-pet-profile" onClick={() => openPetEditor()}><Plus size={13} /> Add my pet</button>}
                     </div>
                   )}
                   {(message.products ?? recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} />)}
+                  {petProfileOffers[message.id]?.length > 0 && (
+                    <div className="pet-profile-offer" role="group" aria-label="Save pet profile">
+                      <button type="button" onClick={() => acceptPetProfileOffer(message.id, petProfileOffers[message.id])}><Heart size={15} /> Save {petProfileOffers[message.id].join(" and ")} to My Pets</button>
+                      <button type="button" onClick={() => dismissPetProfileOffer(message.id)}>Not now</button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

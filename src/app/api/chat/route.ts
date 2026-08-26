@@ -9,6 +9,7 @@ import { productMatchesSpecies } from "@/services/products/product-relevance";
 import { productTextMatchesSearchTerm } from "@/services/products/product-search-aliases";
 import {
   isProductSearchRetry,
+  isGenericProductHelpRequest,
   confirmsProductIdentity,
   confirmsRestockEnquiry,
   normalizeShopifyResourceId,
@@ -193,6 +194,21 @@ export async function POST(request: NextRequest) {
       console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
     } catch (error) {
       console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
+    }
+    if (isGenericProductHelpRequest(latestUserMessage)) {
+      const activePetNames = customerPets.filter((pet) => pet.status === "active").map((pet) => pet.name);
+      const petChoice = activePetNames.length === 0
+        ? "a dog, cat, or another pet"
+        : activePetNames.length === 1
+          ? `${activePetNames[0]} or another pet`
+          : `${activePetNames.slice(0, -1).join(", ")}, ${activePetNames.at(-1)}, or another pet`;
+      return Response.json({
+        message: `Which pet are we shopping for—${petChoice}? And are you looking for everyday food, treats, or something else?`,
+        products: [],
+        resetProductContext: true,
+        pets: customerPets,
+        mode: "product-needs-clarification",
+      });
     }
     const productService = new ShopifyProductService();
     const previousProductIds = previousAssistant?.productIds ?? [];
@@ -653,6 +669,7 @@ export async function POST(request: NextRequest) {
       products: displayRecommendations,
       resetProductContext: discoveryOnly,
       pets: customerPets,
+      petProfileProposalNames: petProfileProposals,
       mode: result.mode
     });
   } catch (error) {

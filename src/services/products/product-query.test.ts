@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   confirmsRestockEnquiry,
   confirmsProductIdentity,
+  isGenericProductHelpRequest,
   isProductSearchRetry,
   productSearchAnchors,
   productFamilySearchAnchors,
@@ -18,6 +19,11 @@ import {
 } from "./product-query";
 
 describe("product catalogue query parsing", () => {
+  it("recognises a generic product-help request that requires clarification", () => {
+    expect(isGenericProductHelpRequest("Help me choose a product")).toBe(true);
+    expect(isGenericProductHelpRequest("Help me choose a cat treat")).toBe(false);
+  });
+
   it("recognises customers asking what to feed their pet as recommendation intent", () => {
     expect(wantsProductSuggestion("I've got a cat and I'm unsure what to feed him")).toBe(true);
   });

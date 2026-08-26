@@ -40,6 +40,7 @@ export interface CustomerPet {
   weightKg: number | null;
   currentFoodTitle: string | null;
   knownSensitivities: string[];
+  notes: string | null;
   status: "active" | "deceased" | "archived";
   deceasedAt: string | null;
   lastMentionedAt: string;

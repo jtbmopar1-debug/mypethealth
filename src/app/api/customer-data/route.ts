@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       .order("updated_at", { ascending: false }),
     supabase
       .from("shopify_customer_pets")
-      .select("id,name,species,breed,age_value,age_unit,age_recorded_at,weight_kg,current_food_title,known_sensitivities,status,deceased_at,created_at,updated_at,last_mentioned_at")
+      .select("id,name,species,breed,age_value,age_unit,age_recorded_at,weight_kg,current_food_title,known_sensitivities,notes,status,deceased_at,created_at,updated_at,last_mentioned_at")
       .eq("shopify_customer_id", session.customerId)
       .order("last_mentioned_at", { ascending: false }),
     supabase

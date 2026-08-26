@@ -85,6 +85,7 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
         pet.weightKg !== null ? `${pet.weightKg} kg` : null,
         pet.currentFoodTitle ? `current food reported as ${pet.currentFoodTitle}` : null,
         pet.knownSensitivities.length ? `sensitivities: ${pet.knownSensitivities.join(", ")}` : null,
+        pet.notes ? `customer notes: ${pet.notes}` : null,
       ].filter(Boolean).join(", ");
       return `- ${pet.name}: status ${pet.status}${details ? `; ${details}` : ""}.`;
     }).join("\n")

@@ -89,8 +89,10 @@ button { color: inherit; }
 .pet-dialog > p { margin: 0 0 20px; color: var(--muted); font-size: 11px; line-height: 1.55; }
 .pet-form { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
 .pet-form label { display: grid; gap: 6px; color: #4f5d78; font-size: 10px; font-weight: 700; }
-.pet-form input, .pet-form select { width: 100%; min-width: 0; height: 42px; padding: 0 11px; border: 1px solid #dce2eb; border-radius: 9px; outline: none; color: var(--brand-navy); background: white; font: inherit; }
-.pet-form input:focus, .pet-form select:focus { border-color: var(--brand-aqua); box-shadow: 0 0 0 3px rgba(153,213,207,.2); }
+.pet-form input, .pet-form select, .pet-form textarea { width: 100%; min-width: 0; padding: 0 11px; border: 1px solid #dce2eb; border-radius: 9px; outline: none; color: var(--brand-navy); background: white; font: inherit; }
+.pet-form input, .pet-form select { height: 42px; }
+.pet-form textarea { min-height: 92px; padding-top: 11px; padding-bottom: 11px; resize: vertical; line-height: 1.5; }
+.pet-form input:focus, .pet-form select:focus, .pet-form textarea:focus { border-color: var(--brand-aqua); box-shadow: 0 0 0 3px rgba(153,213,207,.2); }
 .pet-form-wide, .pet-status-note, .pet-form-error, .pet-form-actions { grid-column: 1 / -1; }
 .pet-status-note { margin: 0; padding: 10px 12px; border-radius: 9px; color: #5f6573; background: #fff8e8; font-size: 10px; line-height: 1.5; }
 .pet-form-error { margin: 0; color: #a73535; font-size: 10px; }
@@ -165,9 +167,13 @@ button { color: inherit; }
 .quick-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .quick-prompts button { padding: 9px 12px; color: var(--store-purple); background: white; border: 1px solid rgba(150,63,145,.3); border-radius: 999px; cursor: pointer; font-size: 10px; font-weight: 600; transition: border-color .15s, background .15s; }
 .welcome-message .message-stack { width: calc(100% - 44px); max-width: none; }
-.welcome-message .quick-prompts { flex-wrap: nowrap; }
+.welcome-message .quick-prompts { flex-wrap: wrap; }
 .welcome-message .quick-prompts button { white-space: nowrap; }
 .quick-prompts button:hover { border-color: var(--store-green); background: var(--store-green-soft); }
+.quick-prompts .quick-pet-profile { display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-color: var(--store-green); color: #4e6f1c; background: var(--store-green-soft); }
+.pet-profile-offer { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 7px; }
+.pet-profile-offer button { min-height: 38px; padding: 8px 12px; border: 1px solid rgba(150,63,145,.28); border-radius: 9px; color: var(--store-purple); background: white; cursor: pointer; font: inherit; font-size: 10px; font-weight: 800; }
+.pet-profile-offer button:first-child { display: inline-flex; align-items: center; gap: 6px; border-color: var(--store-purple); color: white; background: var(--store-purple); }
 .specials-backdrop { position: fixed; inset: 0; z-index: 130; display: grid; place-items: center; padding: 18px; background: rgba(8,19,49,.64); backdrop-filter: blur(5px); }
 .specials-dialog { width: min(590px, 100%); max-height: calc(100dvh - 36px); overflow-y: auto; position: relative; padding: 30px; border-radius: 22px; color: var(--brand-navy); background: var(--cream); box-shadow: 0 30px 90px rgba(7,20,52,.34); }
 .specials-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 10px; color: var(--brand-navy); background: white; cursor: pointer; }

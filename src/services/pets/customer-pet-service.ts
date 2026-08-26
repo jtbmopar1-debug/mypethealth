@@ -15,6 +15,7 @@ interface CustomerPetRow {
   weight_kg: number | null;
   current_food_title: string | null;
   known_sensitivities: string[];
+  notes: string | null;
   status: "active" | "deceased" | "archived";
   deceased_at: string | null;
   last_mentioned_at: string;
@@ -29,6 +30,7 @@ export interface CustomerPetInput {
   weightKg: number | null;
   currentFoodTitle: string | null;
   knownSensitivities: string[];
+  notes: string | null;
   status: CustomerPet["status"];
 }
 
@@ -41,6 +43,7 @@ export interface ProposedCustomerPet {
   weightKg: number | null;
   currentFoodTitle: string | null;
   knownSensitivities: string[];
+  notes: string | null;
 }
 
 export interface PetMemoryResult {
@@ -64,6 +67,7 @@ function fromRow(row: CustomerPetRow): CustomerPet {
     weightKg: row.weight_kg,
     currentFoodTitle: row.current_food_title,
     knownSensitivities: row.known_sensitivities,
+    notes: row.notes,
     status: row.status,
     deceasedAt: row.deceased_at,
     lastMentionedAt: row.last_mentioned_at,
@@ -114,7 +118,7 @@ function profileFacts(message: string) {
 export async function listCustomerPets(shopifyCustomerId: string) {
   const { data, error } = await getServerSupabaseClient()
     .from("shopify_customer_pets")
-    .select("id,name,species,breed,age_value,age_unit,age_recorded_at,weight_kg,current_food_title,known_sensitivities,status,deceased_at,last_mentioned_at")
+    .select("id,name,species,breed,age_value,age_unit,age_recorded_at,weight_kg,current_food_title,known_sensitivities,notes,status,deceased_at,last_mentioned_at")
     .eq("shopify_customer_id", shopifyCustomerId)
     .order("last_mentioned_at", { ascending: false });
   if (error) throw new Error(`Pet memory query failed: ${error.message}`);
@@ -157,6 +161,7 @@ export async function saveCustomerPetProfile(
     weight_kg: input.weightKg,
     current_food_title: input.currentFoodTitle,
     known_sensitivities: input.knownSensitivities,
+    notes: input.notes,
     status: input.status,
     deceased_at: input.status === "deceased" ? existing?.deceased_at || now : null,
     updated_at: now,
@@ -264,6 +269,7 @@ export async function rememberCustomerPets(
         weightKg: facts.weightKg ?? null,
         currentFoodTitle: facts.currentFoodTitle ?? null,
         knownSensitivities: facts.knownSensitivities ?? [],
+        notes: null,
       });
       continue;
     }
