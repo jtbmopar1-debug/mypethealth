@@ -18,11 +18,18 @@ const sessionSchema = z.object({
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
   idToken: z.string().min(1),
-  accessToken: z.string().min(1).optional(),
+  // A signed-in Buddy session must include the Customer Account API token.
+  // Earlier deployments stored a customer identity without one, which made
+  // the UI look authenticated while order-history requests could never run.
+  accessToken: z.string().min(1),
   expiresAt: z.number(),
 });
 
 export type ShopifyCustomerSession = z.infer<typeof sessionSchema>;
+
+type LocalDevelopmentShopifySession = Omit<ShopifyCustomerSession, "accessToken"> & {
+  accessToken?: undefined;
+};
 
 function required(name: string) {
   const value = process.env[name]?.trim();
@@ -117,7 +124,7 @@ export function readShopifySession(cookieValue: string | undefined) {
  * This can never activate in a production build, even if the environment flag
  * is accidentally copied to Vercel.
  */
-export function readShopifySessionOrLocalDev(cookieValue: string | undefined) {
+export function readShopifySessionOrLocalDev(cookieValue: string | undefined): ShopifyCustomerSession | LocalDevelopmentShopifySession | null {
   const session = readShopifySession(cookieValue);
   if (session) return session;
   if (process.env.NODE_ENV !== "development" || process.env.LOCAL_DEV_AUTH_BYPASS === "false") return null;
@@ -134,7 +141,7 @@ export function readShopifySessionOrLocalDev(cookieValue: string | undefined) {
     lastName: "Tester",
     idToken: "local-development-only",
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-  } satisfies ShopifyCustomerSession;
+  } satisfies LocalDevelopmentShopifySession;
 }
 
 export function callbackUrl() {
