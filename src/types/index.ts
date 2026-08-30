@@ -60,6 +60,16 @@ export interface Product {
   retailer: string;
   tags: string[];
   availability: "in_stock" | "out_of_stock";
+  /** Live Shopify variants, used when a customer asks about pack sizes or flavours. */
+  variants?: ProductVariant[];
+}
+
+export interface ProductVariant {
+  id: string;
+  title: string;
+  price: number;
+  compareAtPrice?: number;
+  availability: "in_stock" | "out_of_stock";
 }
 
 export interface ProductRecommendation {

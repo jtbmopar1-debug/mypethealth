@@ -1,7 +1,7 @@
 import "server-only";
 
 import { serverConfig } from "@/config/env";
-import type { Product, ProductRecommendation } from "@/types";
+import type { Product, ProductRecommendation, ProductVariant } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
 import { isPrivateCustomOrderProduct, productMatchesSpecies } from "./product-relevance";
 import { expandProductSearchAliases, productTextMatchesRequiredTerm } from "./product-search-aliases";
@@ -20,6 +20,15 @@ interface ShopifyProductNode {
     availableForSale: boolean;
     compareAtPrice: { amount: string; currencyCode: string } | null;
   } | null;
+  variants: {
+    nodes: Array<{
+      id: string;
+      title: string;
+      availableForSale: boolean;
+      price: { amount: string };
+      compareAtPrice: { amount: string } | null;
+    }>;
+  };
   onlineStoreUrl: string | null;
   featuredImage: { url: string } | null;
   priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
@@ -52,6 +61,7 @@ interface StorefrontTokenResponse {
 
 interface PublicShopifyVariant {
   id: number;
+  title: string;
   available: boolean;
   price: string;
   compare_at_price: string | null;
@@ -108,6 +118,7 @@ const PRODUCTS_QUERY = `
         productType
         availableForSale
         selectedOrFirstAvailableVariant { id availableForSale compareAtPrice { amount currencyCode } }
+        variants(first: 50) { nodes { id title availableForSale price { amount } compareAtPrice { amount } } }
         onlineStoreUrl
         featuredImage { url }
         priceRange { minVariantPrice { amount currencyCode } }
@@ -193,6 +204,13 @@ function toPublicProduct(node: PublicShopifyProduct): Product | null {
     retailer: "All Good Petfood",
     tags,
     availability: variant.available ? "in_stock" : "out_of_stock",
+    variants: node.variants.map((item): ProductVariant => ({
+      id: String(item.id),
+      title: item.title,
+      price: Number(item.price) || 0,
+      compareAtPrice: item.compare_at_price ? Number(item.compare_at_price) || undefined : undefined,
+      availability: item.available ? "in_stock" : "out_of_stock",
+    })),
   };
 }
 
@@ -219,6 +237,13 @@ function toProduct(node: ShopifyProductNode): Product {
     retailer: "All Good Petfood",
     tags,
     availability: node.availableForSale ? "in_stock" : "out_of_stock",
+    variants: node.variants.nodes.map((variant): ProductVariant => ({
+      id: variant.id,
+      title: variant.title,
+      price: Number(variant.price.amount) || 0,
+      compareAtPrice: variant.compareAtPrice ? Number(variant.compareAtPrice.amount) || undefined : undefined,
+      availability: variant.availableForSale ? "in_stock" : "out_of_stock",
+    })),
   };
 }
 

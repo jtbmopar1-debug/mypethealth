@@ -44,4 +44,14 @@ describe("approved knowledge responses", () => {
 
     expect(result.mode).not.toBe("approved-knowledge");
   });
+
+  it("keeps a simple opening-hours question concise", async () => {
+    const hoursKnowledge = {
+      ...knowledge,
+      content: "The retail store is at 12 Mill Lane. Regular staffed shop hours are Monday to Friday, 8:30 am to 5:00 pm, and Saturday, 9:00 am to 2:00 pm. The dog wash is available 24/7.",
+    };
+    const result = await answerCustomer([{ ...message, content: "What time do you open?" }], [hoursKnowledge], []);
+
+    expect(result.content).toBe("Our staffed shop hours are Monday–Friday, 8:30 am to 5:00 pm; Saturday, 9:00 am to 2:00 pm.");
+  });
 });

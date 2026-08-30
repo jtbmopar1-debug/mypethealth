@@ -4,6 +4,7 @@ import { isAdminEmail } from "@/services/admin-auth";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { getServerSupabaseClient } from "@/services/supabase/server";
 import { listManagedKnowledgeEntries } from "@/services/knowledge/supabase-knowledge-service";
+import { reviewKnowledgePolicy } from "@/services/knowledge/policy-review";
 
 const idSchema = z.string().uuid();
 const recommendedProductUrlSchema = z.string().trim().url().max(1000).refine((value) => {
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
   try {
     const { error } = await getServerSupabaseClient().from("knowledge_entries").insert(row(parsed.data, session.email));
     if (error) throw new Error(error.message);
-    return Response.json({ entries: await listManagedKnowledgeEntries() });
+    return Response.json({ entries: await listManagedKnowledgeEntries(), policyConflicts: reviewKnowledgePolicy(parsed.data) });
   } catch (error) {
     console.error("[admin-knowledge] create failed", error instanceof Error ? error.message : "Unknown error");
     return Response.json({ error: "Knowledge entry could not be created" }, { status: 503 });
@@ -95,7 +96,7 @@ export async function PATCH(request: NextRequest) {
       .update(row(parsed.data.entry, session.email))
       .eq("id", parsed.data.id);
     if (error) throw new Error(error.message);
-    return Response.json({ entries: await listManagedKnowledgeEntries() });
+    return Response.json({ entries: await listManagedKnowledgeEntries(), policyConflicts: reviewKnowledgePolicy(parsed.data.entry) });
   } catch (error) {
     console.error("[admin-knowledge] update failed", error instanceof Error ? error.message : "Unknown error");
     return Response.json({ error: "Knowledge entry could not be updated" }, { status: 503 });

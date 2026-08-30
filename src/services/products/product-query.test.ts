@@ -13,6 +13,7 @@ import {
   wantsProductStockStatus,
   wantsCurrentProductAvailability,
   wantsProductSuggestion,
+  wantsProductVariantDetails,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -38,6 +39,12 @@ describe("product catalogue query parsing", () => {
     const message = "Does the Addiction Lamb small dog kibble come in larger sized bags?";
     expect(wantsProductSuggestion(message)).toBe(true);
     expect(productSearchAnchors(productSearchTerms(message))).toEqual(["addiction", "lamb", "small"]);
+  });
+
+  it("treats a short named dry-food follow-up as a catalogue request", () => {
+    expect(wantsProductSuggestion("Dry dog food salmon bleu!")).toBe(true);
+    expect(wantsProductSuggestion("What sizes does Salmon Bleu come in?")).toBe(true);
+    expect(wantsProductVariantDetails("What sizes does Salmon Bleu come in?")).toBe(true);
   });
 
   it("extracts the query from an All Good Petfood search URL", () => {

@@ -15,6 +15,16 @@ function needsContinuation(content: string) {
   return Boolean(trimmed) && !/[.!?…:]$/.test(trimmed);
 }
 
+function asksOpeningHours(message: string) {
+  return /\b(?:what\s+time\s+(?:do\s+you\s+)?open|opening\s+hours?|shop\s+hours?|when\s+(?:are|do)\s+you\s+open)\b/i.test(message);
+}
+
+function conciseOpeningHours(content: string) {
+  const match = content.match(/(?:regular\s+(?:staffed\s+)?shop\s+hours\s+are\s+)?monday\s+to\s+friday,?\s*([^.;]+?),?\s*(?:and\s+)?saturday,?\s*([^.;]+)/i);
+  if (!match) return null;
+  return `Our staffed shop hours are Monday–Friday, ${match[1].trim()}; Saturday, ${match[2].trim()}.`;
+}
+
 export async function answerCustomer(
   messages: ChatMessage[],
   knowledge: KnowledgeEntry[],
@@ -80,8 +90,10 @@ export async function answerCustomer(
   // to paraphrase it: the exact approved answer is the response Buddy gives.
   const approvedKnowledge = knowledge.find((entry) => entry.approvedExact && entry.content.trim());
   if (approvedKnowledge) {
+    const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content || "";
+    const compactHours = asksOpeningHours(latestUserMessage) ? conciseOpeningHours(approvedKnowledge.content) : null;
     return {
-      content: approvedKnowledge.content.trim(),
+      content: compactHours ?? approvedKnowledge.content.trim(),
       recommendations,
       mode: "approved-knowledge",
     };

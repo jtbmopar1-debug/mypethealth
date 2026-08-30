@@ -22,6 +22,7 @@ import {
   wantsProductStockStatus,
   wantsCurrentProductAvailability,
   wantsProductSuggestion,
+  wantsProductVariantDetails,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -31,7 +32,7 @@ import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services
 import { fetchRecentCustomerOrders } from "@/services/shopify/customer-orders";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
 import { contextualNamedPetReply } from "@/services/pets/pet-message-parser";
-import type { CustomerOrder } from "@/types";
+import type { CustomerOrder, ProductRecommendation } from "@/types";
 
 const messageSchema = z.object({
   id: z.string(),
@@ -56,6 +57,37 @@ function confirmsTeamEmail(message: string, previousAssistantMessage = "") {
 function responseNeedsTeamEmailOffer(message: string) {
   return /\b(?:i (?:do not|don['’]t) (?:know|have (?:enough|that) information|have access)|i (?:cannot|can['’]t|could not|couldn['’]t) (?:answer|verify|find|confirm|determine|check)|could not be verified|couldn['’]t be verified|information (?:is|was) unavailable)\b/i.test(message)
     && !message.includes(TEAM_EMAIL_OFFER);
+}
+
+function variantDetailsReply(product: { title: string; variants?: Array<{ title: string; availability: "in_stock" | "out_of_stock" }> }) {
+  const variants = (product.variants || []).filter((variant) => !/^default title$/i.test(variant.title));
+  if (variants.length === 0) return null;
+  const inStock = variants.filter((variant) => variant.availability === "in_stock").map((variant) => variant.title);
+  const outOfStock = variants.filter((variant) => variant.availability === "out_of_stock").map((variant) => variant.title);
+  const format = (items: string[]) => new Intl.ListFormat("en-NZ", { style: "long", type: "conjunction" }).format(items);
+  return [
+    `${product.title} comes in ${format(variants.map((variant) => variant.title))}.`,
+    inStock.length ? `${format(inStock)} ${inStock.length === 1 ? "is" : "are"} currently in stock.` : "None of those variants is currently in stock.",
+    outOfStock.length ? `${format(outOfStock)} ${outOfStock.length === 1 ? "is" : "are"} currently out of stock.` : "",
+  ].filter(Boolean).join("\n\n");
+}
+
+function variantProductCards(recommendations: ProductRecommendation[]) {
+  return recommendations.flatMap((recommendation) => {
+    const variants = (recommendation.product.variants || []).filter((variant) => !/^default title$/i.test(variant.title));
+    if (variants.length === 0) return [recommendation];
+    return variants.map((variant) => ({
+      ...recommendation,
+      product: {
+        ...recommendation.product,
+        variantId: variant.id,
+        title: `${recommendation.product.title} — ${variant.title}`,
+        price: variant.price,
+        compareAtPrice: variant.compareAtPrice,
+        availability: variant.availability,
+      },
+    }));
+  });
 }
 
 function confirmsPetProfile(message: string, previousAssistantMessage = "") {
@@ -717,11 +749,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (directCatalogueListing) {
+      const variantDetailsRequested = wantsProductVariantDetails(latestUserMessage);
+      const variantDetails = variantDetailsRequested && recommendations.length === 1
+        ? variantDetailsReply(recommendations[0].product)
+        : null;
+      const productCards = variantDetailsRequested ? variantProductCards(recommendations) : recommendations;
       return Response.json({
-        message: recommendations.length > 0
+        message: variantDetails ?? (recommendations.length > 0
           ? `Yes—these matching options are currently in stock.`
-          : `I couldn’t verify any matching in-stock options in the current catalogue. Would you like me to email our team to get an answer to your enquiry?`,
-        products: recommendations,
+          : `I couldn’t verify any matching in-stock options in the current catalogue. Would you like me to email our team to get an answer to your enquiry?`),
+        products: productCards,
         resetProductContext: false,
         pets: customerPets,
         mode: "catalogue-listing",

@@ -48,10 +48,26 @@ export function wantsProductSuggestion(message: string) {
   if (/\b(?:does|do|is|are)\b[\s\S]{0,120}\b(?:come in|available in|larger|smaller|size|sizes|bag|bags|pack|packs|variant|flavou?r)\b/i.test(text)
     && /\b(?:food|kibble|treat|chew|litter|supplement|collar|lead|harness|toy|shampoo|conditioner)\b/i.test(text)) return true;
 
+  // Once the customer supplies a meaningful name alongside a pack-size or
+  // flavour question, it is a specific catalogue lookup even if they omit
+  // the product category (for example, "What sizes does Salmon Bleu come in?").
+  if (/\b(?:come in|available in|larger|smaller|size|sizes|bag|bags|pack|packs|variant|flavou?r)\b/i.test(text)
+    && productSearchAnchors(productSearchTerms(message)).length > 0) return true;
+
+  // A named food follow-up, such as "dry dog food salmon bleu", must search
+  // the live catalogue instead of being treated as a general knowledge query.
+  const terms = productSearchTerms(message);
+  if (/\b(?:dog|cat)\s+(?:food|kibble)\b/i.test(text)
+    && productSearchAnchors(terms).some((term) => !["dry", "wet"].includes(term))) return true;
+
   return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
     || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text)
     || /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i.test(text)
     || /\b(?:do you(?: guys)? (?:do|sell|stock|carry)|have you got|got any)\b/i.test(text);
+}
+
+export function wantsProductVariantDetails(message: string) {
+  return /\b(?:size|sizes|sized|bag|bags|pack|packs|variant|variants|flavou?r|flavou?rs)\b/i.test(message);
 }
 
 export function isGenericProductHelpRequest(message: string) {

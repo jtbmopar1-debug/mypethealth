@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BookOpen, CheckCircle2, FilePenLine, Plus, Search, Tags, Trash2, X } from "lucide-react";
 import type { KnowledgeEntry } from "@/types";
+import { reviewKnowledgePolicy, type KnowledgePolicyConflict } from "@/services/knowledge/policy-review";
 
 interface AdminKnowledgeEntry extends KnowledgeEntry {
   sourceCandidateId: string | null;
@@ -148,6 +149,7 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
   }, [draft.category, entries, reviewCandidates]);
   const categories = categoryOptions.length;
   const enabledCount = entries.filter((entry) => entry.publicationStatus === "published").length;
+  const policyConflicts = useMemo(() => reviewKnowledgePolicy({ question: draft.question, answer: draft.answer }), [draft.question, draft.answer]);
 
   function newEntry() {
     setEditingId(null);
@@ -196,10 +198,12 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingId ? { id: editingId, entry: payload(draft) } : payload(draft)),
       });
-      const data = await response.json() as { entries?: AdminKnowledgeEntry[]; error?: string };
+      const data = await response.json() as { entries?: AdminKnowledgeEntry[]; error?: string; policyConflicts?: KnowledgePolicyConflict[] };
       if (!response.ok || !data.entries) throw new Error(data.error || "Knowledge entry could not be saved");
       setEntries(data.entries);
-      setNotice(draft.publicationStatus === "published" ? "Published knowledge saved. Buddy can retrieve it now." : "Unpublished knowledge saved. Buddy will not retrieve it until published.");
+      setNotice(data.policyConflicts?.length
+        ? `Knowledge saved with ${data.policyConflicts.length} policy review flag${data.policyConflicts.length === 1 ? "" : "s"}. Use Edit to revise the entry before relying on it.`
+        : draft.publicationStatus === "published" ? "Published knowledge saved. Buddy can retrieve it now." : "Unpublished knowledge saved. Buddy will not retrieve it until published.");
       setEditingId(null);
       setDraft({ ...EMPTY_ENTRY });
       setSelectedCandidateId("");
@@ -267,6 +271,14 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
           <form className="knowledge-form" onSubmit={saveEntry}>
             <label>Customer question or topic<input required minLength={3} maxLength={300} value={draft.question} onChange={(event) => setDraft((current) => ({ ...current, question: event.target.value }))} placeholder="e.g. How should I transition my dog onto a new food?" /></label>
             <label>Approved answer <small>Shown to customers exactly as written when this entry matches</small><textarea required minLength={10} maxLength={12000} rows={8} value={draft.answer} onChange={(event) => setDraft((current) => ({ ...current, answer: event.target.value }))} placeholder="Write the complete response Buddy should give the customer." /></label>
+            {policyConflicts.length > 0 && <aside className="policy-review" aria-live="polite">
+              <strong>Policy review needed</strong>
+              {policyConflicts.map((conflict) => <div key={conflict.id}>
+                <p><b>Why:</b> {conflict.reason}</p>
+                <p><b>What to do next:</b> {conflict.nextStep}</p>
+              </div>)}
+              <small>You can still save a draft while you revise it.</small>
+            </aside>}
             <div className="knowledge-form-row">
               <label>Category<select required value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}>{categoryOptions.map((category) => <option key={category} value={category}>{category.replaceAll("-", " ")}</option>)}</select></label>
               <label>Search keywords<input value={draft.tags} onChange={(event) => setDraft((current) => ({ ...current, tags: event.target.value }))} placeholder="transition, change food, new diet" /></label>
