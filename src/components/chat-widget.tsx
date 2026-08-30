@@ -712,7 +712,7 @@ export function ChatWidget() {
             <button type="submit" className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message"><ArrowUp size={20} /></button>
           </form>
           <div className="composer-support">
-            <p>{storageNotice || "General pet-food guidance only. For urgent or ongoing health concerns, talk with your vet."}</p>
+            <p>{storageNotice || "General pet-food guidance only. The All Good team can help and will recommend or refer to a vet if they consider it necessary."}</p>
             <button type="button" onClick={openContactTeam} disabled={!hasCustomerMessage || isLoading} title={!hasCustomerMessage ? "Ask Buddy a question first" : undefined}><Mail size={17} /> Contact our team</button>
           </div>
         </footer>

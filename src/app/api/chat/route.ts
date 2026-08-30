@@ -82,6 +82,14 @@ function needsHealthKnowledge(message: string) {
   return /\b(?:itch|yeast|allerg|sensitive|stomach|diarrh|vomit|skin|coat|weight|underweight|overweight|feed(?:ing)?|portion|diet|nutrition|health|condition|symptom|puppy|kitten|senior|transition)\b/i.test(message);
 }
 
+function requestsTopicalSkinSupport(message: string) {
+  return /\b(?:cream|balm|salve|spray|soak|shampoo)\b/i.test(message);
+}
+
+function mentionsSkinOrPawConcern(message: string) {
+  return /\b(?:paw|paws|skin|itch|itchy|red|redness|rash|irritat(?:ed|ion)|lick(?:ing)?|chew(?:ing)?)\b/i.test(message);
+}
+
 function explicitlyWantsPurchaseHistory(message: string) {
   return /\b(?:order history|purchase history|previous(?:ly)? (?:bought|ordered)|last (?:bought|ordered|purchase|order)|bought last|ordered last|usual (?:food|order|product)|reorder|re-order|buy (?:it|that|them) again|what did i (?:buy|order))\b/i.test(message);
 }
@@ -425,7 +433,7 @@ export async function POST(request: NextRequest) {
       || genericBroadContinuation)
       && !needsHealthKnowledge(latestUserMessage);
     const previousUserMessage = userMessages.at(-2) ?? "";
-    const knowledgeQuery = productSearchTerms(latestUserMessage).length <= 4 && previousUserMessage
+    const knowledgeQuery = isShortCategoryRefinement(latestUserMessage) && previousUserMessage
       ? `${previousUserMessage} ${latestUserMessage}`
       : latestUserMessage;
     const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
@@ -563,6 +571,20 @@ export async function POST(request: NextRequest) {
           ...linkedRecommendations,
           ...recommendations.filter(({ product }) => !linkedRecommendations.some((linked) => linked.product.id === product.id)),
         ].slice(0, limit);
+      }
+
+      // A customer may ask for "cream for it" immediately after describing a
+      // red paw or itchy skin. If there is no literal cream match, surface
+      // only relevant live paw/skin support items instead of a substring match
+      // such as "Scream" toy.
+      if (recommendations.length === 0
+        && requestsTopicalSkinSupport(latestUserMessage)
+        && mentionsSkinOrPawConcern(recentPetContext)) {
+        recommendations = await productService.recommendProducts(
+          ["paw", "skin", "itch", "balm", "salve", "spray"],
+          3,
+          { availableOnly: true, allowFallback: false, species: targetSpecies },
+        );
       }
     }
 

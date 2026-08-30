@@ -1,11 +1,11 @@
 import { containsProductSearchAlias } from "./product-search-aliases";
 
 const stopWords = new Set([
-  "a", "an", "and", "any", "are", "about", "again", "at", "better", "can", "carry", "catalog", "catalogue",
+  "a", "an", "and", "any", "are", "about", "again", "at", "available", "better", "bigger", "can", "carry", "catalog", "catalogue", "come",
   "back", "be", "check", "choose", "could", "current", "currently", "deal", "deals", "discount", "discounted", "do", "find", "for",
-  "get", "going", "got", "guy", "guys", "have", "help", "i", "in", "is", "it", "live", "looking", "me", "moment", "need", "now",
+  "does", "get", "going", "got", "guy", "guys", "have", "help", "i", "in", "is", "it", "larger", "live", "looking", "me", "moment", "need", "now",
   "of", "on", "or", "please", "product", "products", "recommend", "sale", "sales", "sell", "show", "some", "special",
-  "specials", "still", "stock", "suggest", "the", "their", "there", "they", "to", "want", "what", "when", "which", "will", "with", "you",
+  "sized", "sizes", "smaller", "specials", "still", "stock", "suggest", "the", "their", "there", "they", "to", "want", "what", "when", "which", "will", "with", "you",
 ]);
 
 function replaceShopifySearchUrls(message: string) {
@@ -41,6 +41,12 @@ export function wantsProductSuggestion(message: string) {
 
   if (explicitPhrases.some((phrase) => text.includes(phrase))) return true;
   if (/https?:\/\/(?:www\.)?allgoodpetfood\.co\.nz\/search\?[^\s]*\bq=/i.test(message.replace(/\\&/g, "&"))) return true;
+
+  // Customers often ask a stock/catalogue question about an exact item without
+  // using the words "stock" or "recommend" (for example, whether a kibble has
+  // a larger bag). These need a live catalogue search, not a general AI reply.
+  if (/\b(?:does|do|is|are)\b[\s\S]{0,120}\b(?:come in|available in|larger|smaller|size|sizes|bag|bags|pack|packs|variant|flavou?r)\b/i.test(text)
+    && /\b(?:food|kibble|treat|chew|litter|supplement|collar|lead|harness|toy|shampoo|conditioner)\b/i.test(text)) return true;
 
   return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
     || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text)

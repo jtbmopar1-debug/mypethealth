@@ -137,7 +137,16 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
     return reviewCandidates.filter((candidate) => !usedIds.has(candidate.id));
   }, [entries, reviewCandidates]);
 
-  const categories = new Set(entries.map((entry) => entry.category)).size;
+  const categoryOptions = useMemo(() => {
+    const values = new Set([
+      "general",
+      ...entries.map((entry) => entry.category),
+      ...reviewCandidates.map((candidate) => candidate.category),
+      draft.category,
+    ].map((category) => category.trim()).filter(Boolean));
+    return [...values].sort((left, right) => left.localeCompare(right));
+  }, [draft.category, entries, reviewCandidates]);
+  const categories = categoryOptions.length;
   const enabledCount = entries.filter((entry) => entry.publicationStatus === "published").length;
 
   function newEntry() {
@@ -259,12 +268,12 @@ export function AdminKnowledgeEditor({ builtInCount, reviewCandidates }: { built
             <label>Customer question or topic<input required minLength={3} maxLength={300} value={draft.question} onChange={(event) => setDraft((current) => ({ ...current, question: event.target.value }))} placeholder="e.g. How should I transition my dog onto a new food?" /></label>
             <label>Approved answer<textarea required minLength={10} maxLength={12000} rows={8} value={draft.answer} onChange={(event) => setDraft((current) => ({ ...current, answer: event.target.value }))} placeholder="Write the factual answer Buddy should use. Include important limits and context." /></label>
             <div className="knowledge-form-row">
-              <label>Category<input required maxLength={100} value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} placeholder="feeding-guidance" /></label>
+              <label>Category<select required value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}>{categoryOptions.map((category) => <option key={category} value={category}>{category.replaceAll("-", " ")}</option>)}</select></label>
               <label>Search keywords<input value={draft.tags} onChange={(event) => setDraft((current) => ({ ...current, tags: event.target.value }))} placeholder="transition, change food, new diet" /></label>
             </div>
             <label>Short summary <small>Optional—generated from the answer if blank</small><textarea maxLength={500} rows={2} value={draft.summary} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} /></label>
             <label>Useful follow-up questions <small>One question per line</small><textarea rows={3} value={draft.followUpQuestions} onChange={(event) => setDraft((current) => ({ ...current, followUpQuestions: event.target.value }))} placeholder={'What food are they eating now?\nHow old is your pet?'} /></label>
-            <label>Safety notes <small>One instruction per line</small><textarea rows={3} value={draft.safetyNotes} onChange={(event) => setDraft((current) => ({ ...current, safetyNotes: event.target.value }))} placeholder="Persistent or severe symptoms require veterinary advice." /></label>
+            <label>Safety notes <small>One instruction per line</small><textarea rows={3} value={draft.safetyNotes} onChange={(event) => setDraft((current) => ({ ...current, safetyNotes: event.target.value }))} placeholder="The All Good team can help and will recommend or refer to a vet if they consider it necessary." /></label>
             <label>Product matching tags <small>Optional, comma-separated Shopify/product tags</small><input value={draft.relevantProductTags} onChange={(event) => setDraft((current) => ({ ...current, relevantProductTags: event.target.value }))} placeholder="puppy, growth, sensitive-stomach" /></label>
             <label>Recommended product links <small>Optional, one All Good Petfood product URL per line</small><textarea rows={3} value={draft.recommendedProductUrls} onChange={(event) => setDraft((current) => ({ ...current, recommendedProductUrls: event.target.value }))} placeholder={'https://allgoodpetfood.co.nz/products/example-balm\nhttps://allgoodpetfood.co.nz/products/example-cream'} /></label>
             <div className="knowledge-form-row">

@@ -49,6 +49,6 @@ describe("local assistant guardrails", () => {
       user("She is 6 years old, 24 kg, eats chicken and this started a month ago")
     ], [], [recommendation]);
     expect(result.recommendations.map(({ product }) => product.id)).toEqual(["known-product"]);
-    expect(result.content.toLowerCase()).toContain("vet");
+    expect(result.content).toContain("All Good team can help and will recommend or refer to a vet if they consider it necessary.");
   });
 });

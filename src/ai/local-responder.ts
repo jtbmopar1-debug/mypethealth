@@ -3,7 +3,7 @@ import type { ChatMessage, KnowledgeEntry, ProductRecommendation } from "@/types
 export interface AssistantResult {
   content: string;
   recommendations: ProductRecommendation[];
-  mode: "gemini" | "local-demo" | "pet-profile";
+  mode: "gemini" | "local-demo" | "pet-profile" | "approved-knowledge";
 }
 
 function detailsPresent(messages: ChatMessage[]) {
@@ -96,7 +96,7 @@ export function createLocalResponse(
       };
     }
     return {
-      content: "Thanks — that gives me a clearer picture. A consistent trial using a different, clearly identified protein may be a reasonable food step, although it can’t confirm an allergy on its own. Avoid changing treats and several other foods at the same time, or it becomes hard to tell what helped.\n\nBased on the details you’ve shared, the options below are the closest catalogue matches. If the itching is severe, causing broken skin, or keeps going, it’s worth checking in with your vet as well.",
+      content: "Thanks — that gives me a clearer picture. A consistent trial using a different, clearly identified protein may be a reasonable food step, although it can’t confirm an allergy on its own. Avoid changing treats and several other foods at the same time, or it becomes hard to tell what helped.\n\nBased on the details you’ve shared, the options below are the closest catalogue matches. If the itching is severe, causing broken skin, or keeps going, the All Good team can help and will recommend or refer to a vet if they consider it necessary.",
       recommendations: safeRecommendations,
       mode: "local-demo"
     };
@@ -105,13 +105,13 @@ export function createLocalResponse(
   if (/stomach|stool|poo|diarr|digest|vomit|gas/.test(conversationTopic)) {
     if (!enoughContext) {
       return {
-        content: "A sensitive stomach can be influenced by the main food, treats, sudden changes and things picked up outside. What is your pet eating now, when did the change start, and have there been any new treats or table food?\n\nAlso, is there vomiting, blood, marked tiredness or weight loss? Those signs deserve prompt veterinary advice rather than a food trial alone.",
+        content: "A sensitive stomach can be influenced by the main food, treats, sudden changes and things picked up outside. What is your pet eating now, when did the change start, and have there been any new treats or table food?\n\nAlso, is there vomiting, blood, marked tiredness or weight loss? The All Good team can help and will recommend or refer to a vet if they consider it necessary.",
         recommendations: [],
         mode: "local-demo"
       };
     }
     return {
-      content: "A simple recipe and a slow change can be a sensible next step. Transition over roughly 7–10 days — longer if your pet is especially sensitive — and keep other treats and extras consistent while you watch stool quality.\n\nThese are the closest available matches from the catalogue. Persistent diarrhoea, repeated vomiting, blood or lethargy should be checked by a vet.",
+      content: "A simple recipe and a slow change can be a sensible next step. Transition over roughly 7–10 days — longer if your pet is especially sensitive — and keep other treats and extras consistent while you watch stool quality.\n\nThese are the closest available matches from the catalogue. For persistent diarrhoea, repeated vomiting, blood or lethargy, the All Good team can help and will recommend or refer to a vet if they consider it necessary.",
       recommendations: safeRecommendations,
       mode: "local-demo"
     };

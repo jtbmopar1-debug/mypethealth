@@ -25,5 +25,8 @@ export function containsProductSearchAlias(terms: string[]) {
 
 export function productTextMatchesSearchTerm(searchableText: string, term: string) {
   const normalizedText = searchableText.toLowerCase();
-  return expandProductSearchAliases([term]).some((alias) => normalizedText.includes(alias));
+  return expandProductSearchAliases([term]).some((alias) => {
+    const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[^a-z0-9])${escapedAlias}(?:s|es)?(?=$|[^a-z0-9])`, "i").test(normalizedText);
+  });
 }

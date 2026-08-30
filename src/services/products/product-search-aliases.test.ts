@@ -26,5 +26,6 @@ describe("expandProductSearchAliases", () => {
   it("matches customer wording against catalogue aliases", () => {
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "treat")).toBe(true);
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "salmon")).toBe(false);
+    expect(productTextMatchesSearchTerm("Scream Xtreme Treat Tyre", "cream")).toBe(false);
   });
 });

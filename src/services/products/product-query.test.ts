@@ -33,6 +33,12 @@ describe("product catalogue query parsing", () => {
     expect(productSearchTerms("i looking for bully sticks")).toEqual(["bully", "stick"]);
   });
 
+  it("recognises a named product's bag-size question as a catalogue request", () => {
+    const message = "Does the Addiction Lamb small dog kibble come in larger sized bags?";
+    expect(wantsProductSuggestion(message)).toBe(true);
+    expect(productSearchAnchors(productSearchTerms(message))).toEqual(["addiction", "lamb", "small"]);
+  });
+
   it("extracts the query from an All Good Petfood search URL", () => {
     const url = "https://allgoodpetfood.co.nz/search?q=bully+sticks\\&options%5Bprefix%5D=last";
     expect(wantsProductSuggestion(url)).toBe(true);
