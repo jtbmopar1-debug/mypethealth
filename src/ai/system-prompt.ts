@@ -74,7 +74,7 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     ? `LIKELY RELEVANT TO THIS QUESTION\n${primaryPurchases.length ? primaryPurchases.map(formatPurchase).join("\n") : "None identified."}\n\nOTHER RECENT ITEMS\n${otherPurchases.length ? otherPurchases.map(formatPurchase).join("\n") : "None."}`
     : purchaseHistoryUnavailable
       ? "The customer explicitly requested purchase history, but it is unavailable in this session. Do not invent purchases; briefly ask them to sign out and sign in again, then retry."
-      : "No recent purchase line items were supplied for this turn.";
+      : "No recent purchase line items were supplied for this turn. Do not claim that purchase-history access is unavailable; say only that no purchase was returned for this account.";
 
   const petText = customerPets.length
     ? customerPets.map((pet) => {

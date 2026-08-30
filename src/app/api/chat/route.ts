@@ -444,6 +444,14 @@ export async function POST(request: NextRequest) {
         console.warn("[chat] purchase history unavailable", error instanceof Error ? error.message : "Unknown error");
       }
     }
+    if (explicitlyWantsPurchaseHistory(latestUserMessage)) {
+      console.info("[chat] purchase history lookup", {
+        accessTokenPresent: Boolean(customerSession.accessToken),
+        attempted: purchaseHistoryRelevant && Boolean(customerSession.accessToken),
+        returnedLineItems: recentPurchases.length,
+        unavailable: purchaseHistoryUnavailable,
+      });
+    }
     const relevantPurchases = purchasesRelevantToQuestion(recentPurchaseContext, recentPurchases);
     const retryingProductSearch = earlierProductIntent && isProductSearchRetry(latestUserMessage);
     const continuingSelection = (!latestHasProductIntent || retryingProductSearch)
