@@ -2,7 +2,7 @@ import "server-only";
 
 import type { KnowledgeEntry } from "@/types";
 import { getServerSupabaseClient } from "@/services/supabase/server";
-import { LocalKnowledgeService, scoreKnowledge } from "./local-knowledge-service";
+import { LocalKnowledgeService, rankKnowledge, tokenize } from "./local-knowledge-service";
 import type { KnowledgeService } from "./types";
 
 export interface ManagedKnowledgeEntry extends KnowledgeEntry {
@@ -55,6 +55,7 @@ function fromRow(row: KnowledgeRow): ManagedKnowledgeEntry {
     publicationStatus: row.publication_status,
     lastVerifiedAt: row.last_verified_at,
     reviewAfter: row.review_after,
+    approvedExact: row.publication_status === "published" && row.enabled,
   };
 }
 
@@ -75,27 +76,23 @@ export class SupabaseKnowledgeService implements KnowledgeService {
   async search(query: string, limit = 3): Promise<KnowledgeEntry[]> {
     const localEntries = await this.local.listEnabled();
     try {
+      const searchTerms = tokenize(query);
       const { data, error } = await getServerSupabaseClient().rpc("search_published_knowledge", {
-        search_text: query,
-        result_limit: limit,
+        // Natural customer questions contain filler words that made the old
+        // web-search query require every remaining term. OR retrieves a small
+        // candidate set; rankKnowledge then selects the genuinely relevant
+        // approved answer using the original question.
+        search_text: searchTerms.length ? searchTerms.join(" OR ") : query,
+        result_limit: 10,
       });
       if (error) throw new Error(error.message);
       const managedEntries = ((data || []) as KnowledgeRow[]).map(fromRow);
-      if (!managedEntries.length) return localEntries
-        .map((entry) => ({ entry, score: scoreKnowledge(entry, query) }))
-        .filter(({ score }) => score > 0)
-        .sort((left, right) => right.score - left.score)
-        .slice(0, limit)
-        .map(({ entry }) => entry);
-      return managedEntries.slice(0, limit);
+      const rankedManagedEntries = rankKnowledge(managedEntries, query, limit);
+      if (rankedManagedEntries.length) return rankedManagedEntries;
+      return rankKnowledge(localEntries, query, limit);
     } catch (error) {
       console.warn("[knowledge] managed entries unavailable; using built-in knowledge", error instanceof Error ? error.message : "Unknown error");
-      return localEntries
-        .map((entry) => ({ entry, score: scoreKnowledge(entry, query) }))
-        .filter(({ score }) => score > 0)
-        .sort((left, right) => right.score - left.score)
-        .slice(0, limit)
-        .map(({ entry }) => entry);
+      return rankKnowledge(localEntries, query, limit);
     }
   }
 

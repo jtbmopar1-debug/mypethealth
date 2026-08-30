@@ -80,6 +80,19 @@ export interface CustomerPurchase {
   currency: string | null;
 }
 
+export interface CustomerOrder {
+  id: string;
+  name: string;
+  processedAt: string;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+  financialStatus: string | null;
+  fulfillmentStatus: string | null;
+  totalPrice: number | null;
+  currency: string | null;
+  lineItems: CustomerPurchase[];
+}
+
 export interface KnowledgeEntry {
   id: string;
   title: string;
@@ -95,4 +108,6 @@ export interface KnowledgeEntry {
   publicationStatus?: "draft" | "published" | "archived";
   lastVerifiedAt?: string | null;
   reviewAfter?: string | null;
+  /** True only for a published, staff-managed answer that may be shown verbatim. */
+  approvedExact?: boolean;
 }

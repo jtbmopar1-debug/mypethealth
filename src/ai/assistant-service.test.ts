@@ -26,6 +26,7 @@ const knowledge: KnowledgeEntry = {
   tags: [],
   relevantProductTags: [],
   enabled: true,
+  approvedExact: true,
 };
 
 describe("approved knowledge responses", () => {
@@ -36,5 +37,11 @@ describe("approved knowledge responses", () => {
       content: "This is the exact staff-approved customer answer.",
       mode: "approved-knowledge",
     });
+  });
+
+  it("does not expose a built-in grounding entry as staff-approved verbatim copy", async () => {
+    const result = await answerCustomer([message], [{ ...knowledge, approvedExact: false }], []);
+
+    expect(result.mode).not.toBe("approved-knowledge");
   });
 });

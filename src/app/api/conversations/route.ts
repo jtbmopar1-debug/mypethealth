@@ -35,7 +35,7 @@ const messageSchema = z.object({
   content: z.string().min(1).max(12000),
   createdAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
   productIds: z.array(z.string().max(200)).max(20).optional(),
-  products: z.array(recommendationSchema).max(10).optional(),
+  products: z.array(recommendationSchema).max(20).optional(),
 });
 const conversationSchema = z.object({
   id: idSchema,

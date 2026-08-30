@@ -1,23 +1,13 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
-import { getServerSupabaseClient } from "@/services/supabase/server";
+import { loadCustomerConversation } from "@/services/conversations/customer-conversation-service";
 import { ContactTeamRateLimitError, sendContactTeamEnquiry } from "@/services/enquiries/contact-team-service";
-import type { Conversation } from "@/types";
 
 const requestSchema = z.object({
   conversationId: z.string().uuid(),
   customerMessage: z.string().trim().min(1).max(2000),
 });
-
-interface ConversationRow {
-  id: string;
-  title: string;
-  messages: Conversation["messages"];
-  pet_profile: Conversation["petProfile"] | null;
-  created_at: string;
-  updated_at: string;
-}
 
 export async function POST(request: NextRequest) {
   const session = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
@@ -27,27 +17,14 @@ export async function POST(request: NextRequest) {
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Enter a message for the team before sending." }, { status: 400 });
 
-  const { data, error } = await getServerSupabaseClient()
-    .from("shopify_conversations")
-    .select("id,title,messages,pet_profile,created_at,updated_at")
-    .eq("id", parsed.data.conversationId)
-    .eq("shopify_customer_id", session.customerId)
-    .maybeSingle();
-  if (error) {
-    console.error("[contact-team] conversation lookup failed", error.message);
+  let conversation;
+  try {
+    conversation = await loadCustomerConversation(session.customerId, parsed.data.conversationId);
+  } catch (error) {
+    console.error("[contact-team] conversation lookup failed", error instanceof Error ? error.message : "Unknown error");
     return Response.json({ error: "Your saved chat could not be loaded." }, { status: 503 });
   }
-  if (!data) return Response.json({ error: "That conversation could not be found." }, { status: 404 });
-
-  const row = data as ConversationRow;
-  const conversation: Conversation = {
-    id: row.id,
-    title: row.title,
-    messages: row.messages,
-    petProfile: row.pet_profile ?? undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+  if (!conversation) return Response.json({ error: "That conversation could not be found." }, { status: 404 });
   if (!conversation.messages.some((message) => message.role === "user")) {
     return Response.json({ error: "Ask Buddy a question before contacting the team." }, { status: 400 });
   }

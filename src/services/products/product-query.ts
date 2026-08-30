@@ -63,12 +63,17 @@ export function isProductSearchRetry(message: string) {
     || /\b(?:check again|try again|search again)\b/i.test(message);
 }
 
+export function wantsCurrentProductAvailability(message: string) {
+  return /\b(?:in stock|available|availability)\b/i.test(message);
+}
+
 export function wantsProductStockStatus(message: string) {
-  return /\b(?:back in(?:to)? stock|back in|restock(?:ed|ing)?|when[\s\S]{0,80}(?:get|have)|still be on special)\b/i.test(message);
+  return wantsCurrentProductAvailability(message)
+    || /\b(?:back in(?:to)? stock|back in|restock(?:ed|ing)?|when[\s\S]{0,80}(?:get|have)|still be on special)\b/i.test(message);
 }
 
 const nonIdentifyingProductTerms = new Set([
-  "cat", "dog", "pet", "food", "feed", "kibble", "diet", "meal", "ear", "bite", "snack", "jerky",
+  "cat", "dog", "pet", "food", "feed", "kibble", "diet", "meal", "bite", "snack", "jerky",
   "reward", "crunchy", "natural", "option", "bag", "pack",
 ]);
 

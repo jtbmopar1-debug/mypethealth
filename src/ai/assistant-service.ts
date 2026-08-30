@@ -78,7 +78,7 @@ export async function answerCustomer(
 
   // Published knowledge is staff-approved customer copy. Do not ask the model
   // to paraphrase it: the exact approved answer is the response Buddy gives.
-  const approvedKnowledge = knowledge.find((entry) => entry.content.trim());
+  const approvedKnowledge = knowledge.find((entry) => entry.approvedExact && entry.content.trim());
   if (approvedKnowledge) {
     return {
       content: approvedKnowledge.content.trim(),

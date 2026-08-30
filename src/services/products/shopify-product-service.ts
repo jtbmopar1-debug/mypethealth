@@ -4,7 +4,7 @@ import { serverConfig } from "@/config/env";
 import type { Product, ProductRecommendation } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
 import { isPrivateCustomOrderProduct, productMatchesSpecies } from "./product-relevance";
-import { expandProductSearchAliases, productTextMatchesSearchTerm } from "./product-search-aliases";
+import { expandProductSearchAliases, productTextMatchesRequiredTerm } from "./product-search-aliases";
 import { productSearchAnchors } from "./product-query";
 
 interface ShopifyProductNode {
@@ -460,7 +460,7 @@ export class ShopifyProductService implements ProductService {
       .filter((product) => {
         if (requiredTerms.length === 0) return true;
         const titleAndTags = `${product.title} ${product.tags.join(" ")}`.toLowerCase();
-        return requiredTerms.every((term) => productTextMatchesSearchTerm(titleAndTags, term))
+        return requiredTerms.every((term) => productTextMatchesRequiredTerm(titleAndTags, term))
           && (!requiredTerms.includes("raw") || /\braw\b/i.test(product.title));
       })
       .map((product) => ({

@@ -11,6 +11,7 @@ import {
   rejectsProductIdentity,
   productSearchTerms,
   wantsProductStockStatus,
+  wantsCurrentProductAvailability,
   wantsProductSuggestion,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
@@ -110,6 +111,12 @@ describe("product catalogue query parsing", () => {
     expect(wantsAddToCart("is it in stock?")).toBe(false);
     expect(acknowledgesInStockProduct("oh it is in stock, cool")).toBe(true);
     expect(acknowledgesInStockProduct("when is it in stock?")).toBe(false);
+  });
+
+  it("treats a direct in-stock question as current stock intent", () => {
+    expect(wantsCurrentProductAvailability("do you have pig ears in stock?")).toBe(true);
+    expect(wantsProductStockStatus("do you have pig ears in stock?")).toBe(true);
+    expect(productStockSearchAnchors(productSearchTerms("do you have pig ears in stock?"))).toEqual(["pig", "ear"]);
   });
 
   it("recognises a request for the enquiry audit status", () => {

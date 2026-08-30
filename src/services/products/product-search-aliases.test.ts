@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsProductSearchAlias, expandProductSearchAliases, productTextMatchesSearchTerm } from "./product-search-aliases";
+import { containsProductSearchAlias, expandProductSearchAliases, productTextMatchesRequiredTerm, productTextMatchesSearchTerm } from "./product-search-aliases";
 
 describe("expandProductSearchAliases", () => {
   it("expands treat language into common catalogue names", () => {
@@ -27,5 +27,11 @@ describe("expandProductSearchAliases", () => {
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "treat")).toBe(true);
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "salmon")).toBe(false);
     expect(productTextMatchesSearchTerm("Scream Xtreme Treat Tyre", "cream")).toBe(false);
+  });
+
+  it("does not satisfy a required ear format with an unrelated pig treat", () => {
+    expect(productTextMatchesRequiredTerm("Natura Bacon Strips pig treat", "ear")).toBe(false);
+    expect(productTextMatchesRequiredTerm("25 X Pig Ears", "ear")).toBe(true);
+    expect(productTextMatchesRequiredTerm("Venison Chews", "treat")).toBe(true);
   });
 });

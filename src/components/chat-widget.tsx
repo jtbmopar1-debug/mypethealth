@@ -320,7 +320,7 @@ export function ChatWidget() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages })
+        body: JSON.stringify({ conversationId: persistedConversation.id, messages: messages.slice(-40) })
       });
       const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; petProfileProposalNames?: string[]; error?: string };
       if (!response.ok || !data.message) throw new Error(data.error || "No response received");

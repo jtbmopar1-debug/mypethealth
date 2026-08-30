@@ -25,4 +25,11 @@ describe("local knowledge retrieval", () => {
     expect(results[0]?.category).toBe("digestive-issues");
     expect(results.length).toBeLessThanOrEqual(3);
   });
+
+  it("matches a skin-product question to skin knowledge rather than puppy feeding", async () => {
+    const results = await new LocalKnowledgeService().search("do you have any products for dog skin rash?", 2);
+
+    expect(results[0]?.id).toBe("itchy-dogs-first-steps");
+    expect(results.some((result) => result.id === "puppy-feeding")).toBe(false);
+  });
 });

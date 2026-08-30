@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
 import { guardPendingRecommendationCatalogueClaim } from "@/ai/catalogue-claim-guard";
 import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry } from "@/services/enquiries/restock-enquiry-service";
+import { ContactTeamRateLimitError, contactTeamConfigured, sendContactTeamEnquiry } from "@/services/enquiries/contact-team-service";
+import { loadCustomerConversation } from "@/services/conversations/customer-conversation-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { productMatchesSpecies } from "@/services/products/product-relevance";
@@ -18,6 +20,7 @@ import {
   rejectsProductIdentity,
   productSearchTerms,
   wantsProductStockStatus,
+  wantsCurrentProductAvailability,
   wantsProductSuggestion,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
@@ -25,19 +28,35 @@ import {
   acknowledgesInStockProduct,
 } from "@/services/products/product-query";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
-import { fetchRecentCustomerPurchases } from "@/services/shopify/customer-orders";
+import { fetchRecentCustomerOrders } from "@/services/shopify/customer-orders";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
 import { contextualNamedPetReply } from "@/services/pets/pet-message-parser";
+import type { CustomerOrder } from "@/types";
 
 const messageSchema = z.object({
   id: z.string(),
   role: z.enum(["user", "assistant"]),
-  content: z.string().trim().min(1).max(4000),
+  content: z.string().trim().min(1).max(12000),
   createdAt: z.string(),
   productIds: z.array(z.string()).optional()
 });
 
-const bodySchema = z.object({ messages: z.array(messageSchema).min(1).max(40) });
+const bodySchema = z.object({
+  conversationId: z.string().uuid(),
+  messages: z.array(messageSchema).min(1).max(40),
+});
+
+const TEAM_EMAIL_OFFER = "Would you like me to email our team to get an answer to your enquiry?";
+
+function confirmsTeamEmail(message: string, previousAssistantMessage = "") {
+  const affirmative = /^(?:yes|yes please|yep|yeah|sure|okay|ok|please do|go ahead|send it|email them)\b/i.test(message.trim());
+  return affirmative && previousAssistantMessage.includes(TEAM_EMAIL_OFFER);
+}
+
+function responseNeedsTeamEmailOffer(message: string) {
+  return /\b(?:i (?:do not|don['’]t) (?:know|have (?:enough|that) information|have access)|i (?:cannot|can['’]t|could not|couldn['’]t) (?:answer|verify|find|confirm|determine|check)|could not be verified|couldn['’]t be verified|information (?:is|was) unavailable)\b/i.test(message)
+    && !message.includes(TEAM_EMAIL_OFFER);
+}
 
 function confirmsPetProfile(message: string, previousAssistantMessage = "") {
   const affirmative = /^(?:yes|yes please|yep|yeah|sure|okay|ok|please do|go ahead|add (?:him|her|them|it)|please add (?:him|her|them|it))\b/i.test(message.trim());
@@ -91,7 +110,7 @@ function mentionsSkinOrPawConcern(message: string) {
 }
 
 function explicitlyWantsPurchaseHistory(message: string) {
-  return /\b(?:order history|purchase history|previous(?:ly)? (?:bought|ordered)|last (?:bought|ordered|purchase|order)|bought last|ordered last|usual (?:food|order|product)|reorder|re-order|buy (?:it|that|them) again|what did i (?:buy|order))\b/i.test(message);
+  return /\b(?:order history|purchase history|order status|where is my order|recent orders?|previous(?:ly)? (?:bought|ordered)|last (?:bought|ordered|purchase|order)|bought last|ordered last|usual (?:food|order|product)|reorder|re-order|buy (?:it|that|them) again|what did i (?:buy|order)|cancelled order|canceled order)\b/i.test(message);
 }
 
 function reportsHealthChange(message: string) {
@@ -106,15 +125,15 @@ function purchaseHistoryCouldAnswer(message: string) {
 }
 
 function wantsPurchasedProductCards(message: string) {
-  return /\b(?:reorder|re-order|buy (?:it|that|them) again|usual (?:food|order|product)|what did i (?:buy|order)|last (?:bought|ordered))\b/i.test(message);
+  return /\b(?:reorder|re-order|buy (?:it|that|them) again|usual (?:food|order|product)|what did i (?:buy|order)|last (?:bought|ordered|purchase|order)|recent orders?)\b/i.test(message);
 }
 
 function purchasesRelevantToQuestion<T extends { title: string; productType: string | null }>(message: string, purchases: T[]) {
   if (explicitlyWantsPurchaseHistory(message)) {
-    return [...purchases].sort((left, right) => {
-      const isFood = (purchase: T) => /\b(?:food|feed|diet|kibble|raw|meal|puppy|kitten)\b/i.test(`${purchase.title} ${purchase.productType || ""}`);
-      return Number(isFood(right)) - Number(isFood(left));
-    }).slice(0, 10);
+    // Shopify already returns orders newest-first. Preserve that chronology;
+    // sorting food ahead of other items can make an older item look like the
+    // customer's latest purchase.
+    return purchases.slice(0, 20);
   }
 
   const asksAboutPuppy = /\b(?:puppy|pup)\b/i.test(message);
@@ -140,6 +159,37 @@ function purchasesRelevantToQuestion<T extends { title: string; productType: str
   }).slice(0, 5);
 }
 
+function readableOrderStatus(status: string | null) {
+  return status ? status.toLowerCase().replaceAll("_", " ") : null;
+}
+
+function orderHistoryReply(order: CustomerOrder) {
+  const orderDate = new Intl.DateTimeFormat("en-NZ", {
+    dateStyle: "medium",
+    timeZone: "Pacific/Auckland",
+  }).format(new Date(order.processedAt));
+  const total = order.totalPrice === null
+    ? ""
+    : `, totalling $${order.totalPrice.toFixed(2)} ${order.currency ?? "NZD"}`;
+  const itemSummary = order.lineItems.length
+    ? order.lineItems.map((item) => `${item.quantity} × ${item.title}${item.variantTitle ? ` (${item.variantTitle})` : ""}`).join("; ")
+    : "No line items were returned for this order.";
+  const status = order.cancelledAt
+    ? `It was cancelled${order.cancelReason ? ` (${readableOrderStatus(order.cancelReason)})` : ""}. It still belongs in your order history.`
+    : [readableOrderStatus(order.financialStatus), readableOrderStatus(order.fulfillmentStatus)]
+      .filter(Boolean)
+      .join("; ");
+
+  return [
+    `Your most recent order was ${order.name}, placed ${orderDate}${total}.`,
+    status ? `Status: ${status}.` : "",
+    `Items: ${itemSummary}`,
+    order.cancelledAt
+      ? "If you would like to order those items now, the product cards below show their current catalogue availability."
+      : "The product cards below show the current catalogue availability where those items are still listed.",
+  ].filter(Boolean).join("\n\n");
+}
+
 function mentionedActivePet<T extends { name: string; status: string }>(message: string, pets: T[]) {
   return pets.find((pet) => pet.status === "active"
     && new RegExp(`\\b${pet.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(message));
@@ -157,11 +207,55 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Please send a valid message." }, { status: 400 });
     }
 
-    const { messages } = parsed.data;
+    const { conversationId, messages } = parsed.data;
     const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
     const latestUserMessage = userMessages.at(-1) ?? "";
-    const conversationQuery = userMessages.join(" ");
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    if (confirmsTeamEmail(latestUserMessage, previousAssistant?.content)) {
+      if (!customerSession.email) {
+        return Response.json({
+          message: "I can’t email the team because this signed-in account does not include an email address.",
+          products: [],
+          resetProductContext: true,
+          mode: "team-email-unavailable",
+        });
+      }
+      if (!contactTeamConfigured()) {
+        return Response.json({
+          message: "I can’t email the team right now because the store email service is unavailable. Please try again shortly.",
+          products: [],
+          resetProductContext: true,
+          mode: "team-email-unavailable",
+        });
+      }
+      const originalQuestion = [...messages.slice(0, -1)].reverse()
+        .find((message) => message.role === "user")?.content ?? "Please help with my enquiry.";
+      try {
+        const conversation = await loadCustomerConversation(customerSession.customerId, conversationId);
+        if (!conversation) throw new Error("Saved conversation not found");
+        const sent = await sendContactTeamEnquiry({
+          shopifyCustomerId: customerSession.customerId,
+          customerEmail: customerSession.email,
+          customerName: [customerSession.firstName, customerSession.lastName].filter(Boolean).join(" "),
+          customerMessage: originalQuestion,
+          conversation,
+        });
+        return Response.json({
+          message: sent.alreadySent
+            ? "That enquiry has already been emailed to our team. They can reply directly to your account email."
+            : "Done—I emailed our team to get an answer to your enquiry. They can reply directly to your account email.",
+          products: [],
+          resetProductContext: true,
+          mode: "team-email-sent",
+        });
+      } catch (error) {
+        const message = error instanceof ContactTeamRateLimitError
+          ? "You have already emailed three enquiries to the team in the last 24 hours."
+          : "I couldn’t email the team right now. Please try again shortly.";
+        console.warn("[chat] team email failed", error instanceof Error ? error.message : "Unknown error");
+        return Response.json({ message, products: [], resetProductContext: true, mode: "team-email-failed" });
+      }
+    }
     if (previousAssistant && ambiguousFeedingNumber(latestUserMessage, previousAssistant.content)) {
       const number = latestUserMessage.match(/\d+(?:\.\d+)?/)?.[0] ?? "that number";
       return Response.json({
@@ -392,23 +486,31 @@ export async function POST(request: NextRequest) {
       .map((message) => mentionedActivePet(message, customerPets))
       .find((pet) => Boolean(pet));
     const targetPet = latestNamedPet ?? (startsNewProductSearch ? undefined : recentNamedPet);
-    const explicitlyRequestedSpecies = /\b(?:cat|kitten|feline)\b/i.test(recentPetContext) ? "cat" as const
-      : /\b(?:dog|puppy|pup|canine)\b/i.test(recentPetContext) ? "dog" as const
+    const speciesContext = startsNewProductSearch ? latestUserMessage : recentPetContext;
+    const explicitlyRequestedSpecies = /\b(?:cat|kitten|feline)\b/i.test(speciesContext) ? "cat" as const
+      : /\b(?:dog|puppy|pup|canine)\b/i.test(speciesContext) ? "dog" as const
       : null;
     const targetSpecies = targetPet?.species ?? explicitlyRequestedSpecies;
     const petNameTerms = new Set(customerPets.flatMap((pet) => productSearchTerms(pet.name)));
     const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
-    const earlierProductIntent = userMessages.slice(0, -1).some(wantsProductSuggestion);
+    const previousUserMessage = userMessages.at(-2) ?? "";
+    const earlierProductIntent = Boolean(previousAssistant?.productIds?.length)
+      && wantsProductSuggestion(previousUserMessage);
     const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
       && !latestHasProductIntent
       && !needsHealthKnowledge(latestUserMessage)
       && !latestMessageIsContextualPetName;
-    const recommendationContextReady = hasRecommendationContext(conversationQuery);
-    const latestProductRequest = [...userMessages].reverse()
+    const recommendationContextReady = hasRecommendationContext(userMessages.slice(-3).join(" "));
+    const latestProductRequest = [...userMessages.slice(-3)].reverse()
       .find((message) => wantsProductSuggestion(message) && !isProductSearchRetry(message)) ?? latestUserMessage;
     const broadCategoryQuestion = isBroadCategoryQuestion(latestUserMessage);
-    const broadCategoryIndex = userMessages.findLastIndex(isBroadCategoryQuestion);
-    const activeBroadCategoryRequest = broadCategoryIndex >= 0;
+    const recentProductMessages = userMessages.slice(-3);
+    const recentBroadCategoryIndex = recentProductMessages.findLastIndex(isBroadCategoryQuestion);
+    const broadCategoryIndex = recentBroadCategoryIndex < 0
+      ? -1
+      : userMessages.length - recentProductMessages.length + recentBroadCategoryIndex;
+    const activeBroadCategoryRequest = broadCategoryIndex >= 0
+      && userMessages.slice(broadCategoryIndex + 1, -1).every((message) => isShortCategoryRefinement(message));
     const latestDirectTerms = productSearchTerms(latestUserMessage);
     const refiningBroadCategory = !broadCategoryQuestion
       && activeBroadCategoryRequest
@@ -425,28 +527,32 @@ export async function POST(request: NextRequest) {
       && !startsNewProductSearch
       && (rejectedProductIdentity || (latestDirectTerms.length > 0 && latestDirectTerms.length <= 4));
     const effectiveStockStatusRequested = stockStatusRequested || continuingProductDefinition;
+    const currentAvailabilityRequested = wantsCurrentProductAvailability(latestUserMessage);
     const specialsRequested = wantsSpecials(latestUserMessage) && !stockStatusRequested;
-    const catalogueOnlyTurn = (specialsRequested
+    const catalogueOnlyTurn = ((specialsRequested
       || effectiveStockStatusRequested
       || broadCategoryQuestion
       || refiningBroadCategory
-      || genericBroadContinuation)
-      && !needsHealthKnowledge(latestUserMessage);
-    const previousUserMessage = userMessages.at(-2) ?? "";
+      || genericBroadContinuation
+      || latestHasProductIntent)
+      && !needsHealthKnowledge(latestUserMessage));
     const knowledgeQuery = isShortCategoryRefinement(latestUserMessage) && previousUserMessage
       ? `${previousUserMessage} ${latestUserMessage}`
       : latestUserMessage;
-    const knowledge = catalogueOnlyTurn || petProfileOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
+    const orderOnlyTurn = explicitlyWantsPurchaseHistory(latestUserMessage);
+    const knowledge = catalogueOnlyTurn || petProfileOnlyTurn || orderOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
     // Include a small amount of recent conversation so a short follow-up such as
     // "it started last week" can still be related to the symptom just discussed.
     const recentPurchaseContext = userMessages.slice(-3).join(" ");
     const purchaseHistoryRelevant = purchaseHistoryCouldAnswer(recentPurchaseContext)
       || (effectiveStockStatusRequested && !rejectedProductIdentity);
-    let recentPurchases = [] as Awaited<ReturnType<typeof fetchRecentCustomerPurchases>>;
+    let recentOrders = [] as Awaited<ReturnType<typeof fetchRecentCustomerOrders>>;
+    let recentPurchases = [] as CustomerOrder["lineItems"];
     let purchaseHistoryUnavailable = false;
     if (purchaseHistoryRelevant && customerSession.accessToken) {
       try {
-        recentPurchases = await fetchRecentCustomerPurchases(customerSession.accessToken);
+        recentOrders = await fetchRecentCustomerOrders(customerSession.accessToken);
+        recentPurchases = recentOrders.flatMap((order) => order.lineItems);
       } catch (error) {
         purchaseHistoryUnavailable = true;
         console.warn("[chat] purchase history unavailable", error instanceof Error ? error.message : "Unknown error");
@@ -456,11 +562,14 @@ export async function POST(request: NextRequest) {
       console.info("[chat] purchase history lookup", {
         accessTokenPresent: Boolean(customerSession.accessToken),
         attempted: purchaseHistoryRelevant && Boolean(customerSession.accessToken),
+        returnedOrders: recentOrders.length,
         returnedLineItems: recentPurchases.length,
         unavailable: purchaseHistoryUnavailable,
       });
     }
-    const relevantPurchases = purchasesRelevantToQuestion(recentPurchaseContext, recentPurchases);
+    const relevantPurchases = orderOnlyTurn && recentOrders[0]
+      ? recentOrders[0].lineItems
+      : purchasesRelevantToQuestion(recentPurchaseContext, recentPurchases);
     const retryingProductSearch = earlierProductIntent && isProductSearchRetry(latestUserMessage);
     const continuingSelection = (!latestHasProductIntent || retryingProductSearch)
       && earlierProductIntent
@@ -475,6 +584,7 @@ export async function POST(request: NextRequest) {
       : [];
     const matchingSpecialsFound = specialsRequested && recommendations.length > 0;
     let regularAlternativesForSpecials = false;
+    let directCatalogueListing = false;
 
     if (specialsRequested && recommendations.length === 0 && specialSearchTerms.length > 0) {
       recommendations = (await productService.recommendProducts([
@@ -512,6 +622,10 @@ export async function POST(request: NextRequest) {
         : latestHasProductIntent ? latestUserMessage : latestProductRequest;
       const directTerms = productSearchTerms(searchSource).filter((term) => !petNameTerms.has(term));
       const directAnchorTerms = productSearchAnchors(directTerms);
+      directCatalogueListing = !needsHealthKnowledge(latestUserMessage)
+        && !orderOnlyTurn
+        && directAnchorTerms.length > 0
+        && (currentAvailabilityRequested || (!continuingProductDefinition && !wantsProductStockStatus(latestUserMessage)));
       const statusRequiredTerms = effectiveStockStatusRequested
         ? [...new Set([
           ...productStockSearchAnchors(productSearchTerms(statusRequest || latestUserMessage)),
@@ -523,14 +637,15 @@ export async function POST(request: NextRequest) {
         ? [...new Set(broadCategoryMessages.flatMap(productSearchTerms).filter((term) => term !== "food"))]
         : [];
       const discoveryOnly = broadCategoryQuestion;
-      const limit = effectiveStockStatusRequested ? 12
+      const limit = directCatalogueListing ? 20
+        : effectiveStockStatusRequested ? 12
         : discoveryOnly ? 6
         : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
       recommendations = await productService.recommendProducts(directTerms.length > 0
         ? [directTerms.join(" "), ...directTerms]
         : [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], limit, {
           includeTreatAddon: recommendationContextReady,
-          availableOnly: !discoveryOnly && !effectiveStockStatusRequested,
+          availableOnly: directCatalogueListing || (!discoveryOnly && !effectiveStockStatusRequested),
           // Specific searches must never degrade into an unrelated card just
           // because no exact product scored above zero.
           allowFallback: directTerms.length === 0 && !discoveryOnly && !targetSpecies,
@@ -586,6 +701,31 @@ export async function POST(request: NextRequest) {
           { availableOnly: true, allowFallback: false, species: targetSpecies },
         );
       }
+
+      // A direct request for skin-rash products should show a small set of
+      // relevant live options even when literal required terms such as
+      // "rash" do not appear in Shopify titles or tags.
+      if (recommendations.length === 0
+        && latestHasProductIntent
+        && mentionsSkinOrPawConcern(recentPetContext)) {
+        recommendations = await productService.recommendProducts(
+          ["skin support", "skin", "itch", "paw", "balm", "salve", "spray", "shampoo"],
+          3,
+          { availableOnly: true, allowFallback: false, species: targetSpecies },
+        );
+      }
+    }
+
+    if (directCatalogueListing) {
+      return Response.json({
+        message: recommendations.length > 0
+          ? `Yes—these matching options are currently in stock.`
+          : `I couldn’t verify any matching in-stock options in the current catalogue. Would you like me to email our team to get an answer to your enquiry?`,
+        products: recommendations,
+        resetProductContext: false,
+        pets: customerPets,
+        mode: "catalogue-listing",
+      });
     }
 
     const referencedProducts = !latestHasProductIntent && !activeBroadCategoryRequest && previousProductIds.length > 0
@@ -597,7 +737,7 @@ export async function POST(request: NextRequest) {
     const purchasesByProductId = new Map(relevantPurchases
       .filter((purchase) => purchase.productId)
       .map((purchase) => [purchase.productId as string, purchase]));
-    const purchasedProducts = (await Promise.all(recentProductIds.slice(0, 6).map(async (productId) => {
+    const purchasedProducts = (await Promise.all(recentProductIds.slice(0, orderOnlyTurn ? 20 : 6).map(async (productId) => {
       const purchase = purchasesByProductId.get(productId);
       const product = await productService.getPurchasedProduct(productId, purchase?.variantId ?? null, purchase?.variantTitle ?? null);
       return product ? { product, purchase } : null;
@@ -619,6 +759,34 @@ export async function POST(request: NextRequest) {
           priceNote,
         };
       });
+
+    if (orderOnlyTurn) {
+      if (!customerSession.accessToken || purchaseHistoryUnavailable) {
+        return Response.json({
+          message: "I couldn’t load your Shopify order history in this session. Please sign out and sign back in with your All Good Petfood account, then try again. Would you like me to email our team to get an answer to your enquiry?",
+          products: [],
+          resetProductContext: true,
+          pets: customerPets,
+          mode: "order-history-unavailable",
+        });
+      }
+      if (recentOrders.length === 0) {
+        return Response.json({
+          message: "Shopify returned no orders for this signed-in customer account. Would you like me to email our team to get an answer to your enquiry?",
+          products: [],
+          resetProductContext: true,
+          pets: customerPets,
+          mode: "order-history-empty",
+        });
+      }
+      return Response.json({
+        message: orderHistoryReply(recentOrders[0]),
+        products: purchasedProducts,
+        resetProductContext: true,
+        pets: customerPets,
+        mode: "order-history",
+      });
+    }
     const groundingRecommendations = recommendations.length > 0
       ? recommendations
       : referencedProducts.length > 0
@@ -682,12 +850,18 @@ export async function POST(request: NextRequest) {
       updatedPetNames,
       petProfileOnlyTurn,
     });
-    result.content = guardPendingRecommendationCatalogueClaim(
-      result.content,
-      targetSpecies,
-      (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
-    );
-    if (latestMessageIsContextualPetName && petProfileProposals.length > 0
+    if (result.mode !== "approved-knowledge") {
+      result.content = guardPendingRecommendationCatalogueClaim(
+        result.content,
+        targetSpecies,
+        (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
+      );
+      if (responseNeedsTeamEmailOffer(result.content)) {
+        result.content = `${result.content.trim()}\n\n${TEAM_EMAIL_OFFER}`;
+      }
+    }
+    if (result.mode !== "approved-knowledge"
+      && latestMessageIsContextualPetName && petProfileProposals.length > 0
       && !/\badd\b[\s\S]{0,80}\bMy Pets\b/i.test(result.content)) {
       const names = petProfileProposals.join(" and ");
       result.content = `${result.content.trim()}\n\nShall I add ${names} to My Pets? This helps me remember their details between conversations and make future guidance and product suggestions more relevant.`;
@@ -697,7 +871,7 @@ export async function POST(request: NextRequest) {
     return Response.json({
       message: result.content,
       products: displayRecommendations,
-      resetProductContext: discoveryOnly,
+      resetProductContext: discoveryOnly || (!latestHasProductIntent && displayRecommendations.length === 0),
       pets: customerPets,
       petProfileProposalNames: petProfileProposals,
       mode: result.mode

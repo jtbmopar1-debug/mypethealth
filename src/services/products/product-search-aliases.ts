@@ -30,3 +30,13 @@ export function productTextMatchesSearchTerm(searchableText: string, term: strin
     return new RegExp(`(?:^|[^a-z0-9])${escapedAlias}(?:s|es)?(?=$|[^a-z0-9])`, "i").test(normalizedText);
   });
 }
+
+export function productTextMatchesRequiredTerm(searchableText: string, term: string) {
+  const normalizedTerm = term.trim().toLowerCase();
+  const broadAliases = new Set(["treat", "food", "wet", "parasite", "lead", "leash"]);
+  const candidates = broadAliases.has(normalizedTerm) ? expandProductSearchAliases([normalizedTerm]) : [normalizedTerm];
+  return candidates.some((candidate) => {
+    const escapedCandidate = candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[^a-z0-9])${escapedCandidate}(?:s|es)?(?=$|[^a-z0-9])`, "i").test(searchableText);
+  });
+}
