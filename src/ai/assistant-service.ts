@@ -5,6 +5,7 @@ import { serverConfig } from "@/config/env";
 import type { ChatMessage, CustomerPet, CustomerPurchase, KnowledgeEntry, ProductRecommendation } from "@/types";
 import { buildGroundedInstructions } from "./system-prompt";
 import { createLocalResponse, type AssistantResult } from "./local-responder";
+import { primaryApprovedKnowledge } from "../services/knowledge/primary-knowledge";
 
 function candidateFinishReason(response: GenerateContentResponse) {
   return response.candidates?.[0]?.finishReason;
@@ -88,7 +89,7 @@ export async function answerCustomer(
 
   // Published knowledge is staff-approved customer copy. Do not ask the model
   // to paraphrase it: the exact approved answer is the response Buddy gives.
-  const approvedKnowledge = knowledge.find((entry) => entry.approvedExact && entry.content.trim());
+  const approvedKnowledge = primaryApprovedKnowledge(knowledge);
   if (approvedKnowledge) {
     const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content || "";
     const compactHours = asksOpeningHours(latestUserMessage) ? conciseOpeningHours(approvedKnowledge.content) : null;

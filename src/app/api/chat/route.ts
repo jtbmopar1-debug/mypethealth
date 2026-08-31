@@ -6,6 +6,7 @@ import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry }
 import { ContactTeamRateLimitError, contactTeamConfigured, sendContactTeamEnquiry } from "@/services/enquiries/contact-team-service";
 import { loadCustomerConversation } from "@/services/conversations/customer-conversation-service";
 import { knowledgeService } from "@/services/knowledge/supabase-knowledge-service";
+import { primaryKnowledgeProductControls } from "@/services/knowledge/primary-knowledge";
 import { ShopifyProductService } from "@/services/products/shopify-product-service";
 import { productMatchesSpecies } from "@/services/products/product-relevance";
 import { productTextMatchesSearchTerm } from "@/services/products/product-search-aliases";
@@ -573,6 +574,7 @@ export async function POST(request: NextRequest) {
       : latestUserMessage;
     const orderOnlyTurn = explicitlyWantsPurchaseHistory(latestUserMessage);
     const knowledge = catalogueOnlyTurn || petProfileOnlyTurn || orderOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
+    const knowledgeProductControls = primaryKnowledgeProductControls(knowledge);
     // Include a small amount of recent conversation so a short follow-up such as
     // "it started last week" can still be related to the symptom just discussed.
     const recentPurchaseContext = userMessages.slice(-3).join(" ");
@@ -673,9 +675,14 @@ export async function POST(request: NextRequest) {
         : effectiveStockStatusRequested ? 12
         : discoveryOnly ? 6
         : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
-      recommendations = await productService.recommendProducts(directTerms.length > 0
-        ? [directTerms.join(" "), ...directTerms]
-        : [...new Set(knowledge.flatMap((entry) => entry.relevantProductTags))], limit, {
+      const primaryKnowledgeTags = knowledgeProductControls.controlled
+        ? knowledgeProductControls.productTags
+        : knowledge[0]?.relevantProductTags ?? [];
+      recommendations = knowledgeProductControls.controlled
+        ? []
+        : await productService.recommendProducts(directTerms.length > 0
+          ? [directTerms.join(" "), ...directTerms]
+          : [...new Set(primaryKnowledgeTags)], limit, {
           includeTreatAddon: recommendationContextReady,
           availableOnly: directCatalogueListing || (!discoveryOnly && !effectiveStockStatusRequested),
           // Specific searches must never degrade into an unrelated card just
@@ -707,17 +714,27 @@ export async function POST(request: NextRequest) {
         ));
       }
 
-      const linkedUrls = [...new Set(knowledge.flatMap((entry) => entry.recommendedProductUrls ?? []))];
+      const linkedUrls = [...new Set(knowledgeProductControls.controlled
+        ? knowledgeProductControls.productUrls
+        : knowledge[0]?.recommendedProductUrls ?? [])];
       if (linkedUrls.length > 0 && !discoveryOnly) {
         const linkedRecommendations = (await Promise.all(linkedUrls.slice(0, 6).map((url) => productService.getProductByUrl(url))))
           .filter((product): product is NonNullable<typeof product> => product !== null)
           .filter((product) => product.availability === "in_stock")
           .filter((product) => productMatchesSpecies(product, targetSpecies))
           .map((product) => ({ product, reason: "Staff-reviewed product linked to this guidance." }));
-        recommendations = [
-          ...linkedRecommendations,
-          ...recommendations.filter(({ product }) => !linkedRecommendations.some((linked) => linked.product.id === product.id)),
-        ].slice(0, limit);
+        recommendations = knowledgeProductControls.controlled
+          ? linkedRecommendations.slice(0, Math.min(limit, 2))
+          : [
+            ...linkedRecommendations,
+            ...recommendations.filter(({ product }) => !linkedRecommendations.some((linked) => linked.product.id === product.id)),
+          ].slice(0, limit);
+      } else if (knowledgeProductControls.controlled && knowledgeProductControls.productTags.length > 0 && !discoveryOnly) {
+        recommendations = await productService.recommendProducts(
+          knowledgeProductControls.productTags,
+          2,
+          { availableOnly: true, allowFallback: false, species: targetSpecies },
+        );
       }
 
       // A customer may ask for "cream for it" immediately after describing a
@@ -725,6 +742,7 @@ export async function POST(request: NextRequest) {
       // only relevant live paw/skin support items instead of a substring match
       // such as "Scream" toy.
       if (recommendations.length === 0
+        && !knowledgeProductControls.controlled
         && requestsTopicalSkinSupport(latestUserMessage)
         && mentionsSkinOrPawConcern(recentPetContext)) {
         recommendations = await productService.recommendProducts(
@@ -738,6 +756,7 @@ export async function POST(request: NextRequest) {
       // relevant live options even when literal required terms such as
       // "rash" do not appear in Shopify titles or tags.
       if (recommendations.length === 0
+        && !knowledgeProductControls.controlled
         && latestHasProductIntent
         && mentionsSkinOrPawConcern(recentPetContext)) {
         recommendations = await productService.recommendProducts(

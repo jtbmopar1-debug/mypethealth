@@ -60,9 +60,18 @@ export function wantsProductSuggestion(message: string) {
   if (/\b(?:dog|cat)\s+(?:food|kibble)\b/i.test(text)
     && productSearchAnchors(terms).some((term) => !["dry", "wet"].includes(term))) return true;
 
-  return /\b(?:suggest|recommend|better|alternative|switch)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
+  // Current availability is an operational catalogue request regardless of
+  // product wording (for example, "bully sticks in stock?").
+  if (wantsProductStockStatus(message)) return true;
+
+  // A bare category phrase is a catalogue shorthand. Merely mentioning that
+  // category inside a health or feeding question is not shopping intent.
+  const categoryPhrase = /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i;
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount <= 5 && categoryPhrase.test(text)) return true;
+
+  return /\b(?:suggest|recommend|better|alternative)\b[\w\s]{0,30}\b(?:food|diet|option|product|brand)\b/i.test(text)
     || /\b(?:food|diet|option|product|brand)\b[\w\s]{0,30}\b(?:suggest|recommend|better|alternative)\b/i.test(text)
-    || /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i.test(text)
     || /\b(?:do you(?: guys)? (?:do|sell|stock|carry)|have you got|got any)\b/i.test(text);
 }
 

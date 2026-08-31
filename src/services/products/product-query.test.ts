@@ -30,6 +30,13 @@ describe("product catalogue query parsing", () => {
     expect(wantsProductSuggestion("I've got a cat and I'm unsure what to feed him")).toBe(true);
   });
 
+  it("does not turn a transition question into an unrequested catalogue recommendation", () => {
+    expect(wantsProductSuggestion("do i need to transition my dog from pellets to raw food?")).toBe(false);
+    expect(wantsProductSuggestion("should I switch my dog from kibble to raw food?")).toBe(false);
+    expect(wantsProductSuggestion("raw food?")).toBe(true);
+    expect(wantsProductSuggestion("do you sell raw food?")).toBe(true);
+  });
+
   it("recognises a natural looking-for request", () => {
     expect(wantsProductSuggestion("i looking for bully sticks")).toBe(true);
     expect(productSearchTerms("i looking for bully sticks")).toEqual(["bully", "stick"]);
@@ -124,6 +131,7 @@ describe("product catalogue query parsing", () => {
     expect(wantsCurrentProductAvailability("do you have pig ears in stock?")).toBe(true);
     expect(wantsProductStockStatus("do you have pig ears in stock?")).toBe(true);
     expect(productStockSearchAnchors(productSearchTerms("do you have pig ears in stock?"))).toEqual(["pig", "ear"]);
+    expect(wantsProductSuggestion("bully sticks in stock?")).toBe(true);
   });
 
   it("recognises a request for the enquiry audit status", () => {
