@@ -7,7 +7,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog has itchy skin and we've tried multiple elimination diets through skin specialists without success. What else can we try?",
-      "answer": "A clean hypoallergenic diet is usually the first place to start, ideally one that's grain-free and uses a novel or limited protein source. It can take a few different approaches before finding what works, so it's worth persevering with a properly controlled elimination trial rather than switching foods too quickly.",
+      "answer": "Without knowing the cause of the itching, start at the beginning with a completely hypoallergenic diet that removes the four major causes of itching, irritation and inflammation. Remove all treats and other foods during the trial. After three to four weeks, one of three things should happen: complete improvement suggests a food allergy; partial improvement suggests a combination of food and contact or environmental allergies; and no improvement suggests a contact or environmental allergy rather than food. The result gives us a direction so we can recommend treatments, products and solutions for your dog's specific issues.",
       "tags": [
         "itchy skin",
         "elimination diet",
@@ -20,7 +20,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog is itchy around the eyes, face, muzzle and ears. Could this be food related?",
-      "answer": "Itching concentrated around the eyes, face, muzzle and ears is quite often food related. Chicken is one of the most common triggers, so if your dog's current food contains chicken, trialling a chicken-free hypoallergenic diet for several weeks is a reasonable first step.",
+      "answer": "Absolutely, it could be a food allergen. However, itching around the eyes, face, muzzle and ears can also be caused by contact or environmental allergens. Many dogs roll in grass or other things that may set them off. A hypoallergenic diet trial can help assess whether the cause is food, contact or environmental.",
       "tags": [
         "itchy skin",
         "food allergy",
@@ -34,7 +34,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog's itching gets worse in spring and summer but clears up over winter. What does this mean?",
-      "answer": "A seasonal pattern like this, especially when it shows up on the legs or belly, is very typical of an environmental allergy, most commonly grass. Unlike a food allergy, you can't fully eliminate exposure to grass or other environmental triggers, but management options include limiting contact with fresh-cut or long grass, wiping paws and belly after time outside, and using a hypoallergenic diet to reduce the overall allergy burden.",
+      "answer": "This suggests a contact or environmental allergen. Grass grows quickly in spring and summer and can cause skin issues, while seasonal pollen can cause symptoms such as itchy or goopy eyes. The fact that the itching clears over winter is quite indicative of a seasonal contact allergy. Products that support the immune system and skin microbiome can help manage it.",
       "tags": [
         "seasonal allergy",
         "grass allergy",
@@ -47,7 +47,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog has a yeasty smell and their skin gets worse in summer. What could be causing this?",
-      "answer": "A yeasty smell combined with symptoms worsening in summer often points to a seasonal or contact allergy with a secondary yeast overgrowth. A raw or low-carbohydrate diet can help, since reducing carbohydrates limits the sugars that feed yeast on the skin.",
+      "answer": "Yeast issues can have several causes. Dogs with food or contact allergens become itchy and lick sensitive areas such as their armpits or paws. Saliva remains in those warm areas and can develop into a yeast infection. Scratching can then transfer it between the feet and ears. Food does not create yeast issues, but certain foods can be used to help starve the yeast, alongside support for the immune system and gut health.",
       "tags": [
         "yeast",
         "seasonal allergy",
@@ -60,7 +60,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog is licking their paws and rolling around a lot. What are the common causes?",
-      "answer": "Paw licking and rolling/rubbing on the ground are both classic signs of itching, most often linked to either a food allergy or a contact/environmental allergy such as grass. Note when it happens (after walks, indoors only, seasonal) as that can help narrow down whether it's contact-based or food-based.",
+      "answer": "First assess whether the dog is itchy over the whole body or mainly on the underbelly, undercarriage and paws. This helps distinguish a possible food and contact allergy from a contact allergy alone. The itching can then be relieved with appropriate diet changes or supplements that support dogs with contact and seasonal allergies.",
       "tags": [
         "paw licking",
         "itchy skin",
@@ -73,7 +73,7 @@
     {
       "category": "skin_and_itching",
       "question": "Even organic beef seems to cause my dog's allergies. Is that normal?",
-      "answer": "Yes — allergies are to the specific animal protein itself, not to how it was farmed. So even organic or free-range beef will still trigger a reaction in a dog that's allergic to beef. If beef is a suspected trigger, it needs to be avoided entirely rather than switched to a higher-welfare source.",
+      "answer": "Yes. Feeding organic beef or chicken does not prevent a food-allergy reaction because dogs are allergic to the protein in the meat. Even when the animal was raised organically, a dog that reacts to that meat protein can still have an adverse reaction.",
       "tags": [
         "beef allergy",
         "protein allergy",
@@ -86,7 +86,7 @@
     {
       "category": "skin_and_itching",
       "question": "My terrier has chronic itching. Are certain breeds more prone to allergies?",
-      "answer": "Terrier breeds can be more prone to both food and contact allergies. Grass is the most common contact trigger. If your dog is a terrier with ongoing itching, it's worth considering both an elimination diet trial and reducing exposure to grass to see which has more impact.",
+      "answer": "Absolutely. Terriers are particularly prone to food and contact allergies, and colouration can be a factor, especially with dilute colours such as blue. Other breeds, including German Shepherds and Shar-Peis, can also have sensitive skin, but terriers are certainly among the breeds more prone to these issues.",
       "tags": [
         "breed predisposition",
         "terrier",
@@ -99,7 +99,7 @@
     {
       "category": "skin_and_itching",
       "question": "My dog has chronic skin issues (belly, groin, armpit, neck) and is now getting recurring ear infections. Could switching food help?",
-      "answer": "If a dog is already eating a fully hypoallergenic diet and the ingredients aren't a likely cause, ongoing skin and ear issues may be pointing to something other than diet — for example an environmental or contact allergy. In that case, changing food again may not resolve it, and it's worth discussing with a vet whether further allergy testing or a different management approach (such as topical treatment) makes sense alongside diet.",
+      "answer": "This pattern sounds like contact allergens, although food allergens may also be involved. A food allergen would usually cause itching across more of the body, while the belly, feet, armpits and groin have thinner hair and more contact with grass and sap. Dogs then lick the itchy areas, and the warm saliva between their feet can lead to a yeast infection, sometimes with an orange or rusty tint and an unusual smell. Scratching can transfer the yeast between the feet and ears. Food does not cause yeast, but selected foods can help starve it, while immune support and better-quality food can help reduce discomfort.",
       "tags": [
         "chronic skin issues",
         "ear infections",
@@ -112,7 +112,7 @@
     {
       "category": "skin_and_itching",
       "question": "Is it okay to keep my dog on a topical itch spray alongside a prescribed allergy medication?",
-      "answer": "A natural topical spray can generally be used alongside a vet-prescribed allergy medication to give extra relief during flare-ups. It's a supportive measure rather than a replacement for the prescribed treatment, so keep following your vet's guidance on the medication itself.",
+      "answer": "For the most part, yes, although we would double-check the particular medication and topical product. We can also reassess the cause of the allergy and look at ways to reduce the dog's need for medication or potentially come off it entirely, while keeping the dog comfortable.",
       "tags": [
         "topical spray",
         "allergy medication",
@@ -125,7 +125,7 @@
     {
       "category": "skin_and_itching",
       "question": "How do I bathe my itchy dog without making the itching worse?",
-      "answer": "If regular bathing seems to help an itchy dog, bathing around twice a week is generally fine. Using a topical itch-soothing spray between baths can help manage flare-ups without over-bathing, since bathing too frequently can sometimes dry out the skin further.",
+      "answer": "Some vet-prescribed products, such as Malaseb, soothe the skin and coat effectively, but they can also strip microbes from the skin. When the skin flora rebuilds, the unwanted microbes may return first. For regular bathing, choose something gentle and natural that does not strip the skin. The WashBar range is a gentle option with antibacterial, antimicrobial and antifungal properties.",
       "tags": [
         "bathing",
         "itchy skin",
@@ -138,7 +138,7 @@
     {
       "category": "protein_selection",
       "question": "My dog got sick after eating a smoked treat. Could the smoking process be the cause?",
-      "answer": "Variation in how much a treat is smoked between production batches can occur, and a treat that's more heavily smoked than usual can occasionally upset a sensitive dog's stomach. If you notice a treat behaves differently between batches (stronger smell, darker colour), it's worth flagging to the manufacturer so they can check their process.",
+      "answer": "It could be the smoking process, but that is unlikely. A more likely cause is that the dog is not used to the treat's flavour, has a sensitive stomach, or was introduced to the treat or protein too quickly. Nausea, vomiting and eating grass can be signs of this kind of stomach upset.",
       "tags": [
         "treats",
         "smoked treats",
@@ -152,7 +152,7 @@
     {
       "category": "protein_selection",
       "question": "What's a good hypoallergenic protein option if I need to buy in bulk for multiple dogs?",
-      "answer": "A venison and lamb trachea mix is a good hypoallergenic option for feeding multiple dogs, and buying in bulk (larger box sizes) is generally the best value per kilo.",
+      "answer": "If you know which protein causes the itching, choose an alternative that is free from that protein, such as a food without beef, chicken or wheat. If the allergen is unknown, start with stage one of a hypoallergenic diet trial. For value, Natura Diet Itch Buster and Natura Diet Grain Be Gone are fully hypoallergenic options made in New Zealand from wild-caught New Zealand fish. Once the cause of the itching is understood, we may be able to suggest cheaper alternatives.",
       "tags": [
         "bulk feeding",
         "hypoallergenic",
@@ -166,7 +166,7 @@
     {
       "category": "protein_selection",
       "question": "My dog is a fussy eater and isn't taking to a new hypoallergenic food. What should I try?",
-      "answer": "For fussy eaters, trying a different hypoallergenic range with a more novel or appealing protein (such as kangaroo or venison based options) is often the next step. Every dog's preference is different, so it can take trying two or three ranges before finding one they'll happily eat.",
+      "answer": "There are many reasons for fussy eating, and some veterinary hypoallergenic foods are not especially rich in flavour or available in alternative flavours. We have several options for different dogs, including Natura Diet Itch Buster, Natura Diet Grain Be Gone and multiple hypoallergenic Addiction flavours. Addiction's small biscuit sizes can suit small, fussy dogs, while Grain Be Gone and Itch Buster offer good value for medium and large breeds.",
       "tags": [
         "fussy eater",
         "hypoallergenic",
@@ -179,7 +179,7 @@
     {
       "category": "protein_selection",
       "question": "My dog has IBD and is limited to single-protein exotic meats. What should I know about ingredient changes?",
-      "answer": "Dogs on a strict single-protein diet for IBD or severe allergies need any formula change checked carefully, since even a small ingredient or moisture-content change in a recipe can affect them. Always compare the old and new ingredient list before switching bags, and check with your vet if you're unsure whether a reformulation is safe for your dog's condition.",
+      "answer": "For dogs with food sensitivities and gut-health issues, start by supporting the gut microbiome with good probiotics and prebiotics, then choose gentle meats. Natura Diet Itch Buster is our leading option: it is hypoallergenic and has been independently tested to universal standards for dogs with impaired gut health, gastrointestinal issues, impaired liver function, and dogs with or prone to pancreatitis. This makes it a useful multifaceted option for dogs with IBD.",
       "tags": [
         "IBD",
         "single protein diet",
@@ -193,7 +193,7 @@
     {
       "category": "protein_selection",
       "question": "My dog is bored of eating the same food. What can I do to add variety without upsetting their stomach?",
-      "answer": "If a dog gets bored of the same food, mixing in a small amount of a low-fat wet food alongside their regular kibble is a good way to add variety without a full diet change. Keeping the base diet consistent while varying the topper reduces the risk of stomach upset.",
+      "answer": "If your dog is on a hypoallergenic diet, anything on our website marked with a pink-purple circle is safe for them. Dogs on sensitive or hypoallergenic diets do not have to miss out. We have taken the guesswork out of choosing treats, raw food, tinned food, wet food and food toppers that are suitable for dogs with itching, skin issues, food allergies or sensitive stomachs. Follow the colour coding on the website or the barcodes in store to give your dog safe variety.",
       "tags": [
         "food boredom",
         "wet food topper",
@@ -206,7 +206,7 @@
     {
       "category": "protein_selection",
       "question": "Why might my dog get bored of a food after being on it for a while?",
-      "answer": "Some dogs go off a food after a period of time simply because it's a richer recipe and the taste becomes less exciting to them. This isn't unusual and doesn't necessarily mean something is wrong with the food — rotating to a different flavour or protein within the same hypoallergenic range can often solve it.",
+      "answer": "Like humans, dogs have different tastes. Smaller dogs can become fussy because we often treat them more like little people, giving them special tidbits, home-cooked food and the best of everything. They learn that if they hold out, their owner may offer something better. Most dogs also enjoy variety, so adding a wet food or topper, or alternating between appropriate options, can keep meals exciting and maintain their interest.",
       "tags": [
         "food boredom",
         "picky eating"
@@ -218,7 +218,7 @@
     {
       "category": "allergies_and_sensitivities",
       "question": "My dog has multiple food allergies. Are treats safe to give as well?",
-      "answer": "If your dog has known food allergies, check that any treat is made with a protein and ingredient list your dog already tolerates well, ideally from a hypoallergenic range. Treats should be treated the same as their main food when it comes to allergy management.",
+      "answer": "Absolutely. We have taken out the guesswork: anything on our website with a pink-purple circle, or a pink-purple barcode in store, indicates a hypoallergenic option. These products exclude the four main causes: wheat, chicken, beef, and processing additives such as colourings, flavourings and preservatives.",
       "tags": [
         "food allergies",
         "treats",
@@ -244,7 +244,7 @@
     {
       "category": "allergies_and_sensitivities",
       "question": "My dog has environmental sensitivities as well as food ones. What can help?",
-      "answer": "For dogs with both environmental and food sensitivities, a hypoallergenic diet won't remove the environmental triggers, but it reduces the overall allergy load on the body, which can make environmental flare-ups less severe. It's often used alongside management of contact/environmental exposure rather than as a complete fix on its own.",
+      "answer": "First, put the dog on a correctly balanced hypoallergenic diet. Then use products that support environmental sensitivities, such as BioPet grasses and WashBar Itch Soothe topical spray, to soothe itchy areas and reduce inflammation. A microbiome prebiotic can also help get gut health back on track. Better gut health supports the immune system, helping the dog cope with contact or grass allergies. You cannot eliminate a grass or contact allergy, but these options can reduce the problem and discomfort.",
       "tags": [
         "environmental allergy",
         "food allergy",
@@ -257,7 +257,7 @@
     {
       "category": "diarrhoea_and_stool_changes",
       "question": "My dog has ongoing diarrhoea even after switching food. What should I check?",
-      "answer": "If diarrhoea continues after a food switch, it's worth checking whether your dog has been on a course of probiotics or prebiotics, as gut flora can take time to rebalance after a diet change. Unless a vet has diagnosed a specific gastrointestinal issue, there's usually no reason for diarrhoea to continue long-term, so if it persists it's worth getting it checked out.",
+      "answer": "Diarrhoea is often associated with a poor gut microbiome. Anaesthetic, steroids, prednisone, other medication and stress can all affect the stomach lining and gut health. Start with a prebiotic or probiotic to help restore gut health, and use a hypoallergenic food to reduce inflammation. New foods can then be reintroduced slowly while assessing possible causes. Dogs should not have constant vomiting or diarrhoea; unless a condition such as IBD has been diagnosed, we can resolve 99% of these issues permanently.",
       "tags": [
         "diarrhoea",
         "probiotics",
@@ -271,7 +271,7 @@
     {
       "category": "diarrhoea_and_stool_changes",
       "question": "Can a change in protein help firm up my dog's stool?",
-      "answer": "Yes — some proteins are gentler on digestion than others. Novel proteins like kangaroo, combined with a fruit like apple, are often reported to help with digestion and stool consistency, particularly in dogs who react poorly to more common proteins like chicken or beef.",
+      "answer": "Absolutely. Richer proteins can sometimes produce looser stools, so changing the protein may help. Increasing bone content is another natural way to firm the stool. For anal-gland issues, OmegaFlex pumpkin powder can help firm loose stools or soften stools when the dog is constipated. This can support natural anal-gland emptying and reduce related issues.",
       "tags": [
         "stool consistency",
         "digestion",
@@ -284,7 +284,7 @@
     {
       "category": "puppies",
       "question": "My large-breed puppy is 9 months old. Should I switch them to adult food now or wait?",
-      "answer": "Large breed dogs generally benefit from staying on a puppy formula until around 12 months old, since their bones and joints take longer to develop. The alternative is moving them onto a good quality all-life-stages food rather than switching straight to a standard adult formula early.",
+      "answer": "In general, large-breed puppies should stay on puppy food until at least 12 months old. By nine months they are close to their mature height, but this is when they begin adding mass, building bulk and increasing bone density, so extra calcium and protein remain important. You could move to an adult food if it is very high in protein and fat and you provide additional bone, but it is best to have a chat about the individual puppy first.",
       "tags": [
         "large breed puppy",
         "puppy food timing",
@@ -297,7 +297,7 @@
     {
       "category": "puppies",
       "question": "My puppy isn't very food motivated and is slow to adjust to a new food. Is that normal?",
-      "answer": "It's common for puppies to be less food-driven than adult dogs and to take longer to adjust to a new food. A slow, gradual transition over a week or two, mixed in with their previous food, usually helps them come around without stressing their stomach.",
+      "answer": "Depending on the puppy's age and breed, this can be completely normal. Changing a young puppy's food too quickly can cause stomach upset, so make the transition slowly. Some puppies simply are not highly food-motivated. As long as the puppy is healthy and growing consistently along its expected growth trend, there should not be a problem.",
       "tags": [
         "puppy nutrition",
         "food transition",
@@ -310,7 +310,7 @@
     {
       "category": "ingredients",
       "question": "I noticed my bag of food looks or smells slightly different from the last one. Is that a problem?",
-      "answer": "Small natural variations between batches are normal — the colour of grains or vegetables in a formula can vary slightly depending on the raw ingredient batch, and this doesn't affect quality or safety. If a bag has an unusual smell, visible mould, or looks noticeably different in texture, that's worth reporting directly, since it may indicate the product was exposed to heat or moisture in transit (for example, being left in the sun during delivery) rather than a manufacturing issue.",
+      "answer": "Because we use natural products and natural food preservatives, there can be slight variations in the food's colour and smell. Seasonal ingredients, including fish, can also create differences in colour. Small variations in tone and appearance are normal, and the food should still be fine.",
       "tags": [
         "batch variation",
         "ingredient quality",
@@ -337,7 +337,7 @@
     {
       "category": "ingredients",
       "question": "Is it cheaper to buy dog food in bulk?",
-      "answer": "Generally yes — buying a larger bag size works out to a lower cost per kilogram than buying smaller bags more frequently. It's worth comparing the cost-per-kg across bag sizes rather than just the sticker price when deciding what to buy.",
+      "answer": "If you run a kennel, breeding business, doggy day care or similar operation and want to buy bulk stock, we can help. We also offer great pricing for individuals who want to buy dog food in bulk for their own pets.",
       "tags": [
         "bulk buying",
         "cost comparison",
@@ -350,7 +350,7 @@
     {
       "category": "weight_management",
       "question": "My dog is overweight for their breed. What kind of food change can help?",
-      "answer": "For weight management, choosing a lower-calorie protein option — such as a kangaroo and apple based recipe — alongside portion control is a common approach. Weight loss in dogs should be gradual, so pair any food change with monitoring body condition over several weeks rather than expecting a fast result.",
+      "answer": "Weight gain is generally a matter of calories in versus calories out. Some breeds have slower metabolisms, and some dogs gain weight after desexing, but the most common cause is overfeeding through snacks and tidbits during the day. Usually, reducing the total quantity is the first step. Larger biscuits can slow eating and make the meal more satisfying than small biscuits that are gulped down. We also have low-fat foods and treats, so the dog does not need to go on a strict diet; they just need the right proteins and portions.",
       "tags": [
         "overweight dog",
         "weight loss",
@@ -363,7 +363,7 @@
     {
       "category": "weight_management",
       "question": "How many treats or treat-sticks can I give without overdoing calories?",
-      "answer": "Treats should generally make up a small portion of a dog's daily calorie intake. For calorie-dense treats like meaty sticks, cutting them in half (or choosing a smaller bite-size version of the same treat) is an easy way to reduce calories per treat without cutting them out altogether, especially for small or food-driven dogs.",
+      "answer": "Our treats are natural and clean, so they generally act as protein substitutes. If you feed more treats, reduce the amount of regular food because the treats are also nutritionally beneficial. Too many treats can reduce the balance of the overall diet, so a good-quality raw or kibble food should remain the priority, with treats used as a top-up and for enjoyment.",
       "tags": [
         "treats",
         "calorie control",
@@ -376,7 +376,7 @@
     {
       "category": "product_comparisons",
       "question": "What's the difference between a grain-free and a wheat-free hypoallergenic food?",
-      "answer": "Grain-free means the recipe excludes all grains, while wheat-free only excludes wheat specifically and may still contain other grains. Both are considered hypoallergenic options, but if your dog has a broader grain sensitivity rather than a wheat-specific one, a fully grain-free option is the safer choice.",
+      "answer": "Grain-free became a major marketing trend about ten years ago, but most dogs are not allergic to grains. In 99.9% of dogs with food issues or allergies, wheat is the problem, so wheat-free is usually the important requirement. Grain-free food is slightly cleaner and may be needed by the small percentage of dogs that react to other grains. Its main benefit is for dogs with yeast issues: food does not cause yeast, but grains break down into sugars that can feed it. Grain-free food produces less sugar and can help starve the yeast. In short, choose grain-free for yeasty issues and wheat-free for typical allergy issues.",
       "tags": [
         "grain-free",
         "wheat-free",
