@@ -82,5 +82,17 @@
     "tags": ["delivery", "shipping", "subscription", "order", "account"],
     "relevantProductTags": [],
     "enabled": true
+  },
+  {
+    "id": "online-store-colour-coding",
+    "title": "What do the pink and green product backgrounds mean?",
+    "category": "product-labels",
+    "summary": "The online store uses pink for hypoallergenic products and green for non-hypoallergenic products.",
+    "content": "Products with a pink background in the All Good Petfood online store are hypoallergenic and are safe for dogs and cats, including those with allergies or sensitivities. Products with a green background are non-hypoallergenic and are intended for dogs and cats without allergies or sensitivities. Use the background colour as a quick guide when browsing the online store.",
+    "followUpQuestions": ["Does your dog or cat have any known allergies or sensitivities?", "Would you like help finding a pink-background hypoallergenic product?"],
+    "safetyNotes": ["Do not recommend a green-background product for a pet with known allergies or sensitivities."],
+    "tags": ["pink background", "green background", "pink products", "green products", "colour coding", "color coding", "hypoallergenic", "non-hypoallergenic", "allergies", "sensitivities", "online store"],
+    "relevantProductTags": ["hypoallergenic"],
+    "enabled": true
   }
 ]

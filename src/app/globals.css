@@ -247,6 +247,14 @@ button { color: inherit; }
 .composer-support > button:disabled { color: #aeb3be; cursor: not-allowed; }
 
 .admin-page { min-height: 100dvh; padding: 55px 24px; background: var(--cream); }
+.admin-session-backdrop { position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; padding: 20px; background: rgba(8,19,49,.62); backdrop-filter: blur(4px); }
+.admin-session-dialog { width: min(430px, 100%); padding: 30px; border-radius: 20px; color: var(--brand-navy); background: white; box-shadow: 0 28px 80px rgba(7,20,52,.3); }
+.admin-session-dialog h2 { margin: 7px 0 9px; font-size: 26px; letter-spacing: -.03em; }
+.admin-session-dialog p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.admin-session-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+.admin-session-actions a, .admin-session-actions button { min-height: 40px; padding: 9px 15px; border: 1px solid var(--line); border-radius: 9px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.admin-session-actions a { display: inline-flex; align-items: center; color: var(--brand-navy); background: white; text-decoration: none; }
+.admin-session-actions button { border-color: var(--brand-navy); color: white; background: var(--brand-navy); }
 .admin-container { width: min(1120px, 100%); margin: 0 auto; }
 .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--brand-navy); text-decoration: none; font-size: 12px; font-weight: 600; }
 .admin-heading { margin: 45px 0 30px; }

@@ -5,7 +5,11 @@ import { callbackUrl, createShopifyFlow, shopifyCookieOptions, shopifyCustomerCo
 export async function GET(request: NextRequest) {
   try {
     const config = shopifyCustomerConfig();
-    const flow = createShopifyFlow();
+    const requestedReturnTo = request.nextUrl.searchParams.get("returnTo");
+    const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+      ? requestedReturnTo
+      : undefined;
+    const flow = createShopifyFlow(returnTo);
     const authorizationUrl = new URL(config.authorizationEndpoint);
     authorizationUrl.searchParams.set("client_id", config.clientId);
     authorizationUrl.searchParams.set("scope", "openid email customer-account-api:full");

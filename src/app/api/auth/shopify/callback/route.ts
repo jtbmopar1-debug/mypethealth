@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
       expiresAt: Date.now() + maxAge * 1000,
     });
 
-    const response = NextResponse.redirect(new URL("/?shopify=connected", config.appBaseUrl));
+    const destination = new URL(flow.returnTo || "/", config.appBaseUrl);
+    destination.searchParams.set("shopify", "connected");
+    const response = NextResponse.redirect(destination);
     response.cookies.delete(SHOPIFY_FLOW_COOKIE);
     response.cookies.set(SHOPIFY_SESSION_COOKIE, session, shopifyCookieOptions(maxAge));
     return response;

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import reviewSource from "../../../knowledge/pethealth_knowledge_base.json";
 import { AdminKnowledgeEditor, type KnowledgeReviewCandidate } from "@/components/admin-knowledge-editor";
+import { AdminSessionTimer } from "@/components/admin-session-timer";
 import { isAdminEmail } from "@/services/admin-auth";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
@@ -24,6 +25,7 @@ export default async function AdminPage() {
   return (
     <main className="admin-page">
       <div className="admin-container">
+        <AdminSessionTimer expiresAt={session.expiresAt} />
         <Link href="/" className="back-link"><ArrowLeft size={16} /> Back to assistant</Link>
         <div className="admin-heading">
           <span className="eyebrow">Restricted staff workspace</span>
@@ -31,7 +33,7 @@ export default async function AdminPage() {
           <p>Add reviewed answers to real customer questions, save unfinished work as drafts, and publish approved guidance directly to Buddy. Only configured admin email addresses can access this page or its API.</p>
         </div>
 
-        <AdminKnowledgeEditor builtInCount={7} reviewCandidates={reviewCandidates} />
+        <AdminKnowledgeEditor builtInCount={8} reviewCandidates={reviewCandidates} />
       </div>
     </main>
   );

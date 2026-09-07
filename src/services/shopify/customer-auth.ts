@@ -10,6 +10,7 @@ const flowSchema = z.object({
   state: z.string().min(20),
   verifier: z.string().min(40),
   createdAt: z.number(),
+  returnTo: z.string().startsWith("/").optional(),
 });
 
 const sessionSchema = z.object({
@@ -84,14 +85,14 @@ function decrypt(value: string) {
   ]).toString("utf8")) as unknown;
 }
 
-export function createShopifyFlow() {
+export function createShopifyFlow(returnTo?: string) {
   const state = randomBytes(24).toString("base64url");
   const verifier = randomBytes(48).toString("base64url");
   const challenge = createHash("sha256").update(verifier).digest("base64url");
   return {
     state,
     challenge,
-    cookieValue: encrypt({ state, verifier, createdAt: Date.now() }),
+    cookieValue: encrypt({ state, verifier, createdAt: Date.now(), returnTo }),
   };
 }
 

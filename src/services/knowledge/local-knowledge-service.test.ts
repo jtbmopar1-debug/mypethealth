@@ -32,4 +32,12 @@ describe("local knowledge retrieval", () => {
     expect(results[0]?.id).toBe("itchy-dogs-first-steps");
     expect(results.some((result) => result.id === "puppy-feeding")).toBe(false);
   });
+
+  it("explains the online store product background colours", async () => {
+    const results = await new LocalKnowledgeService().search("What do pink and green products mean?", 3);
+
+    expect(results[0]?.id).toBe("online-store-colour-coding");
+    expect(results[0]?.content).toContain("pink background");
+    expect(results[0]?.content).toContain("green background");
+  });
 });

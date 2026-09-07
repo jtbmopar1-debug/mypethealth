@@ -11,11 +11,11 @@ const recommendedProductUrlSchema = z.string().trim().url().max(1000).refine((va
   try {
     const url = new URL(value);
     return (url.hostname === "allgoodpetfood.co.nz" || url.hostname === "www.allgoodpetfood.co.nz")
-      && url.pathname.startsWith("/products/");
+      && (/^\/products\/[^/]+\/?$/.test(url.pathname) || /^\/collections\/[^/]+\/?$/.test(url.pathname));
   } catch {
     return false;
   }
-}, "Use an All Good Petfood product URL");
+}, "Use an All Good Petfood product or collection URL");
 const entrySchema = z.object({
   question: z.string().trim().min(3).max(300),
   answer: z.string().trim().min(10).max(12000),
