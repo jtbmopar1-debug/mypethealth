@@ -109,7 +109,7 @@ function createConversation(name = "", pets: CustomerPet[] = []): Conversation {
   return { id: id(), title: "New conversation", createdAt: now, updatedAt: now, messages: [welcomeMessage(name, pets)] };
 }
 
-export function ChatWidget() {
+export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
   const [conversation, setConversation] = useState<Conversation>(() => createConversation());
   const [history, setHistory] = useState<Conversation[]>([]);
   const [input, setInput] = useState("");
@@ -124,6 +124,7 @@ export function ChatWidget() {
   const [petFormError, setPetFormError] = useState("");
   const [petFormSaving, setPetFormSaving] = useState(false);
   const [shopifyAuthState, setShopifyAuthState] = useState<"checking" | "authenticated" | "guest">("checking");
+  const [accountPrompt, setAccountPrompt] = useState("");
   const [storageNotice, setStorageNotice] = useState("");
   const [specialsOpen, setSpecialsOpen] = useState(false);
   const [newsletter, setNewsletter] = useState<LatestNewsletter | null>(null);
@@ -142,12 +143,6 @@ export function ChatWidget() {
       .then((result) => {
         if (!result.authenticated || !result.customer) {
           setShopifyAuthState("guest");
-          // Buddy cannot read Shopify's cookie across domains. Ask Shopify to
-          // reuse it silently; if it is absent, the callback redirects to the
-          // All Good Petfood login rather than presenting a second login here.
-          if (!new URLSearchParams(window.location.search).has("auth_error")) {
-            window.location.replace("/api/auth/shopify/start?silent=1");
-          }
           return;
         }
         setShopifyCustomer(result.customer);
@@ -222,6 +217,7 @@ export function ChatWidget() {
 
   async function persist(next: Conversation) {
     const normalized = normalizeConversation(next);
+    if (shopifyAuthState !== "authenticated") return normalized;
     // Keep the sidebar responsive even if the cloud request is slow or fails.
     setHistory((current) => [normalized, ...current.filter((item) => item.id !== normalized.id)]
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
@@ -242,6 +238,10 @@ export function ChatWidget() {
   }
 
   function openContactTeam() {
+    if (shopifyAuthState !== "authenticated") {
+      setAccountPrompt("Sign in or create an account to contact the team and receive their reply by email.");
+      return;
+    }
     setContactMessage("");
     setContactError("");
     setContactSentAt("");
@@ -322,9 +322,10 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId: persistedConversation.id, messages: messages.slice(-40) })
       });
-      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; petProfileProposalNames?: string[]; error?: string };
+      const data = (await response.json()) as { message?: string; products?: ProductRecommendation[]; resetProductContext?: boolean; pets?: CustomerPet[]; petProfileProposalNames?: string[]; requiresAccount?: boolean; error?: string };
       if (!response.ok || !data.message) throw new Error(data.error || "No response received");
       if (data.pets) setCustomerPets(data.pets);
+      if (data.requiresAccount) setAccountPrompt("Create or sign in to an All Good Petfood account to use this feature. You can continue asking Buddy general questions as a guest.");
 
       const assistantMessage: ChatMessage = {
         id: id(),
@@ -472,7 +473,7 @@ export function ChatWidget() {
     }
   }
 
-  if (shopifyAuthState !== "authenticated") {
+  if (shopifyAuthState === "checking") {
     return (
       <main className="access-gate">
         <section className="access-card" aria-live="polite">
@@ -488,7 +489,7 @@ export function ChatWidget() {
               <span className="eyebrow">All Good Petfood customer access</span>
               <h1>Continue through All Good Petfood</h1>
               <p>Buddy uses your All Good Petfood customer account. Sign in or create an account on the store, then open Chat with Buddy again.</p>
-              <a className="access-primary" href="https://allgoodpetfood.co.nz/account/login">Sign in at All Good Petfood</a>
+              <a className="access-primary" href={allGoodLoginUrl}>Sign in at All Good Petfood</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz/account/register">Create Account</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz">Return to All Good Petfood</a>
               <small>My Pet Health never receives your Shopify password.</small>
@@ -508,7 +509,12 @@ export function ChatWidget() {
           <button className="icon-button mobile-only" aria-label="Close menu" onClick={() => setSidebarOpen(false)}><X size={20} /></button>
         </div>
         <button className="new-chat-button" onClick={startNewConversation}><Plus size={18} /> New conversation</button>
-        <section className="pets-block" aria-labelledby="my-pets-heading">
+        {shopifyAuthState === "guest" && <section className="guest-sidebar-card">
+          <strong>Using Buddy as a guest</strong>
+          <p>Ask questions and browse live All Good Petfood products. This chat will not be saved.</p>
+          <div><a href={allGoodLoginUrl}>Sign in at All Good</a><a href="https://allgoodpetfood.co.nz/account/register">Create account</a></div>
+        </section>}
+        {shopifyAuthState === "authenticated" && <section className="pets-block" aria-labelledby="my-pets-heading">
           <div className="pets-label">
             <span id="my-pets-heading"><Heart size={14} /> My pets</span>
             <button type="button" onClick={() => openPetEditor()} aria-label="Add a pet"><Plus size={14} /> Add</button>
@@ -531,8 +537,8 @@ export function ChatWidget() {
               ))}
             </div>
           )}
-        </section>
-        <div className="history-block">
+        </section>}
+        {shopifyAuthState === "authenticated" && <div className="history-block">
           <div className="history-label"><Clock3 size={14} /> Previous conversations</div>
           {history.length === 0 ? (
             <div className="empty-history"><MessageCircleMore size={23} /><p>Your saved chats will appear here.</p></div>
@@ -556,9 +562,9 @@ export function ChatWidget() {
               ))}
             </div>
           )}
-        </div>
+        </div>}
         <div className="sidebar-note"><ShieldCheck size={18} /><span>Practical guidance, grounded in trusted pet-health knowledge.</span></div>
-        <a className="admin-link" href="/admin">Admin</a>
+        {shopifyAuthState === "authenticated" && <a className="admin-link" href="/admin">Admin</a>}
       </aside>
 
       {editingPetId && (
@@ -665,7 +671,7 @@ export function ChatWidget() {
           <a className="header-back" href="https://allgoodpetfood.co.nz">Back to All Good Petfood</a>
           <AllGoodLogo />
           <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> All Good Petfood assistant</small></span></div>
-          {shopifyCustomer && <ShopifyAccountControl customer={shopifyCustomer} />}
+          {shopifyCustomer ? <ShopifyAccountControl customer={shopifyCustomer} /> : <a className="guest-header-signin" href={allGoodLoginUrl}>Sign in at All Good</a>}
         </header>
 
         <section className="conversation" aria-live="polite">
@@ -683,11 +689,11 @@ export function ChatWidget() {
                       {QUICK_PROMPTS.map((prompt) => (
                         <button key={prompt} onClick={() => prompt === "Promotions" ? void openSpecials() : void sendMessage(prompt)}>{prompt}</button>
                       ))}
-                      {customerPets.length === 0 && <button className="quick-pet-profile" onClick={() => openPetEditor()}><Plus size={13} /> Add my pet</button>}
+                      {shopifyAuthState === "authenticated" && customerPets.length === 0 && <button className="quick-pet-profile" onClick={() => openPetEditor()}><Plus size={13} /> Add my pet</button>}
                     </div>
                   )}
-                  {(message.products ?? recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} />)}
-                  {petProfileOffers[message.id]?.length > 0 && (
+                  {(message.products ?? recommendations[message.id] ?? []).map((recommendation) => <ProductCard key={recommendation.product.id} recommendation={recommendation} allowAddToCart={shopifyAuthState === "authenticated"} />)}
+                  {shopifyAuthState === "authenticated" && petProfileOffers[message.id]?.length > 0 && (
                     <div className="pet-profile-offer" role="group" aria-label="Save pet profile">
                       <button type="button" onClick={() => acceptPetProfileOffer(message.id, petProfileOffers[message.id])}><Heart size={15} /> Save {petProfileOffers[message.id].join(" and ")} to My Pets</button>
                       <button type="button" onClick={() => dismissPetProfileOffer(message.id)}>Not now</button>
@@ -707,12 +713,16 @@ export function ChatWidget() {
         </section>
 
         <footer className="composer-wrap">
+          {accountPrompt && shopifyAuthState === "guest" && <div className="guest-account-prompt" role="status">
+            <div><strong>Want Buddy to remember?</strong><p>{accountPrompt}</p></div>
+            <div className="guest-account-actions"><a href={allGoodLoginUrl}>Sign in at All Good</a><a href="https://allgoodpetfood.co.nz/account/register">Create account</a><button type="button" onClick={() => setAccountPrompt("")}>Not now</button></div>
+          </div>}
           <form className="composer" onSubmit={(event: FormEvent) => { event.preventDefault(); void sendMessage(); }}>
             <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={4000} placeholder="Ask about food, feeding, or your pet…" aria-label="Your message" />
             <button type="submit" className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message"><ArrowUp size={20} /></button>
           </form>
           <div className="composer-support">
-            <p>{storageNotice || "General pet-food guidance only. The All Good team can help and will recommend or refer to a vet if they consider it necessary."}</p>
+            <p>{shopifyAuthState === "guest" ? "Guest chat is not saved. Product information, prices and stock still come from All Good Petfood." : storageNotice || "General pet-food guidance only. The All Good team can help and will recommend or refer to a vet if they consider it necessary."}</p>
             <button type="button" onClick={openContactTeam} disabled={!hasCustomerMessage || isLoading} title={!hasCustomerMessage ? "Ask Buddy a question first" : undefined}><Mail size={17} /> Contact our team</button>
           </div>
         </footer>

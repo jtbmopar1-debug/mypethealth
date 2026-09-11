@@ -50,6 +50,8 @@ export async function answerCustomer(
     updatedPetNames?: string[];
     petProfileOnlyTurn?: boolean;
     namedProductFactsRequested?: boolean;
+    namedProductFactsQuestion?: string;
+    guestMode?: boolean;
   } = {}
 ): Promise<AssistantResult> {
   if (options.petProfileOnlyTurn && options.petProfileProposals?.length) {

@@ -37,6 +37,14 @@ export function productTextMatchesRequiredTerm(searchableText: string, term: str
   const candidates = broadAliases.has(normalizedTerm) ? expandProductSearchAliases([normalizedTerm]) : [normalizedTerm];
   return candidates.some((candidate) => {
     const escapedCandidate = candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(`(?:^|[^a-z0-9])${escapedCandidate}(?:s|es)?(?=$|[^a-z0-9])`, "i").test(searchableText);
+    if (new RegExp(`(?:^|[^a-z0-9])${escapedCandidate}(?:s|es)?(?=$|[^a-z0-9])`, "i").test(searchableText)) return true;
+
+    // Shopify and customers do not always agree about spaces or hyphens in
+    // compound product names. The caller supplies the whole compact identity
+    // (not an individual fragment), so comparing canonical forms remains
+    // strict while allowing "Pancrea Care" to match "PancreaCare".
+    const compactCandidate = candidate.replace(/[^a-z0-9]/g, "");
+    const compactText = searchableText.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return compactCandidate.length >= 8 && compactText.includes(compactCandidate);
   });
 }

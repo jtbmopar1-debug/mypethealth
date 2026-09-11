@@ -25,7 +25,16 @@ function replaceShopifySearchUrls(message: string) {
 export function productSearchTerms(message: string) {
   return replaceShopifySearchUrls(message).toLowerCase().split(/[^a-z0-9]+/)
     .filter((term) => term.length > 1 && !stopWords.has(term))
-    .map((term) => term.length > 3 && term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term);
+    .flatMap((term) => {
+      // Customers commonly join a product descriptor and category while the
+      // catalogue title separates them, such as "pigears" or "bullysticks".
+      const compound = term.match(/^(.{2,}?)(ears|sticks|treats|chews|bites|snacks)$/);
+      if (compound) {
+        const category = compound[2].endsWith("s") ? compound[2].slice(0, -1) : compound[2];
+        return [compound[1], category];
+      }
+      return term.length > 3 && term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term;
+    });
 }
 
 export function wantsProductSuggestion(message: string) {
@@ -91,13 +100,45 @@ export function namedProductIdentityTerms(message: string) {
   // facts to answer and must not become mandatory catalogue identifiers.
   const clauses = message.split(/[?!.]+/).map((clause) => clause.trim()).filter(Boolean);
   for (const clause of clauses) {
-    const match = clause.match(/\b(?:what|which)\s+(?:flavou?rs?|ingredients?|recipe)\s+(?:is|are|does)\s+(?:the\s+)?(.+)$/i);
+    const match = clause.match(/\b(?:what|which)\s+(?:flavou?rs?|ingredients?|recipe)\s+(?:is|are|does)\s+(?:the\s+)?(.+?)(?=\s+and\s+(?:is|are|does|can|will|would)\b|$)/i);
     if (match) return productSearchAnchors(productSearchTerms(match[1]));
 
     const subjectMatch = clause.match(/^(.+?)\s+(?:is|are|does)\s+(?:it\s+)?(?:grain[- ]?free|wheat[- ]?free|hypoallergenic|suitable for|safe for)\b/i);
     if (subjectMatch) return productSearchAnchors(productSearchTerms(subjectMatch[1]));
   }
   return [];
+}
+
+function editDistance(left: string, right: string) {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1),
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+  return previous[right.length];
+}
+
+export function closestDistinctiveProductTitle(identityTerms: string[], titles: string[]) {
+  const requested = identityTerms.join("").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (requested.length < 7) return null;
+
+  const ranked = titles.map((title) => {
+    const words = title.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    const candidates = [...words, words.join("")].filter((candidate) => candidate.length >= 7);
+    return { title, distance: Math.min(...candidates.map((candidate) => editDistance(requested, candidate))) };
+  }).sort((left, right) => left.distance - right.distance);
+
+  const best = ranked[0];
+  const maximumDistance = Math.max(1, Math.floor(requested.length / 6));
+  if (!best || best.distance > maximumDistance || ranked[1]?.distance === best.distance) return null;
+  return best.title;
 }
 
 export function isGenericProductHelpRequest(message: string) {
@@ -143,12 +184,12 @@ export function confirmsRestockEnquiry(message: string, previousAssistantMessage
 
 export function confirmsProductIdentity(message: string, previousAssistantMessage = "") {
   return /^(?:yes|yes please|yep|yeah|correct|that(?:'s| is) (?:it|the one)|exactly)\b/i.test(message.trim())
-    && /is this the product you mean\?/i.test(previousAssistantMessage);
+    && /(?:is this the product you mean|did you mean .+)\?/i.test(previousAssistantMessage);
 }
 
 export function rejectsProductIdentity(message: string, previousAssistantMessage = "") {
   return /^(?:no|nope|nah|not that|wrong (?:one|product)|that(?:'s| is) not it)\b/i.test(message.trim())
-    && /is this the product you mean\?/i.test(previousAssistantMessage);
+    && /(?:is this the product you mean|did you mean .+)\?/i.test(previousAssistantMessage);
 }
 
 export function normalizeShopifyResourceId(id: string | null | undefined) {

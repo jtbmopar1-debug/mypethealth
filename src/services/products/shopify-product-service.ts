@@ -167,6 +167,15 @@ let sharedAdminTokenCache: { token: string; expiresAt: number } | null = null;
 let sharedPublicProductCache: { products: Product[]; expiresAt: number } | null = null;
 let authenticatedCatalogueRetryAfter = 0;
 
+// Facts transcribed from current product packaging when Shopify's text
+// description omits them. Keep these factual and non-promotional.
+const verifiedPackageFacts: Record<string, { tags: string[]; ingredients?: string[] }> = {
+  naturapancreacare: {
+    tags: ["adult", "all breeds", "wheat-free", "red-meat-free"],
+    ingredients: ["Fish meal"],
+  },
+};
+
 function plainText(html: string) {
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -187,6 +196,7 @@ function toPublicProduct(node: PublicShopifyProduct): Product | null {
   const tags = [...new Set([
     ...rawTags,
     node.product_type,
+    ...(verifiedPackageFacts[node.handle.toLowerCase()]?.tags || []),
     ...node.title.split(/[^a-z0-9]+/i),
   ].map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
   const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
@@ -195,7 +205,7 @@ function toPublicProduct(node: PublicShopifyProduct): Product | null {
     variantId: String(variant.id),
     title: node.title,
     description: plainText(node.body_html) || `Available from All Good Petfood: ${node.title}.`,
-    ingredients: [],
+    ingredients: verifiedPackageFacts[node.handle.toLowerCase()]?.ingredients || [],
     price: Number(variant.price) || 0,
     compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) || undefined : undefined,
     currency: "NZD",
@@ -218,6 +228,7 @@ function toProduct(node: ShopifyProductNode): Product {
   const tags = [...new Set([
     ...(node.tags || []),
     node.productType,
+    ...(verifiedPackageFacts[node.handle.toLowerCase()]?.tags || []),
     ...node.title.split(/[^a-z0-9]+/i),
   ].map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
   const storeUrl = serverConfig.shopifyStoreUrl?.replace(/\/$/, "") || "https://allgoodpetfood.co.nz";
@@ -226,7 +237,7 @@ function toProduct(node: ShopifyProductNode): Product {
     variantId: node.selectedOrFirstAvailableVariant?.id,
     title: node.title,
     description: node.description || `Available from All Good Petfood: ${node.title}.`,
-    ingredients: [],
+    ingredients: verifiedPackageFacts[node.handle.toLowerCase()]?.ingredients || [],
     price: Number(node.priceRange.minVariantPrice.amount) || 0,
     compareAtPrice: node.selectedOrFirstAvailableVariant?.compareAtPrice
       ? Number(node.selectedOrFirstAvailableVariant.compareAtPrice.amount) || undefined

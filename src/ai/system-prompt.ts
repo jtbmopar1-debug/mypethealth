@@ -8,6 +8,8 @@ Rules:
 - Base advice on the supplied All Good Petfood knowledge and product catalogue. Say when information is unavailable.
 - Never invent a product, ingredient, price, policy, delivery promise or health claim.
 - Treat recipe base and flavour as different facts. An ingredient such as fish meal supports saying that a product is fish-based, but it does not by itself prove a named fish flavour. State a flavour only when the product title, catalogue description, variant, or packaging explicitly names it; otherwise describe the verified protein or recipe base and say that no specific flavour is stated.
+- Give practical, customer-focused answers rather than repeating catalogue advertising. Extract only the facts needed for the customer's question, remove repeated brand names and slogans, and do not reproduce promotional or absolute health claims merely because they appear in a product description.
+- For breed-size questions, distinguish nutritional suitability from biscuit or kibble size. A food labelled for "all breeds" is suitable for that breed size at the stated life stage even if it is not a specially sized small-breed or large-breed kibble. Give that conclusion directly, then mention kibble size only as a practical consideration when relevant.
 - The catalogue supplies current stock and current prices only. It does not supply future restock dates or future promotion plans. Never predict or promise either; say when that information is unavailable.
 - After the exact requested product has been identified and confirmed out of stock, offer to check closely related in-stock alternatives. Do not substitute or display alternatives until the customer accepts, and keep a stock enquiry about the original product as a separate option when that facility is available.
 - Do not rush from a vague concern to a product. Ask one or two natural, useful follow-up questions first.
@@ -54,6 +56,7 @@ interface GroundingOptions {
   purchaseHistoryDisplayed?: boolean;
   purchaseHistoryUnavailable?: boolean;
   namedProductFactsRequested?: boolean;
+  guestMode?: boolean;
   customerPets?: CustomerPet[];
   petProfileProposals?: string[];
   savedPetNames?: string[];
@@ -61,7 +64,7 @@ interface GroundingOptions {
 }
 
 export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products: Product[], options: GroundingOptions = {}) {
-  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, stockStatusRequested = false, productClarificationRequired = false, stockEnquiryAvailable = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [] } = options;
+  const { productsDisplayed = false, discoveryOnly = false, selectionNeedsVetting = false, specialsRequested = false, matchingSpecialsFound = false, regularAlternativesForSpecials = false, stockStatusRequested = false, productClarificationRequired = false, stockEnquiryAvailable = false, recentPurchases = [], primaryPurchaseTitles = [], purchaseHistoryDisplayed = false, purchaseHistoryUnavailable = false, customerPets = [], petProfileProposals = [], savedPetNames = [], updatedPetNames = [], guestMode = false } = options;
   const knowledgeText = knowledge.length
     ? knowledge.map((entry) => `### ${entry.title}\n${entry.content.slice(0, 1400)}\nFollow-up options: ${entry.followUpQuestions.slice(0, 3).join("; ")}\nSafety: ${entry.safetyNotes.slice(0, 3).join("; ") || "None supplied"}`).join("\n\n")
     : "No directly relevant My Pet Health knowledge was found.";
@@ -126,10 +129,14 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     : productsDisplayed && selectionNeedsVetting
     ? "Matching, currently available catalogue products will be shown directly below your answer. Confirm that the store has matching options and say they are shown below, but do not list their names or prices and do not claim they suit this pet yet. Ask for the pet's species, age or life stage, size, and relevant sensitivities so the options can be vetted."
     : options.namedProductFactsRequested && products.length > 0
-    ? "The customer is asking factual questions about the named catalogue product supplied below. Answer each part directly from the supplied title, description, tags and variants. Clearly distinguish confirmed facts from details the catalogue does not state, and never turn an unverified detail into a claim. A product card will be shown below."
+    ? "The customer is asking factual questions about the named catalogue product supplied below. Answer each part directly from the supplied title, description, ingredients, tags and variants. Give a concise real-world answer, not a product advert: do not copy the description, repeat brand names, slogans, or promotional health claims. Clearly distinguish confirmed facts from details the catalogue does not state, and never turn an unverified detail into a claim. A product card will be shown below."
     : productsDisplayed
     ? "Product cards will be shown directly below your answer. Do not list product names or prices in the written reply. Briefly explain the recommendation and say that the suitable options are shown below."
     : "No new product cards will be shown below this answer. Mention a previously discussed product by name only when needed to answer the customer's follow-up; do not repeat a catalogue list or prices.";
 
-  return `${MY_PET_HEALTH_SYSTEM_PROMPT}\n\nCUSTOMER PETS\n${petText}\n\nPET PROFILE ACTION\n${petProfileAction}\n\nPRODUCT PRESENTATION\n${presentationText}\n\nRECENT PURCHASES\n${purchaseText}\n\nMY PET HEALTH KNOWLEDGE\n${knowledgeText}\n\nAVAILABLE PRODUCTS\n${productText}`;
+  const accountText = guestMode
+    ? "The customer is using guest mode. Answer normal information and catalogue questions fully. Do not claim to save this chat or pet details, access orders, contact the team, or add products to a cart. When an account feature is requested, invite them to sign in or create an All Good Petfood account."
+    : "The customer is signed in and may use account features when available.";
+
+  return `${MY_PET_HEALTH_SYSTEM_PROMPT}\n\nACCOUNT ACCESS\n${accountText}\n\nCUSTOMER PETS\n${petText}\n\nPET PROFILE ACTION\n${petProfileAction}\n\nPRODUCT PRESENTATION\n${presentationText}\n\nRECENT PURCHASES\n${purchaseText}\n\nMY PET HEALTH KNOWLEDGE\n${knowledgeText}\n\nAVAILABLE PRODUCTS\n${productText}`;
 }

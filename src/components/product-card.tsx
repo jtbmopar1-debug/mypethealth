@@ -5,7 +5,7 @@ import { ArrowUpRight, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import type { ProductRecommendation } from "@/types";
 
-export function ProductCard({ recommendation }: { recommendation: ProductRecommendation }) {
+export function ProductCard({ recommendation, allowAddToCart = true }: { recommendation: ProductRecommendation; allowAddToCart?: boolean }) {
   const { product, reason } = recommendation;
   const [cartStatus, setCartStatus] = useState("");
   const variantId = product.variantId?.split("/").pop();
@@ -43,7 +43,7 @@ export function ProductCard({ recommendation }: { recommendation: ProductRecomme
           <a href={product.url} target="_blank" rel="noreferrer" className="button button-secondary" onClick={(event) => product.url.startsWith("#") && event.preventDefault()}>
             View product <ArrowUpRight size={15} />
           </a>
-          {variantId && product.availability === "in_stock" && <button type="button" className="button button-dark" onClick={addToStoreCart}>
+          {allowAddToCart && variantId && product.availability === "in_stock" && <button type="button" className="button button-dark" onClick={addToStoreCart}>
             <ShoppingBag size={14} /> Add to cart
           </button>}
         </div>

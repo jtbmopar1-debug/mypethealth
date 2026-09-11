@@ -26,6 +26,7 @@ import {
   wantsProductVariantDetails,
   wantsNamedProductFacts,
   namedProductIdentityTerms,
+  closestDistinctiveProductTitle,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -33,6 +34,7 @@ import {
 } from "@/services/products/product-query";
 import { readShopifySessionOrLocalDev, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 import { fetchRecentCustomerOrders } from "@/services/shopify/customer-orders";
+import { guestAccountFeatureReply, guestAccountFeatureRequested } from "@/services/shopify/guest-access";
 import { rememberCustomerPets } from "@/services/pets/customer-pet-service";
 import { contextualNamedPetReply } from "@/services/pets/pet-message-parser";
 import type { CustomerOrder, ProductRecommendation } from "@/types";
@@ -232,10 +234,15 @@ function mentionedActivePet<T extends { name: string; status: string }>(message:
 
 export async function POST(request: NextRequest) {
   try {
-    const customerSession = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
-    if (!customerSession) {
-      return Response.json({ error: "Sign in with All Good Petfood to chat with Buddy." }, { status: 401 });
-    }
+    const signedInSession = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
+    const guestMode = !signedInSession;
+    const customerSession = signedInSession ?? {
+      customerId: "guest",
+      email: "",
+      firstName: "",
+      lastName: "",
+      accessToken: "",
+    };
 
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {
@@ -246,7 +253,27 @@ export async function POST(request: NextRequest) {
     const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
     const latestUserMessage = userMessages.at(-1) ?? "";
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    if (guestMode && guestAccountFeatureRequested(latestUserMessage)) {
+      return Response.json({
+        message: guestAccountFeatureReply(latestUserMessage),
+        products: [],
+        resetProductContext: false,
+        pets: [],
+        requiresAccount: true,
+        mode: "guest-account-required",
+      });
+    }
     if (confirmsTeamEmail(latestUserMessage, previousAssistant?.content)) {
+      if (guestMode) {
+        return Response.json({
+          message: "Please sign in or create an All Good Petfood account so the team has an email address to reply to.",
+          products: [],
+          resetProductContext: false,
+          pets: [],
+          requiresAccount: true,
+          mode: "guest-account-required",
+        });
+      }
       if (!customerSession.email) {
         return Response.json({
           message: "I can’t email the team because this signed-in account does not include an email address.",
@@ -318,19 +345,21 @@ export async function POST(request: NextRequest) {
     let petProfileProposals: string[] = [];
     let savedPetNames: string[] = [];
     let updatedPetNames: string[] = [];
-    try {
-      const petMemory = await rememberCustomerPets(
-        customerSession.customerId,
-        latestMessageIsContextualPetName && contextualPetMessage ? contextualPetMessage : latestUserMessage,
-        confirmedProposalMessage,
-      );
-      customerPets = petMemory.pets;
-      petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
-      savedPetNames = petMemory.savedPetNames;
-      updatedPetNames = petMemory.updatedPetNames;
-      console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
-    } catch (error) {
-      console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
+    if (!guestMode) {
+      try {
+        const petMemory = await rememberCustomerPets(
+          customerSession.customerId,
+          latestMessageIsContextualPetName && contextualPetMessage ? contextualPetMessage : latestUserMessage,
+          confirmedProposalMessage,
+        );
+        customerPets = petMemory.pets;
+        petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
+        savedPetNames = petMemory.savedPetNames;
+        updatedPetNames = petMemory.updatedPetNames;
+        console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
+      } catch (error) {
+        console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
+      }
     }
     if (isGenericProductHelpRequest(latestUserMessage)) {
       const activePetNames = customerPets.filter((pet) => pet.status === "active").map((pet) => pet.name);
@@ -369,6 +398,22 @@ export async function POST(request: NextRequest) {
     if (confirmedProductIdentity && previousProductIds.length === 1) {
       const confirmedProduct = await productService.getProduct(previousProductIds[0]);
       if (confirmedProduct) {
+        const originalFactsQuestion = [...userMessages.slice(0, -1)].reverse().find(wantsNamedProductFacts);
+        if (originalFactsQuestion) {
+          const recommendation = { product: confirmedProduct, reason: "Customer-confirmed catalogue product." };
+          const result = await answerCustomer(messages, [], [recommendation], {
+            productsDisplayed: true,
+            namedProductFactsRequested: true,
+            namedProductFactsQuestion: originalFactsQuestion,
+          });
+          return Response.json({
+            message: result.content,
+            products: [recommendation],
+            resetProductContext: false,
+            pets: customerPets,
+            mode: result.mode,
+          });
+        }
         const originalStockQuestion = [...userMessages].reverse().find(wantsProductStockStatus) ?? "";
         const askedAboutSpecial = wantsSpecials(originalStockQuestion);
         const currentlyOnSpecial = Boolean(confirmedProduct.compareAtPrice && confirmedProduct.compareAtPrice > confirmedProduct.price)
@@ -416,6 +461,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (wantsRestockEnquiryStatus(latestUserMessage)) {
+      if (guestMode) return Response.json({
+        message: "Please sign in to view account-linked enquiry history.", products: [], resetProductContext: false, pets: [], requiresAccount: true, mode: "guest-account-required",
+      });
       try {
         const enquiry = await getLatestRestockEnquiry(customerSession.customerId, requestedProductIds[0]);
         const message = !enquiry
@@ -622,6 +670,7 @@ export async function POST(request: NextRequest) {
     const matchingSpecialsFound = specialsRequested && recommendations.length > 0;
     let regularAlternativesForSpecials = false;
     let directCatalogueListing = false;
+    let fuzzyProductClarification = false;
 
     if (specialsRequested && recommendations.length === 0 && specialSearchTerms.length > 0) {
       recommendations = (await productService.recommendProducts([
@@ -660,7 +709,13 @@ export async function POST(request: NextRequest) {
       const identityTerms = namedProductIdentityTerms(searchSource);
       const directTerms = (identityTerms.length > 0 ? identityTerms : productSearchTerms(searchSource))
         .filter((term) => !petNameTerms.has(term));
-      const directAnchorTerms = productSearchAnchors(directTerms);
+      // A customer may insert spaces into a branded compound name (for
+      // example "Pancrea Care" while Shopify stores "PancreaCare"). Treat
+      // the complete extracted name as one required identifier rather than
+      // requiring each fragment to be a standalone title word.
+      const directAnchorTerms = identityTerms.length > 1
+        ? [identityTerms.join("")]
+        : productSearchAnchors(directTerms);
       directCatalogueListing = !namedProductFactsRequested
         && !needsHealthKnowledge(latestUserMessage)
         && !orderOnlyTurn
@@ -771,6 +826,16 @@ export async function POST(request: NextRequest) {
           { availableOnly: true, allowFallback: false, species: targetSpecies },
         );
       }
+
+      if (recommendations.length === 0 && namedProductFactsRequested && identityTerms.length > 0) {
+        const availableProducts = await productService.searchProducts({ availableOnly: true });
+        const closestTitle = closestDistinctiveProductTitle(identityTerms, availableProducts.map((product) => product.title));
+        const closestProduct = closestTitle ? availableProducts.find((product) => product.title === closestTitle) : null;
+        if (closestProduct) {
+          recommendations = [{ product: closestProduct, reason: "Possible match for a misspelled product name." }];
+          fuzzyProductClarification = true;
+        }
+      }
     }
 
     if (directCatalogueListing) {
@@ -823,6 +888,16 @@ export async function POST(request: NextRequest) {
       });
 
     if (orderOnlyTurn) {
+      if (guestMode) {
+        return Response.json({
+          message: "Please sign in to view orders linked to your All Good Petfood account.",
+          products: [],
+          resetProductContext: false,
+          pets: [],
+          requiresAccount: true,
+          mode: "guest-account-required",
+        });
+      }
       if (!customerSession.accessToken || purchaseHistoryUnavailable) {
         return Response.json({
           message: "I couldn’t load your Shopify order history in this session. Please sign out and sign back in with your All Good Petfood account, then try again. Would you like me to email our team to get an answer to your enquiry?",
@@ -854,6 +929,16 @@ export async function POST(request: NextRequest) {
       : referencedProducts.length > 0
         ? referencedProducts
       : purchasedProducts;
+    if (fuzzyProductClarification && recommendations[0]) {
+      const candidate = recommendations[0];
+      return Response.json({
+        message: `Did you mean ${candidate.product.title}?`,
+        products: [candidate],
+        resetProductContext: false,
+        pets: customerPets,
+        mode: "product-clarification",
+      });
+    }
     const discoveryOnly = broadCategoryQuestion;
     if (effectiveStockStatusRequested && recommendations.length > 0) {
       const candidate = recommendations[0];
@@ -912,6 +997,7 @@ export async function POST(request: NextRequest) {
       updatedPetNames,
       petProfileOnlyTurn,
       namedProductFactsRequested,
+      guestMode,
     });
     if (result.mode !== "approved-knowledge") {
       result.content = guardPendingRecommendationCatalogueClaim(
@@ -919,7 +1005,7 @@ export async function POST(request: NextRequest) {
         targetSpecies,
         (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
       );
-      if (responseNeedsTeamEmailOffer(result.content)) {
+      if (responseNeedsTeamEmailOffer(result.content) && !guestMode) {
         result.content = `${result.content.trim()}\n\n${TEAM_EMAIL_OFFER}`;
       }
     }

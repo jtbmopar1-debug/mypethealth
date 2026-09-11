@@ -16,6 +16,44 @@ function detailsPresent(messages: ChatMessage[]) {
   return messages.filter((message) => message.role === "user").length >= 2 || facts.filter((pattern) => pattern.test(userText)).length >= 2;
 }
 
+export function namedProductFactsReply(question: string, recommendation: ProductRecommendation) {
+  const product = recommendation.product;
+  const searchable = `${product.title} ${product.description} ${product.ingredients.join(" ")} ${product.tags.join(" ")}`;
+  const answers: string[] = [];
+
+  if (/\bflavou?r\b/i.test(question)) {
+    const protein = ["fish", "salmon", "lamb", "chicken", "beef", "venison", "duck", "turkey", "pork", "kangaroo", "rabbit"]
+      .find((candidate) => product.ingredients.some((ingredient) => new RegExp(`\\b${candidate}\\b`, "i").test(ingredient)));
+    answers.push(protein
+      ? `Its ingredients make it a ${protein}-based recipe, but the catalogue does not name a specific flavour.`
+      : "The catalogue does not name a specific flavour.");
+  }
+
+  if (/\bgrain[- ]?free\b/i.test(question)) {
+    answers.push(/\bgrain[- ]?free\b/i.test(searchable)
+      ? "It is explicitly described as grain-free."
+      : /\bwheat[- ]?free\b/i.test(searchable)
+        ? "It is labelled wheat-free, which is not the same as confirmed grain-free."
+        : "The current listing does not confirm that it is grain-free.");
+  }
+
+  if (/\b(?:small breeds?|small dogs?|suitable for|safe for)\b/i.test(question)) {
+    answers.push(/\ball breeds?\b/i.test(searchable) && /\badult\b/i.test(searchable)
+      ? "Yes, it is labelled for adult dogs of all breeds, so it is suitable for an adult small-breed dog. It is not specifically a small-breed kibble, so biscuit size may still matter for a very small or fussy dog."
+      : /\b(?:small breeds?|small dogs?)\b/i.test(searchable)
+        ? "Yes, the listing specifically describes it for small dogs."
+        : "The listing does not state a breed restriction, but it also does not provide enough detail to confirm the kibble size for a particular small dog.");
+  }
+
+  if (/\bhypoallergenic\b/i.test(question)) {
+    answers.push(/\bhypoallergenic\b/i.test(searchable)
+      ? "The listing describes it as hypoallergenic."
+      : "The listing does not describe it as hypoallergenic.");
+  }
+
+  return `${product.title}: ${answers.join(" ") || "I found the product, but the current listing does not state the specific detail you asked about."}`;
+}
+
 export function createLocalResponse(
   messages: ChatMessage[],
   knowledge: KnowledgeEntry[],
@@ -28,6 +66,7 @@ export function createLocalResponse(
     productClarificationRequired?: boolean;
     stockEnquiryAvailable?: boolean;
     namedProductFactsRequested?: boolean;
+    namedProductFactsQuestion?: string;
   } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
@@ -40,9 +79,8 @@ export function createLocalResponse(
   const safeRecommendations = enoughContext ? recommendations : [];
 
   if (options.namedProductFactsRequested && recommendations[0]) {
-    const product = recommendations[0].product;
     return {
-      content: `I found ${product.title} in the current catalogue. Its listing describes it as ${product.description.trim() || "a current catalogue product"}. If a flavour, grain-free claim, or small-breed suitability is not stated there, I canâ€™t safely infer it from the product name alone.`,
+      content: namedProductFactsReply(options.namedProductFactsQuestion || latest, recommendations[0]),
       recommendations: recommendations.slice(0, 1),
       mode: "local-demo",
     };

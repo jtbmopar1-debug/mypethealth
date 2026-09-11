@@ -24,6 +24,35 @@ const recommendation = {
 } satisfies ProductRecommendation;
 
 describe("local assistant guardrails", () => {
+  it("answers named product facts without copying catalogue marketing", () => {
+    const product = {
+      ...recommendation,
+      product: {
+        ...recommendation.product,
+        title: "Natura PancreaCare",
+        description: "Our NATURA PancreaCare is amazing! It is hypoallergenic and will help your dog enjoy life to the fullest!",
+        ingredients: ["Fish meal", "Rice", "Vitamins and minerals"],
+        tags: ["dog food", "adult", "all breeds", "wheat-free", "red-meat-free"],
+      },
+    };
+    const result = createLocalResponse(
+      [user("What flavour is Pancrea Care? Is it grain-free and suitable for small breeds?")],
+      [],
+      [product],
+      { namedProductFactsRequested: true },
+    );
+
+    expect(result.content).toContain("fish-based recipe");
+    expect(result.content).toContain("does not name a specific flavour");
+    expect(result.content).toContain("labelled wheat-free");
+    expect(result.content).toContain("not the same as confirmed grain-free");
+    expect(result.content).toContain("Yes, it is labelled for adult dogs of all breeds");
+    expect(result.content).toContain("suitable for an adult small-breed dog");
+    expect(result.content).not.toContain("amazing");
+    expect(result.content).not.toContain("enjoy life");
+    expect(result.content).not.toContain("â");
+  });
+
   it("offers regular alternatives when a requested category has no specials", () => {
     const result = createLocalResponse(
       [user("Do you have any shampoo specials?")],

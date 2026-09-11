@@ -34,4 +34,11 @@ describe("expandProductSearchAliases", () => {
     expect(productTextMatchesRequiredTerm("25 X Pig Ears", "ear")).toBe(true);
     expect(productTextMatchesRequiredTerm("Venison Chews", "treat")).toBe(true);
   });
+
+  it("matches a complete product identity across spacing differences", () => {
+    expect(productTextMatchesRequiredTerm("Natura PancreaCare dog food", "pancreacare")).toBe(true);
+    expect(productTextMatchesRequiredTerm("Natura Salmon Bleu dog food", "salmonbleu")).toBe(true);
+    expect(productTextMatchesRequiredTerm("Natura PancreaCare dog food", "smallbreed")).toBe(false);
+    expect(productTextMatchesRequiredTerm("Scream Xtreme Treat Tyre", "cream")).toBe(false);
+  });
 });

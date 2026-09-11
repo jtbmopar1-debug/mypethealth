@@ -16,6 +16,7 @@ import {
   wantsProductVariantDetails,
   wantsNamedProductFacts,
   namedProductIdentityTerms,
+  closestDistinctiveProductTitle,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -44,6 +45,11 @@ describe("product catalogue query parsing", () => {
     expect(productSearchTerms("i looking for bully sticks")).toEqual(["bully", "stick"]);
   });
 
+  it("separates joined product descriptors and categories", () => {
+    expect(productSearchTerms("do you have pigears?")).toEqual(["pig", "ear"]);
+    expect(productSearchTerms("bullysticks in stock?")).toEqual(["bully", "stick"]);
+  });
+
   it("recognises a named product's bag-size question as a catalogue request", () => {
     const message = "Does the Addiction Lamb small dog kibble come in larger sized bags?";
     expect(wantsProductSuggestion(message)).toBe(true);
@@ -60,6 +66,17 @@ describe("product catalogue query parsing", () => {
     const message = "Hi, what flavor is the Pancrea Care? Is it grain-free and suitable for small breeds";
     expect(wantsNamedProductFacts(message)).toBe(true);
     expect(namedProductIdentityTerms(message)).toEqual(["pancrea", "care"]);
+
+    const singleSentence = "what flavour is the Pancreacare and is it grain free and ok for small dogs?";
+    expect(wantsNamedProductFacts(singleSentence)).toBe(true);
+    expect(namedProductIdentityTerms(singleSentence)).toEqual(["pancreacare"]);
+  });
+
+  it("suggests a unique close match for a distinctive mistyped product name", () => {
+    const titles = ["Natura PancreaCare", "Natura Maintenance", "Pig Ears"];
+    expect(closestDistinctiveProductTitle(["panreacare"], titles)).toBe("Natura PancreaCare");
+    expect(closestDistinctiveProductTitle(["care"], titles)).toBeNull();
+    expect(closestDistinctiveProductTitle(["completelydifferent"], titles)).toBeNull();
   });
 
   it("extracts the query from an All Good Petfood search URL", () => {
@@ -108,12 +125,14 @@ describe("product catalogue query parsing", () => {
 
   it("recognises confirmation only after Buddy identifies a product", () => {
     expect(confirmsProductIdentity("yes, that's it", "I found Smokey Venison Chews 1KG. Is this the product you mean?")).toBe(true);
+    expect(confirmsProductIdentity("yes", "Did you mean Natura PancreaCare?")).toBe(true);
     expect(confirmsProductIdentity("yes, that's it", "Would you like alternatives?")).toBe(false);
   });
 
   it("recognises rejection only after Buddy identifies a product", () => {
     const question = "I found Smokey Venison Chews 1KG. Is this the product you mean?";
     expect(rejectsProductIdentity("no", question)).toBe(true);
+    expect(rejectsProductIdentity("no", "Did you mean Natura PancreaCare?")).toBe(true);
     expect(rejectsProductIdentity("no", "Would you like alternatives?")).toBe(false);
   });
 
