@@ -4,7 +4,7 @@ const stopWords = new Set([
   "a", "an", "and", "any", "are", "about", "again", "at", "available", "better", "bigger", "can", "carry", "catalog", "catalogue", "come",
   "back", "be", "check", "choose", "could", "current", "currently", "deal", "deals", "discount", "discounted", "do", "find", "for",
   "does", "get", "going", "got", "guy", "guys", "have", "help", "i", "in", "is", "it", "larger", "live", "looking", "me", "moment", "need", "now",
-  "of", "on", "or", "please", "product", "products", "recommend", "sale", "sales", "sell", "show", "some", "special",
+  "of", "on", "or", "please", "product", "products", "recommend", "sale", "sales", "sell", "show", "some", "special", "this", "that", "these", "those", "them",
   "sized", "sizes", "smaller", "specials", "still", "stock", "suggest", "the", "their", "there", "they", "to", "want", "what", "when", "which", "will", "with", "you",
 ]);
 

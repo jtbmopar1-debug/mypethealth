@@ -845,7 +845,7 @@ export async function POST(request: NextRequest) {
       if (recommendations.length === 0
         && !knowledgeProductControls.controlled
         && latestHasProductIntent
-        && mentionsSkinOrPawConcern(recentPetContext)) {
+        && mentionsSkinOrPawConcern(latestUserMessage)) {
         recommendations = await productService.recommendProducts(
           ["skin support", "skin", "itch", "paw", "balm", "salve", "spray", "shampoo"],
           3,

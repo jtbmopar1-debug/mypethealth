@@ -100,7 +100,7 @@ function welcomeMessage(name = "", pets: CustomerPet[] = []): ChatMessage {
     : activeNames.length === 2
       ? ` How are ${activeNames[0]} and ${activeNames[1]} doing today?`
       : activeNames.length > 2 ? " How are your pets doing today?" : "";
-  const greeting = `${name ? `Hi ${name},` : "Hi,"} ${WELCOME}${petGreeting}`;
+  const greeting = `${name ? `Hi ${name},` : "Hi Guest,"} ${WELCOME}${petGreeting}`;
   return { id: id(), role: "assistant", content: greeting, createdAt: new Date().toISOString() };
 }
 
@@ -567,6 +567,18 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
             </div>
           )}
         </div>}
+        {shopifyAuthState === "guest" && <section className="guest-sidebar-card guest-benefits" aria-labelledby="guest-benefits-title">
+          <strong id="guest-benefits-title">Did you know?</strong>
+          <p>An All Good Petfood account helps you get more from Buddy:</p>
+          <ul>
+            <li>Save your chats and pick up where you left off.</li>
+            <li>Keep pet profiles and dietary details in My Pets.</li>
+            <li>Check your All Good product purchase history.</li>
+            <li>Get guidance with your saved pet details in mind.</li>
+          </ul>
+          <div><a href="https://allgoodpetfood.co.nz/account/register">Create an All Good Petfood account</a></div>
+          <p className="guest-benefits-footnote">Just browsing? You can keep chatting as a guest.</p>
+        </section>}
         <div className="sidebar-note"><ShieldCheck size={18} /><span>Practical guidance, grounded in trusted pet-health knowledge.</span></div>
         {shopifyAuthState === "authenticated" && <a className="admin-link" href="/admin">Admin</a>}
       </aside>
