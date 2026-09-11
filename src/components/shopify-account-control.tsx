@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download, LogOut, Trash2, UserRound, X } from "lucide-react";
-import { conversationStore } from "@/services/conversations/local-storage-store";
+import { LocalStorageConversationStore } from "@/services/conversations/local-storage-store";
 
 export interface ShopifyCustomer {
   id: string;
@@ -12,6 +12,7 @@ export interface ShopifyCustomer {
 }
 
 export function ShopifyAccountControl({ customer }: { customer: ShopifyCustomer }) {
+  const conversationStore = new LocalStorageConversationStore(customer.id);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<"export" | "delete" | null>(null);
   const [message, setMessage] = useState("");

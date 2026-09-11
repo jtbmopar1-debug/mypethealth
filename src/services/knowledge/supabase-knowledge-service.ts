@@ -4,6 +4,7 @@ import type { KnowledgeEntry } from "@/types";
 import { getServerSupabaseClient } from "@/services/supabase/server";
 import { LocalKnowledgeService, rankKnowledge, tokenize } from "./local-knowledge-service";
 import type { KnowledgeService } from "./types";
+import { managedKnowledgeUsesExactCopy } from "./managed-knowledge-policy";
 
 export interface ManagedKnowledgeEntry extends KnowledgeEntry {
   sourceCandidateId: string | null;
@@ -55,7 +56,10 @@ function fromRow(row: KnowledgeRow): ManagedKnowledgeEntry {
     publicationStatus: row.publication_status,
     lastVerifiedAt: row.last_verified_at,
     reviewAfter: row.review_after,
-    approvedExact: row.publication_status === "published" && row.enabled,
+    // Health and diet entries are approved evidence for Buddy to interpret,
+    // not scripts to paste verbatim. Exact copy is reserved for straightforward
+    // operational facts where the stored wording is the intended response.
+    approvedExact: row.publication_status === "published" && row.enabled && managedKnowledgeUsesExactCopy(row.category),
   };
 }
 
@@ -87,9 +91,7 @@ export class SupabaseKnowledgeService implements KnowledgeService {
       });
       if (error) throw new Error(error.message);
       const managedEntries = ((data || []) as KnowledgeRow[]).map(fromRow);
-      const rankedManagedEntries = rankKnowledge(managedEntries, query, limit);
-      if (rankedManagedEntries.length) return rankedManagedEntries;
-      return rankKnowledge(localEntries, query, limit);
+      return rankKnowledge([...managedEntries, ...localEntries.filter((entry) => !managedEntries.some((managed) => managed.id === entry.id))], query, limit);
     } catch (error) {
       console.warn("[knowledge] managed entries unavailable; using built-in knowledge", error instanceof Error ? error.message : "Unknown error");
       return rankKnowledge(localEntries, query, limit);

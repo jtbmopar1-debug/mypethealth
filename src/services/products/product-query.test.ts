@@ -62,6 +62,11 @@ describe("product catalogue query parsing", () => {
     expect(wantsProductVariantDetails("What sizes does Salmon Bleu come in?")).toBe(true);
   });
 
+  it("does not treat pet profile details as a product-size search", () => {
+    expect(wantsProductSuggestion("Bob, corgi - medium size, about 5yrs old")).toBe(false);
+    expect(wantsProductSuggestion("She is a small size and five years old")).toBe(false);
+  });
+
   it("separates a named product from the facts being asked about", () => {
     const message = "Hi, what flavor is the Pancrea Care? Is it grain-free and suitable for small breeds";
     expect(wantsNamedProductFacts(message)).toBe(true);

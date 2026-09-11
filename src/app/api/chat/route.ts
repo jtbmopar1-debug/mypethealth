@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { answerCustomer } from "@/ai/assistant-service";
+import { resolveTurn } from "@/ai/turn-context";
+import { urgentCareReply } from "@/ai/urgent-care";
+import { allowChatRequest } from "@/ai/request-budget";
 import { guardPendingRecommendationCatalogueClaim } from "@/ai/catalogue-claim-guard";
 import { getLatestRestockEnquiry, restockEnquiryConfigured, sendRestockEnquiry } from "@/services/enquiries/restock-enquiry-service";
 import { ContactTeamRateLimitError, contactTeamConfigured, sendContactTeamEnquiry } from "@/services/enquiries/contact-team-service";
@@ -44,7 +47,7 @@ const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string().trim().min(1).max(12000),
   createdAt: z.string(),
-  productIds: z.array(z.string()).optional()
+  productIds: z.array(z.string().min(1).max(200)).max(20).optional()
 });
 
 const bodySchema = z.object({
@@ -236,6 +239,8 @@ export async function POST(request: NextRequest) {
   try {
     const signedInSession = readShopifySessionOrLocalDev(request.cookies.get(SHOPIFY_SESSION_COOKIE)?.value);
     const guestMode = !signedInSession;
+    const requestIdentity = signedInSession?.customerId ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "guest";
+    if (!allowChatRequest(requestIdentity)) return Response.json({ error: "Please wait a minute before sending more messages." }, { status: 429, headers: { "Retry-After": "60" } });
     const customerSession = signedInSession ?? {
       customerId: "guest",
       email: "",
@@ -244,14 +249,25 @@ export async function POST(request: NextRequest) {
       accessToken: "",
     };
 
-    const parsed = bodySchema.safeParse(await request.json());
+    const rawBody = await request.text();
+    if (rawBody.length > 200000) return Response.json({ error: "Please shorten your message." }, { status: 413 });
+    let body: unknown;
+    try { body = JSON.parse(rawBody); } catch { return Response.json({ error: "Invalid message." }, { status: 400 }); }
+    const parsed = bodySchema.safeParse(body);
     if (!parsed.success) {
       return Response.json({ error: "Please send a valid message." }, { status: 400 });
     }
 
     const { conversationId, messages } = parsed.data;
+    if (messages.at(-1)?.role !== "user" || messages.reduce((n, m) => n + m.content.length, 0) > 60000) {
+      return Response.json({ error: "Please shorten the conversation or start a new chat." }, { status: 400 });
+    }
+    const turnContext = resolveTurn(messages);
+    console.info("[chat] turn", { continuing: turnContext.continuing, answeringQuestion: turnContext.answeringQuestion, productCount: turnContext.productIds.length, guestMode });
     const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
     const latestUserMessage = userMessages.at(-1) ?? "";
+    const urgentReply = urgentCareReply(latestUserMessage);
+    if (urgentReply) return Response.json({ message: urgentReply, products: [], resetProductContext: true, mode: "urgent-care" });
     const previousAssistant = [...messages].reverse().find((message) => message.role === "assistant");
     if (guestMode && guestAccountFeatureRequested(latestUserMessage)) {
       return Response.json({
@@ -356,7 +372,7 @@ export async function POST(request: NextRequest) {
         petProfileProposals = petMemory.proposedPets.map((pet) => pet.name);
         savedPetNames = petMemory.savedPetNames;
         updatedPetNames = petMemory.updatedPetNames;
-        console.info("[chat] pet profiles", customerPets.map((pet) => ({ name: pet.name, status: pet.status })));
+        console.info("[chat] pet profiles", { count: customerPets.length });
       } catch (error) {
         console.warn("[chat] pet memory unavailable", error instanceof Error ? error.message : "Unknown error");
       }
@@ -377,7 +393,7 @@ export async function POST(request: NextRequest) {
       });
     }
     const productService = new ShopifyProductService();
-    const previousProductIds = previousAssistant?.productIds ?? [];
+    const previousProductIds = turnContext.productIds;
     const confirmedProductIdentity = confirmsProductIdentity(latestUserMessage, previousAssistant?.content);
     const rejectedProductIdentity = rejectsProductIdentity(latestUserMessage, previousAssistant?.content);
     const enquiryContextAssistant = previousAssistant?.productIds?.length === 1
@@ -575,11 +591,11 @@ export async function POST(request: NextRequest) {
       : null;
     const targetSpecies = targetPet?.species ?? explicitlyRequestedSpecies;
     const petNameTerms = new Set(customerPets.flatMap((pet) => productSearchTerms(pet.name)));
-    const latestHasProductIntent = wantsProductSuggestion(latestUserMessage);
+    const latestHasProductIntent = !turnContext.answeringQuestion && wantsProductSuggestion(latestUserMessage);
     const previousUserMessage = userMessages.at(-2) ?? "";
     const earlierProductIntent = Boolean(previousAssistant?.productIds?.length)
       && wantsProductSuggestion(previousUserMessage);
-    const petProfileOnlyTurn = (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
+    const petProfileOnlyTurn = !turnContext.answeringQuestion && (petProfileProposals.length > 0 || savedPetNames.length > 0 || updatedPetNames.length > 0)
       && !latestHasProductIntent
       && !needsHealthKnowledge(latestUserMessage)
       && !latestMessageIsContextualPetName;
@@ -620,9 +636,19 @@ export async function POST(request: NextRequest) {
       || genericBroadContinuation
       || latestHasProductIntent)
       && !needsHealthKnowledge(latestUserMessage));
-    const knowledgeQuery = isShortCategoryRefinement(latestUserMessage) && previousUserMessage
-      ? `${previousUserMessage} ${latestUserMessage}`
-      : latestUserMessage;
+    const refersToDisplayedProduct = previousProductIds.length > 0
+      && /\b(?:this|that|these|those|it|they|them)\b/i.test(latestUserMessage);
+    const displayedProductContext = refersToDisplayedProduct
+      ? (await Promise.all(previousProductIds.slice(0, 3).map((productId) => productService.getProduct(productId))))
+        .filter((product) => product !== null)
+        .map((product) => product.title)
+        .join(" ")
+      : "";
+    const knowledgeQuery = displayedProductContext
+      ? `${displayedProductContext} ${latestUserMessage}`
+      : isShortCategoryRefinement(latestUserMessage) && previousUserMessage
+        ? `${previousUserMessage} ${latestUserMessage}`
+        : turnContext.knowledgeQuery;
     const orderOnlyTurn = explicitlyWantsPurchaseHistory(latestUserMessage);
     const knowledge = catalogueOnlyTurn || petProfileOnlyTurn || orderOnlyTurn ? [] : await knowledgeService.search(knowledgeQuery, 2);
     const knowledgeProductControls = primaryKnowledgeProductControls(knowledge);
@@ -847,7 +873,7 @@ export async function POST(request: NextRequest) {
       return Response.json({
         message: variantDetails ?? (recommendations.length > 0
           ? `Yes—these matching options are currently in stock.`
-          : `I couldn’t verify any matching in-stock options in the current catalogue. Would you like me to email our team to get an answer to your enquiry?`),
+          : `I couldn't verify any matching in-stock options in the current catalogue.${guestMode ? " You can check directly on All Good Petfood's website." : " Would you like me to email our team to get an answer to your enquiry?"}`),
         products: productCards,
         resetProductContext: false,
         pets: customerPets,
@@ -998,12 +1024,13 @@ export async function POST(request: NextRequest) {
       petProfileOnlyTurn,
       namedProductFactsRequested,
       guestMode,
+      turnContext,
     });
     if (result.mode !== "approved-knowledge") {
       result.content = guardPendingRecommendationCatalogueClaim(
         result.content,
         targetSpecies,
-        (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
+        !turnContext.continuing && (latestHasProductIntent || earlierProductIntent) && !recommendationContextReady,
       );
       if (responseNeedsTeamEmailOffer(result.content) && !guestMode) {
         result.content = `${result.content.trim()}\n\n${TEAM_EMAIL_OFFER}`;
@@ -1020,12 +1047,15 @@ export async function POST(request: NextRequest) {
     return Response.json({
       message: result.content,
       products: displayRecommendations,
-      resetProductContext: discoveryOnly || (!latestHasProductIntent && displayRecommendations.length === 0),
+      resetProductContext: !turnContext.continuing && displayRecommendations.length === 0 && !discoveryOnly,
       pets: customerPets,
       petProfileProposalNames: petProfileProposals,
       mode: result.mode
     });
   } catch (error) {
+    if (error instanceof Error && error.message === "CATALOGUE_UNAVAILABLE") {
+      return Response.json({ message: "The catalogue is temporarily unavailable, so I can't check stock right now. Please retry shortly.", products: [], resetProductContext: false, mode: "catalogue-unavailable" });
+    }
     console.error("[chat] error", error instanceof Error ? { name: error.name, message: error.message } : "Unknown error");
     return Response.json({
       error: "The assistant is having trouble responding. Please try again.",

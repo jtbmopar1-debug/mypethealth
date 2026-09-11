@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { guestAccountFeatureReply, guestAccountFeatureRequested } from "./guest-access";
 
 describe("guest account boundaries", () => {
+  it("allows everyday references to a pet", () => {
+    expect(guestAccountFeatureRequested("My pet is itchy")).toBe(false);
+    expect(guestAccountFeatureRequested("Is this suitable for my pet?")).toBe(false);
+  });
   it("allows ordinary advice and live catalogue questions", () => {
     expect(guestAccountFeatureRequested("Is PancreaCare wheat-free and in stock?")).toBe(false);
     expect(guestAccountFeatureRequested("Show me products for a small dog")).toBe(false);

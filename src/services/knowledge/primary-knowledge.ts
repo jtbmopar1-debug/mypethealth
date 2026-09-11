@@ -1,7 +1,8 @@
 import type { KnowledgeEntry } from "@/types";
 
 export function primaryApprovedKnowledge(entries: KnowledgeEntry[]) {
-  return entries.find((entry) => entry.approvedExact && entry.content.trim()) ?? null;
+  const entry = entries[0];
+  return entry?.approvedExact && entry.content.trim() ? entry : null;
 }
 
 export function primaryKnowledgeProductControls(entries: KnowledgeEntry[]) {

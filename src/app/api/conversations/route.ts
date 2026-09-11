@@ -42,7 +42,7 @@ const conversationSchema = z.object({
   title: z.string().trim().min(1).max(120),
   createdAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
   updatedAt: z.string().refine((value) => !Number.isNaN(Date.parse(value)), "Invalid timestamp"),
-  messages: z.array(messageSchema).min(1).max(100),
+  messages: z.array(messageSchema).min(1).max(2000),
   petProfile: z.record(z.string(), z.unknown()).optional(),
 });
 

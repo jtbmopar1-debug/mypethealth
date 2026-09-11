@@ -51,7 +51,7 @@ export function contextualNamedPetReply(messages: PetNameConversationMessage[]):
       || /\bname\b[\s\S]{0,100}\b(?:pet|dog|cat|puppy|kitten|companion|they|them|he|him|she|her)\b/i.test(previous.content);
     if (!asksForPetName || !/\?|\b(?:tell|hear|know)\b/i.test(previous.content)) continue;
 
-    const rawName = message.content.trim();
+    const rawName = message.content.trim().split(/[,;]|\s+-\s+/)[0].trim();
     if (!/^[A-Za-z][A-Za-z'-]{0,39}(?:\s+[A-Za-z][A-Za-z'-]{0,39})?$/.test(rawName)) continue;
     if (/^(?:yes|no|okay|ok|sure|unknown|unsure|maybe|none)$/i.test(rawName)) continue;
 

@@ -1,7 +1,8 @@
 import { wantsAddToCart } from "../products/product-query";
 
 export function guestAccountFeatureRequested(message: string) {
-  return /\b(?:my pets?|remember|order history|purchase history|recent orders?|previous orders?|contact (?:the|your|our) team|email (?:the|your|our) team)\b/i.test(message)
+  if (/^(?:please )?remember (?:that )?(?:my|our) (?:dog|cat|pet)\b/i.test(message)) return true;
+  return /\b(?:order history|purchase history|recent orders?|previous orders?|contact (?:the|your|our) team|email (?:the|your|our) team|(?:open|view|manage|show) my pets|remember (?:my|our) pet (?:for|next))\b/i.test(message)
     || /\bsave\b[\s\S]{0,35}\b(?:pet|profile|chat|conversation|details?|information)\b/i.test(message)
     || wantsAddToCart(message);
 }

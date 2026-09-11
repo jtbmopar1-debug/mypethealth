@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LocalKnowledgeService, scoreKnowledge } from "./local-knowledge-service";
+import { LocalKnowledgeService, rankKnowledge, scoreKnowledge } from "./local-knowledge-service";
 import type { KnowledgeEntry } from "@/types";
 
 const entry: KnowledgeEntry = {
@@ -39,5 +39,18 @@ describe("local knowledge retrieval", () => {
     expect(results[0]?.id).toBe("online-store-colour-coding");
     expect(results[0]?.content).toContain("pink background");
     expect(results[0]?.content).toContain("green background");
+  });
+
+  it("does not retrieve grain guidance from generic issue wording", () => {
+    const grainEntry: KnowledgeEntry = {
+      ...entry,
+      id: "grain-guidance",
+      title: "Is grain-free better than wheat-free?",
+      summary: "Guidance for grain, wheat and yeast issues",
+      content: "Most dogs are fine on wheat-free food.",
+      tags: ["grain-free", "wheat-free", "yeast issues"],
+    };
+
+    expect(rankKnowledge([grainEntry], "Are these known to cause any issues with dogs?", 2)).toEqual([]);
   });
 });

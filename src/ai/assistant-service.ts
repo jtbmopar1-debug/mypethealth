@@ -6,15 +6,13 @@ import type { ChatMessage, CustomerPet, CustomerPurchase, KnowledgeEntry, Produc
 import { buildGroundedInstructions } from "./system-prompt";
 import { createLocalResponse, type AssistantResult } from "./local-responder";
 import { primaryApprovedKnowledge } from "../services/knowledge/primary-knowledge";
+import type { TurnContext } from "./turn-context";
 
 function candidateFinishReason(response: GenerateContentResponse) {
   return response.candidates?.[0]?.finishReason;
 }
 
-function needsContinuation(content: string) {
-  const trimmed = content.trim();
-  return Boolean(trimmed) && !/[.!?…:]$/.test(trimmed);
-}
+
 
 function asksOpeningHours(message: string) {
   return /\b(?:what\s+time\s+(?:do\s+you\s+)?open|opening\s+hours?|shop\s+hours?|when\s+(?:are|do)\s+you\s+open)\b/i.test(message);
@@ -52,9 +50,10 @@ export async function answerCustomer(
     namedProductFactsRequested?: boolean;
     namedProductFactsQuestion?: string;
     guestMode?: boolean;
+    turnContext?: TurnContext;
   } = {}
 ): Promise<AssistantResult> {
-  if (options.petProfileOnlyTurn && options.petProfileProposals?.length) {
+  if (options.petProfileOnlyTurn && !options.turnContext?.answeringQuestion && options.petProfileProposals?.length) {
     const names = options.petProfileProposals.join(" and ");
     return {
       content: `It’s lovely to meet ${names}. Tell me their age, breed or size, and any dietary or health needs whenever you’re ready.\n\nShall I add ${names} to My Pets? This helps me remember their details between conversations and make future guidance and product suggestions more relevant.`,
@@ -63,7 +62,7 @@ export async function answerCustomer(
     };
   }
 
-  if (options.petProfileOnlyTurn && options.savedPetNames?.length) {
+  if (options.petProfileOnlyTurn && !options.turnContext?.answeringQuestion && options.savedPetNames?.length) {
     const names = options.savedPetNames.join(" and ");
     const savedPets = (options.customerPets ?? []).filter((pet) => options.savedPetNames?.includes(pet.name));
     const missing = new Set<string>();
@@ -81,7 +80,7 @@ export async function answerCustomer(
     };
   }
 
-  if (options.petProfileOnlyTurn && options.updatedPetNames?.length) {
+  if (options.petProfileOnlyTurn && !options.turnContext?.answeringQuestion && options.updatedPetNames?.length) {
     const names = options.updatedPetNames.join(" and ");
     return {
       content: `Thanks for clarifying — I’ve updated ${names}${options.updatedPetNames.length === 1 ? "’s profile" : "’ profiles"} in My Pets.`,
@@ -92,7 +91,7 @@ export async function answerCustomer(
 
   // Published knowledge is staff-approved customer copy. Do not ask the model
   // to paraphrase it: the exact approved answer is the response Buddy gives.
-  const approvedKnowledge = primaryApprovedKnowledge(knowledge);
+  const approvedKnowledge = options.turnContext?.continuing || options.namedProductFactsRequested ? null : primaryApprovedKnowledge(knowledge);
   if (approvedKnowledge) {
     const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content || "";
     const compactHours = asksOpeningHours(latestUserMessage) ? conciseOpeningHours(approvedKnowledge.content) : null;
@@ -110,7 +109,8 @@ export async function answerCustomer(
   const firstUserIndex = messages.findIndex((message) => message.role === "user");
   const conversation = firstUserIndex >= 0 ? messages.slice(firstUserIndex) : messages;
   const gemini = new GoogleGenAI({ apiKey: serverConfig.geminiApiKey });
-  const generate = (model: string, temperature: number) => gemini.models.generateContent({
+  const deadline = Date.now() + 25000;
+  const generate = (model: string, temperature: number, recovery = false) => gemini.models.generateContent({
     model,
     contents: conversation.map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
@@ -118,12 +118,12 @@ export async function answerCustomer(
     })),
     config: {
       httpOptions: {
-        timeout: 12000,
-        retryOptions: { attempts: 2, initialDelay: 0.4, maxDelay: 1, expBase: 1.5, jitter: 0.2 },
+        timeout: Math.max(1, Math.min(12000, deadline - Date.now())),
+        retryOptions: { attempts: 1 },
       },
       systemInstruction: buildGroundedInstructions(knowledge, recommendations.map(({ product }) => product), options),
       temperature,
-      maxOutputTokens: 900
+      maxOutputTokens: recovery ? 8192 : 4096
     }
   });
 
@@ -135,7 +135,7 @@ export async function answerCustomer(
     const fallbackModel = serverConfig.geminiFallbackModel;
     if (!fallbackModel || fallbackModel === activeModel) {
       console.warn("[chat] model unavailable; using local response", error instanceof Error ? error.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations, options);
+      return createLocalResponse(messages, knowledge, recommendations, { ...options, generationUnavailable: true });
     }
     console.warn("[chat] primary model unavailable; trying configured fallback", { primaryModel: activeModel, fallbackModel });
     try {
@@ -143,27 +143,28 @@ export async function answerCustomer(
       response = await generate(activeModel, 0.25);
     } catch (fallbackError) {
       console.warn("[chat] fallback model unavailable; using local response", fallbackError instanceof Error ? fallbackError.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations, options);
+      return createLocalResponse(messages, knowledge, recommendations, { ...options, generationUnavailable: true });
     }
   }
 
   let content = response.text || "";
-  if ((candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) && content) {
+  if (candidateFinishReason(response) === "MAX_TOKENS") {
     console.warn("[chat] incomplete model response; regenerating", { finishReason: candidateFinishReason(response), length: content.length });
     try {
       const fallbackModel = serverConfig.geminiFallbackModel;
       activeModel = fallbackModel && fallbackModel !== activeModel ? fallbackModel : activeModel;
-      response = await generate(activeModel, 0.2);
+      response = await generate(activeModel, 0.2, true);
       content = response.text || "";
     } catch (error) {
       console.warn("[chat] model regeneration failed; using local response", error instanceof Error ? error.message : "Unknown error");
-      return createLocalResponse(messages, knowledge, recommendations, options);
+      return createLocalResponse(messages, knowledge, recommendations, { ...options, generationUnavailable: true });
     }
   }
 
-  if (!content || candidateFinishReason(response) === "MAX_TOKENS" || needsContinuation(content)) {
+  console.info("[chat] generation", { model: activeModel, finishReason: candidateFinishReason(response), usage: response.usageMetadata });
+  if (!content.trim() || candidateFinishReason(response) !== "STOP") {
     console.warn("[chat] rejecting incomplete model response", { finishReason: candidateFinishReason(response), length: content.length });
-    return createLocalResponse(messages, knowledge, recommendations, options);
+    return createLocalResponse(messages, knowledge, recommendations, { ...options, generationUnavailable: true });
   }
 
   return {

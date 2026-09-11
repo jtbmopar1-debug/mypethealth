@@ -274,6 +274,7 @@ export class ShopifyProductService implements ProductService {
       const collected: Product[] = [];
       for (let page = 1; page <= 10; page += 1) {
         const response = await fetch(`${storeUrl}/products.json?limit=250&page=${page}`, {
+          signal: AbortSignal.timeout(8000),
           next: { revalidate: 300 },
         });
         if (!response.ok) throw new Error(`Shopify public catalogue returned ${response.status}`);
@@ -304,6 +305,7 @@ export class ShopifyProductService implements ProductService {
 
     if (!sharedAdminTokenCache || sharedAdminTokenCache.expiresAt <= Date.now()) {
       const response = await fetch(`https://${serverConfig.shopifyStorefrontApiDomain}/admin/oauth/access_token`, {
+          signal: AbortSignal.timeout(8000),
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
         body: new URLSearchParams({
@@ -320,6 +322,7 @@ export class ShopifyProductService implements ProductService {
     }
 
     const response = await fetch(`https://${serverConfig.shopifyStorefrontApiDomain}/admin/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`, {
+          signal: AbortSignal.timeout(8000),
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": sharedAdminTokenCache.token },
       body: JSON.stringify({ query: CREATE_STOREFRONT_TOKEN, variables: { input: { title: "My Pet Health Buddy" } } }),
@@ -345,6 +348,7 @@ export class ShopifyProductService implements ProductService {
       let after: string | null = null;
       for (let page = 0; page < 20; page += 1) {
         const response = await fetch(endpoint, {
+          signal: AbortSignal.timeout(8000),
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -379,12 +383,12 @@ export class ShopifyProductService implements ProductService {
       return await this.fetchPublicProducts();
     } catch (error) {
       console.error("[shopify-products] catalogue query failed", error instanceof Error ? error.message : "Unknown error");
-      return [];
+      throw new Error("CATALOGUE_UNAVAILABLE");
     }
   }
 
   async searchProducts({ query = "", tags = [], availableOnly = true }: ProductSearchOptions) {
-    const products = query ? await this.fetchProducts(query).catch(() => []) : await this.products();
+    const products = query ? await this.fetchProducts(query) : await this.products();
     return products.filter((product) => !isPrivateCustomOrderProduct(product)
       && (!availableOnly || product.availability === "in_stock")
       && (!tags.length || tags.some((tag) => product.tags.includes(tag.toLowerCase()))));
@@ -402,6 +406,7 @@ export class ShopifyProductService implements ProductService {
         if (accessToken && serverConfig.shopifyStorefrontApiDomain) {
           const endpoint = `https://${serverConfig.shopifyStorefrontApiDomain}/api/${serverConfig.shopifyStorefrontApiVersion}/graphql.json`;
           const response = await fetch(endpoint, {
+          signal: AbortSignal.timeout(8000),
             method: "POST",
             headers: {
               "Content-Type": "application/json",

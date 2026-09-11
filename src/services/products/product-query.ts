@@ -39,6 +39,8 @@ export function productSearchTerms(message: string) {
 
 export function wantsProductSuggestion(message: string) {
   const text = message.toLowerCase();
+  if (/\b(?:itchy|itching|bleeding|vomiting|hurts?|pain|swollen)\b/i.test(text)
+    && !/\b(?:buy|sell|stock|recommend|looking for|product)\b/i.test(text)) return false;
   const explicitPhrases = [
     "product suggestion", "product recommendations", "recommend a product", "recommend products", "suggest a product",
     "suggest products", "help me choose a product", "help me pick a product", "what product should i", "which product should i",
@@ -60,7 +62,9 @@ export function wantsProductSuggestion(message: string) {
   // Once the customer supplies a meaningful name alongside a pack-size or
   // flavour question, it is a specific catalogue lookup even if they omit
   // the product category (for example, "What sizes does Salmon Bleu come in?").
-  if (/\b(?:come in|available in|larger|smaller|size|sizes|bag|bags|pack|packs|variant|flavou?r)\b/i.test(text)
+  if (/\b(?:come in|available in|larger|smaller|bag|bags|pack|packs|variant|flavou?r)\b/i.test(text)
+    && productSearchAnchors(productSearchTerms(message)).length > 0) return true;
+  if (/\b(?:what|which)\s+sizes?\b/i.test(text)
     && productSearchAnchors(productSearchTerms(message)).length > 0) return true;
 
   // A named food follow-up, such as "dry dog food salmon bleu", must search

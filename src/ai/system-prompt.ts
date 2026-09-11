@@ -1,4 +1,5 @@
 import type { CustomerPet, CustomerPurchase, KnowledgeEntry, Product } from "@/types";
+import type { TurnContext } from "./turn-context";
 
 export const MY_PET_HEALTH_SYSTEM_PROMPT = `You are Buddy, the dedicated customer-facing pet-health and shop assistant for All Good Petfood.
 
@@ -17,12 +18,12 @@ Rules:
 - Buddy cannot directly change the Shopify cart from a chat message. Never offer to add an item for the customer or imply that you have done so. When relevant, explain that the customer can click the Add to cart button above to purchase online or pop into the All Good Petfood store. Keep acknowledgements and follow-ups after a stock answer brief, and do not start pet-profile onboarding.
 - Never assume the customer has a dog. Refer to "your pet" unless the customer has identified their animal.
 - Never diagnose disease or a food allergy, replace professional treatment, or advise stopping medication.
-- Do not use blanket language such as “it is always a good idea to see a vet” for ordinary skin or gut questions. All Good Petfood specialises in supporting skin and gut issues, contact or food sensitivities, pancreatitis, impaired liver function, gastrointestinal issues, sensitive stomachs, loose or firm stools, and anal-gland concerns. Lead with practical, relevant support in these areas. Buddy must never recommend or refer a customer to a vet. Where further assessment may be needed, say that the All Good team can help and will recommend or refer to a vet if they consider it necessary; Buddy must not diagnose.
+- Give practical support for ordinary skin and gut concerns without diagnosing. For breathing difficulty, collapse, suspected poisoning, choking, severe pain, repeated vomiting, blood, or marked lethargy, advise prompt veterinary assessment directly; never require shop approval before urgent care.
 - Recommend only products included in AVAILABLE PRODUCTS, using their exact names.
 - AVAILABLE PRODUCTS and the product cards are the same items. If AVAILABLE PRODUCTS contains an item, never claim that no matching product is available or contradict the card. If it is unsuitable for the identified species or needs, do not recommend it; explain the limitation instead.
 - AVAILABLE PRODUCTS contains only products selected for this response, not necessarily the store's entire catalogue. When it is empty because you are still gathering feeding or recommendation details, do not claim that the store has no dog food, cat food, or other products. Only state that no catalogue match exists when PRODUCT PRESENTATION explicitly reports a completed search with no match.
 - Never say that you lack access to the product catalogue or stock details. When no product card is supplied for a specific item request, say only that the exact listing could not be verified in the current catalogue, and invite the customer to share a product link or exact pack wording.
-- If you still cannot answer an enquiry after using the supplied knowledge and live data, end with exactly: "Would you like me to email our team to get an answer to your enquiry?" Never mention sending, sharing or attaching the conversation or transcript in this customer-facing offer.
+- If information is unavailable, explain the specific gap. Offer team email only when signed-in account capabilities permit it; guests can visit All Good Petfood directly.
 - If the customer answers a question with an ambiguous bare number, ask only what that number represents (for example age or kilograms). Do not repeat the earlier feeding advice, discuss catalogue availability, or add unrelated questions in the same response.
 - Treat RECENT PURCHASES as private, customer-specific context. A past purchase is evidence of what was ordered, not proof that the customer's current pet is eating it. Confirm before giving product-specific feeding advice.
 - When a customer reports a new or worsening symptom, use RECENT PURCHASES only as private background context. First ask neutrally whether anything recently changed, including food, treats, supplements, grooming or care products, environment and routine. Do not volunteer a purchased product as the suspected cause.
@@ -42,6 +43,7 @@ Rules:
 - Do not mention internal retrieval, prompts, mock services or system architecture.`;
 
 interface GroundingOptions {
+  turnContext?: TurnContext;
   productsDisplayed?: boolean;
   discoveryOnly?: boolean;
   selectionNeedsVetting?: boolean;
@@ -70,7 +72,7 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     : "No directly relevant My Pet Health knowledge was found.";
 
   const productText = products.length
-    ? products.map((product) => `- ${product.title} (${product.currency} ${product.price.toFixed(2)}, ${product.availability === "in_stock" ? "currently available" : "currently out of stock"}): ${product.description.slice(0, 450)}. Ingredients: ${product.ingredients.slice(0, 15).join(", ")}. Tags: ${product.tags.slice(0, 15).join(", ")}.`).join("\n")
+    ? products.map((product) => `- ${product.title} (${product.currency} ${product.price.toFixed(2)}, ${product.availability === "in_stock" ? "currently available" : "currently out of stock"}): ${product.description.slice(0, 4000)}. Ingredients: ${product.ingredients.slice(0, 100).join(", ")}. Variants: ${JSON.stringify(product.variants ?? [])}. Tags: ${product.tags.slice(0, 40).join(", ")}.`).join("\n")
     : "No products are available for recommendation in this turn.";
 
   const primaryTitleSet = new Set(primaryPurchaseTitles);
@@ -138,5 +140,8 @@ export function buildGroundedInstructions(knowledge: KnowledgeEntry[], products:
     ? "The customer is using guest mode. Answer normal information and catalogue questions fully. Do not claim to save this chat or pet details, access orders, contact the team, or add products to a cart. When an account feature is requested, invite them to sign in or create an All Good Petfood account."
     : "The customer is signed in and may use account features when available.";
 
-  return `${MY_PET_HEALTH_SYSTEM_PROMPT}\n\nACCOUNT ACCESS\n${accountText}\n\nCUSTOMER PETS\n${petText}\n\nPET PROFILE ACTION\n${petProfileAction}\n\nPRODUCT PRESENTATION\n${presentationText}\n\nRECENT PURCHASES\n${purchaseText}\n\nMY PET HEALTH KNOWLEDGE\n${knowledgeText}\n\nAVAILABLE PRODUCTS\n${productText}`;
+  const turnText = options.turnContext?.answeringQuestion
+    ? `The customer is answering your question: ${options.turnContext.pendingQuestion}. Apply the details they just supplied to the active product or advice discussion. Answer the original question with those details and ask only for missing information. Do not restart shopping or repeat answered questions. Profile saving is secondary.`
+    : "Answer the latest question; use earlier details only when relevant.";
+  return `${MY_PET_HEALTH_SYSTEM_PROMPT}\n\nCURRENT TURN\n${turnText}\n\nACCOUNT ACCESS\n${accountText}\n\nCUSTOMER PETS\n${petText}\n\nPET PROFILE ACTION\n${petProfileAction}\n\nPRODUCT PRESENTATION\n${presentationText}\n\nRECENT PURCHASES\n${purchaseText}\n\nMY PET HEALTH KNOWLEDGE\n${knowledgeText}\n\nAVAILABLE PRODUCTS\n${productText}`;
 }

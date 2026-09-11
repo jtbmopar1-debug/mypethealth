@@ -3,10 +3,14 @@ import emailDerivedEntries from "../../../knowledge/email-derived.json";
 import type { KnowledgeEntry } from "@/types";
 import type { KnowledgeService } from "./types";
 
-const knowledge = [...entries, ...emailDerivedEntries] as KnowledgeEntry[];
+const knowledge = ([...entries, ...emailDerivedEntries] as KnowledgeEntry[]).map((entry) => entry.id === "online-store-colour-coding" ? {
+  ...entry,
+  content: "A pink background identifies products labelled hypoallergenic; a green background identifies non-hypoallergenic products. Background colour is a browsing guide, not a guarantee of suitability. Check the ingredients and species/life-stage label against the individual pet's needs.",
+  safetyNotes: ["A hypoallergenic label does not guarantee safety for every allergy."],
+} : entry);
 const STOP_WORDS = new Set([
   "about", "any", "cat", "could", "does", "dog", "for", "have", "help", "pet", "product", "products",
-  "should", "their", "there", "they", "what", "when", "which", "with", "would", "you", "your",
+  "cause", "issues", "known", "should", "their", "there", "these", "they", "what", "when", "which", "with", "would", "you", "your",
 ]);
 
 export function tokenize(value: string): string[] {
@@ -14,14 +18,15 @@ export function tokenize(value: string): string[] {
 }
 
 export function scoreKnowledge(entry: KnowledgeEntry, query: string): number {
-  const queryTokens = tokenize(query);
+  const queryTokens = [...new Set(tokenize(query))];
+  if (/grain.*wheat|wheat.*grain/i.test(entry.title) && !/\b(?:grain|wheat)\b/i.test(query)) return 0;
   const title = entry.title.toLowerCase();
   const category = entry.category.toLowerCase();
   const body = `${entry.summary} ${entry.content}`.toLowerCase();
   return queryTokens.reduce((score, token) => {
-    if (entry.tags.some((tag) => tag.toLowerCase().includes(token))) return score + 5;
-    if (title.includes(token) || category.includes(token)) return score + 3;
-    if (body.includes(token)) return score + 1;
+    if (entry.tags.some((tag) => tokenize(tag).includes(token))) return score + 5;
+    if (tokenize(`${title} ${category}`).includes(token)) return score + 3;
+    if (tokenize(body).includes(token)) return score + 1;
     return score;
   }, 0);
 }

@@ -6,6 +6,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: init?.body ? { "Content-Type": "application/json", ...init.headers } : init?.headers,
     cache: "no-store",
+    signal: AbortSignal.timeout(8000),
   });
   const data = await response.json().catch(() => ({})) as { error?: string } & T;
   if (!response.ok) throw new Error(data.error || "Cloud conversation request failed");

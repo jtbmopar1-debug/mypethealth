@@ -1,4 +1,5 @@
 import type { ChatMessage, KnowledgeEntry, ProductRecommendation } from "@/types";
+import type { TurnContext } from "./turn-context";
 
 export interface AssistantResult {
   content: string;
@@ -30,14 +31,14 @@ export function namedProductFactsReply(question: string, recommendation: Product
   }
 
   if (/\bgrain[- ]?free\b/i.test(question)) {
-    answers.push(/\bgrain[- ]?free\b/i.test(searchable)
+    answers.push(/\bgrain[- ]?free\b/i.test(searchable) && !/\b(?:not|non)[- ](?:described as )?grain[- ]?free\b/i.test(searchable)
       ? "It is explicitly described as grain-free."
       : /\bwheat[- ]?free\b/i.test(searchable)
         ? "It is labelled wheat-free, which is not the same as confirmed grain-free."
         : "The current listing does not confirm that it is grain-free.");
   }
 
-  if (/\b(?:small breeds?|small dogs?|suitable for|safe for)\b/i.test(question)) {
+  if (/\b(?:small breeds?|small dogs?)\b/i.test(question)) {
     answers.push(/\ball breeds?\b/i.test(searchable) && /\badult\b/i.test(searchable)
       ? "Yes, it is labelled for adult dogs of all breeds, so it is suitable for an adult small-breed dog. It is not specifically a small-breed kibble, so biscuit size may still matter for a very small or fussy dog."
       : /\b(?:small breeds?|small dogs?)\b/i.test(searchable)
@@ -46,7 +47,7 @@ export function namedProductFactsReply(question: string, recommendation: Product
   }
 
   if (/\bhypoallergenic\b/i.test(question)) {
-    answers.push(/\bhypoallergenic\b/i.test(searchable)
+    answers.push(/\bhypoallergenic\b/i.test(searchable) && !/\b(?:not|non)[- ]hypoallergenic\b/i.test(searchable)
       ? "The listing describes it as hypoallergenic."
       : "The listing does not describe it as hypoallergenic.");
   }
@@ -67,6 +68,8 @@ export function createLocalResponse(
     stockEnquiryAvailable?: boolean;
     namedProductFactsRequested?: boolean;
     namedProductFactsQuestion?: string;
+    turnContext?: TurnContext;
+    generationUnavailable?: boolean;
   } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
@@ -78,12 +81,25 @@ export function createLocalResponse(
   const enoughContext = detailsPresent(messages);
   const safeRecommendations = enoughContext ? recommendations : [];
 
+  if (options.turnContext?.answeringQuestion) {
+    const subject = recommendations[0]?.product.title;
+    return {
+      content: `Thanks for those details${subject ? ` about who ${subject} is for` : ""}. I'm having trouble completing the assessment right now. Please retry in a moment; you don't need to repeat the details you've already shared in this chat.`,
+      recommendations: [],
+      mode: "local-demo",
+    };
+  }
+
   if (options.namedProductFactsRequested && recommendations[0]) {
     return {
       content: namedProductFactsReply(options.namedProductFactsQuestion || latest, recommendations[0]),
       recommendations: recommendations.slice(0, 1),
       mode: "local-demo",
     };
+  }
+
+  if (options.generationUnavailable) {
+    return { content: "I'm having trouble completing your answer right now. Please retry in a moment; the details you've shared are still in this chat.", recommendations: [], mode: "local-demo" };
   }
 
   if (options.productClarificationRequired) {
@@ -144,7 +160,7 @@ export function createLocalResponse(
       };
     }
     return {
-      content: "Thanks — that gives me a clearer picture. A consistent trial using a different, clearly identified protein may be a reasonable food step, although it can’t confirm an allergy on its own. Avoid changing treats and several other foods at the same time, or it becomes hard to tell what helped.\n\nBased on the details you’ve shared, the options below are the closest catalogue matches. If the itching is severe, causing broken skin, or keeps going, the All Good team can help and will recommend or refer to a vet if they consider it necessary.",
+      content: "Thanks — that gives me a clearer picture. A consistent trial using a different, clearly identified protein may be a reasonable food step, although it can’t confirm an allergy on its own. Avoid changing treats and several other foods at the same time, or it becomes hard to tell what helped.\n\nBased on the details you’ve shared, the options below are the closest catalogue matches. If the itching is severe, causing broken skin, or keeps going, contact a veterinarian promptly.",
       recommendations: safeRecommendations,
       mode: "local-demo"
     };
@@ -159,7 +175,7 @@ export function createLocalResponse(
       };
     }
     return {
-      content: "A simple recipe and a slow change can be a sensible next step. Transition over roughly 7–10 days — longer if your pet is especially sensitive — and keep other treats and extras consistent while you watch stool quality.\n\nThese are the closest available matches from the catalogue. For persistent diarrhoea, repeated vomiting, blood or lethargy, the All Good team can help and will recommend or refer to a vet if they consider it necessary.",
+      content: "A simple recipe and a slow change can be a sensible next step. Transition over roughly 7–10 days — longer if your pet is especially sensitive — and keep other treats and extras consistent while you watch stool quality.\n\nThese are the closest available matches from the catalogue. For persistent diarrhoea, repeated vomiting, blood or lethargy, contact a veterinarian promptly.",
       recommendations: safeRecommendations,
       mode: "local-demo"
     };
