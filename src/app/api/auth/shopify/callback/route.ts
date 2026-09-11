@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createShopifySession, exchangeShopifyCode, fetchShopifyCustomer, readShopifyFlow, shopifyCookieOptions, shopifyCustomerConfig, shopifyStorefrontLoginUrl, SHOPIFY_FLOW_COOKIE, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
+import { createShopifySession, exchangeShopifyCode, fetchShopifyCustomer, readShopifyFlow, shopifyCookieOptions, shopifyCustomerConfig, SHOPIFY_FLOW_COOKIE, SHOPIFY_SESSION_COOKIE } from "@/services/shopify/customer-auth";
 
 export async function GET(request: NextRequest) {
   const config = shopifyCustomerConfig();
@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
     const state = request.nextUrl.searchParams.get("state");
     const oauthError = request.nextUrl.searchParams.get("error");
     if (oauthError === "login_required" || oauthError === "interaction_required") {
-      const response = NextResponse.redirect(shopifyStorefrontLoginUrl());
+      const flow = state ? readShopifyFlow(request.cookies.get(SHOPIFY_FLOW_COOKIE)?.value, state) : null;
+      const retry = new URL("/api/auth/shopify/start", config.appBaseUrl);
+      retry.searchParams.set("returnTo", flow?.returnTo || "/");
+      const response = NextResponse.redirect(retry);
       response.cookies.delete(SHOPIFY_FLOW_COOKIE);
       return response;
     }

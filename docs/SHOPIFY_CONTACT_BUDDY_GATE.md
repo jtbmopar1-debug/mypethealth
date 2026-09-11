@@ -37,7 +37,7 @@ documented in [SHOPIFY_BUDDY_LOGIN_HANDOFF.md](SHOPIFY_BUDDY_LOGIN_HANDOFF.md).
     <div class="buddy-contact-gate__actions">
       <a
         class="buddy-contact-gate__primary"
-        href="https://www.mypethealth.co.nz/api/auth/shopify/start?silent=1"
+        href="https://www.mypethealth.co.nz/"
         target="_blank"
         rel="noopener"
       >Chat with Buddy</a>

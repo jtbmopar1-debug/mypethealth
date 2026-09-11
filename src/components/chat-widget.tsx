@@ -14,6 +14,7 @@ const WELCOME = "I’m Buddy, All Good Petfood’s Pet Health and Shop Assistant
 const QUICK_PROMPTS = ["My pet is itchy", "Sensitive stomach", "How much should I feed?", "Help me choose a product", "Promotions"];
 
 const ON_SALE_URL = "https://allgoodpetfood.co.nz/collections/on-sale";
+const AUTH_RETURN_CHAT_KEY = "my-pet-health:auth-return-chat";
 
 interface LatestNewsletter {
   title: string;
@@ -153,6 +154,15 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
           || result.customer.email?.split("@")[0]?.replace(/[._-]+/g, " ").split(/\s+/)[0]
           || "";
         setConversation((current) => {
+          try {
+            const pendingConversation = sessionStorage.getItem(AUTH_RETURN_CHAT_KEY);
+            if (pendingConversation) {
+              sessionStorage.removeItem(AUTH_RETURN_CHAT_KEY);
+              return normalizeConversation(JSON.parse(pendingConversation) as Conversation);
+            }
+          } catch {
+            sessionStorage.removeItem(AUTH_RETURN_CHAT_KEY);
+          }
           const isUntouched = current.title === "New conversation" && !current.messages.some((message) => message.role === "user");
           return isUntouched ? createConversation(name, result.pets ?? []) : current;
         });
@@ -460,6 +470,14 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
     }
   }
 
+  function prepareForAuthentication() {
+    try {
+      sessionStorage.setItem(AUTH_RETURN_CHAT_KEY, JSON.stringify(conversation));
+    } catch {
+      // Authentication can continue if private browsing blocks sessionStorage.
+    }
+  }
+
   async function openSpecials() {
     setSpecialsOpen(true);
     if (newsletter || newsletterLoading) return;
@@ -493,7 +511,7 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
               <span className="eyebrow">All Good Petfood customer access</span>
               <h1>Continue through All Good Petfood</h1>
               <p>Buddy uses your All Good Petfood customer account. Sign in or create an account on the store, then open Chat with Buddy again.</p>
-              <a className="access-primary" href={allGoodLoginUrl}>Sign in at AllGood Petfood</a>
+              <a className="access-primary" href={allGoodLoginUrl} onClick={prepareForAuthentication}>Sign in at AllGood Petfood</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz/account/register">Create Account</a>
               <a className="access-secondary" href="https://allgoodpetfood.co.nz">Return to All Good Petfood</a>
               <small>My Pet Health never receives your Shopify password.</small>
@@ -516,7 +534,7 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
         {shopifyAuthState === "guest" && <section className="guest-sidebar-card">
           <strong>Using Buddy as a guest</strong>
           <p>Ask questions and browse live All Good Petfood products. This chat will not be saved.</p>
-          <div><a href={allGoodLoginUrl}>Sign in at AllGood Petfood</a><a href="https://allgoodpetfood.co.nz/account/register">Create account</a></div>
+          <div><a href={allGoodLoginUrl} onClick={prepareForAuthentication}>Sign in at AllGood Petfood</a><a href={allGoodLoginUrl} onClick={prepareForAuthentication}>Create account</a></div>
         </section>}
         {shopifyAuthState === "authenticated" && <section className="pets-block" aria-labelledby="my-pets-heading">
           <div className="pets-label">
@@ -576,7 +594,7 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
             <li>Check your All Good product purchase history.</li>
             <li>Get guidance with your saved pet details in mind.</li>
           </ul>
-          <div><a href="https://allgoodpetfood.co.nz/account/register">Create an All Good Petfood account</a></div>
+          <div><a href={allGoodLoginUrl} onClick={prepareForAuthentication}>Create an All Good Petfood account</a></div>
           <p className="guest-benefits-footnote">Just browsing? You can keep chatting as a guest.</p>
         </section>}
         <div className="sidebar-note"><ShieldCheck size={18} /><span>Practical guidance, grounded in trusted pet-health knowledge.</span></div>
@@ -687,7 +705,7 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
           <a className="header-back" href="https://allgoodpetfood.co.nz">Back to All Good Petfood</a>
           <AllGoodLogo />
           <div className="guide-status"><span className="status-avatar"><Image className="buddy-avatar-image" src="/brand/buddy-paw.png" alt="" width={311} height={271} sizes="28px" /></span><span><strong>Buddy</strong><small><i /> All Good Petfood assistant</small></span></div>
-          {shopifyCustomer ? <ShopifyAccountControl customer={shopifyCustomer} /> : <a className="guest-header-signin" href={allGoodLoginUrl}>Sign in at AllGood Petfood</a>}
+          {shopifyCustomer ? <ShopifyAccountControl customer={shopifyCustomer} /> : <a className="guest-header-signin" href={allGoodLoginUrl} onClick={prepareForAuthentication}>Sign in at AllGood Petfood</a>}
         </header>
 
         <section className="conversation" aria-live="polite">
@@ -731,7 +749,7 @@ export function ChatWidget({ allGoodLoginUrl }: { allGoodLoginUrl: string }) {
         <footer className="composer-wrap">
           {accountPrompt && shopifyAuthState === "guest" && <div className="guest-account-prompt" role="status">
             <div><strong>Want Buddy to remember?</strong><p>{accountPrompt}</p></div>
-            <div className="guest-account-actions"><a href={allGoodLoginUrl}>Sign in at AllGood Petfood</a><a href="https://allgoodpetfood.co.nz/account/register">Create account</a><button type="button" onClick={() => setAccountPrompt("")}>Not now</button></div>
+            <div className="guest-account-actions"><a href={allGoodLoginUrl} onClick={prepareForAuthentication}>Sign in at AllGood Petfood</a><a href={allGoodLoginUrl} onClick={prepareForAuthentication}>Create account</a><button type="button" onClick={() => setAccountPrompt("")}>Not now</button></div>
           </div>}
           <form className="composer" onSubmit={(event: FormEvent) => { event.preventDefault(); void sendMessage(); }}>
             <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={4000} placeholder="Ask about food, feeding, or your pet…" aria-label="Your message" />
