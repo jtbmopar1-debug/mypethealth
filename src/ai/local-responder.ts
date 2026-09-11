@@ -27,6 +27,7 @@ export function createLocalResponse(
     stockStatusRequested?: boolean;
     productClarificationRequired?: boolean;
     stockEnquiryAvailable?: boolean;
+    namedProductFactsRequested?: boolean;
   } = {}
 ): AssistantResult {
   const latest = messages.at(-1)?.content.toLowerCase() ?? "";
@@ -37,6 +38,15 @@ export function createLocalResponse(
     .toLowerCase();
   const enoughContext = detailsPresent(messages);
   const safeRecommendations = enoughContext ? recommendations : [];
+
+  if (options.namedProductFactsRequested && recommendations[0]) {
+    const product = recommendations[0].product;
+    return {
+      content: `I found ${product.title} in the current catalogue. Its listing describes it as ${product.description.trim() || "a current catalogue product"}. If a flavour, grain-free claim, or small-breed suitability is not stated there, I canâ€™t safely infer it from the product name alone.`,
+      recommendations: recommendations.slice(0, 1),
+      mode: "local-demo",
+    };
+  }
 
   if (options.productClarificationRequired) {
     const examples = recommendations.slice(0, 4).map(({ product }) => product.title).join(", ");

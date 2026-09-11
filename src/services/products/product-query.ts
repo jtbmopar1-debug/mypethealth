@@ -79,6 +79,27 @@ export function wantsProductVariantDetails(message: string) {
   return /\b(?:size|sizes|sized|bag|bags|pack|packs|variant|variants|flavou?r|flavou?rs)\b/i.test(message);
 }
 
+export function wantsNamedProductFacts(message: string) {
+  return /\b(?:flavou?r|ingredients?|grain[- ]?free|wheat[- ]?free|hypoallergenic|kibble size|suitable for|safe for)\b/i.test(message);
+}
+
+export function namedProductIdentityTerms(message: string) {
+  if (!wantsNamedProductFacts(message)) return [];
+
+  // In questions such as "what flavour is the Pancrea Care? Is it grain-free?",
+  // only the first clause names the product. The remaining clauses describe
+  // facts to answer and must not become mandatory catalogue identifiers.
+  const clauses = message.split(/[?!.]+/).map((clause) => clause.trim()).filter(Boolean);
+  for (const clause of clauses) {
+    const match = clause.match(/\b(?:what|which)\s+(?:flavou?rs?|ingredients?|recipe)\s+(?:is|are|does)\s+(?:the\s+)?(.+)$/i);
+    if (match) return productSearchAnchors(productSearchTerms(match[1]));
+
+    const subjectMatch = clause.match(/^(.+?)\s+(?:is|are|does)\s+(?:it\s+)?(?:grain[- ]?free|wheat[- ]?free|hypoallergenic|suitable for|safe for)\b/i);
+    if (subjectMatch) return productSearchAnchors(productSearchTerms(subjectMatch[1]));
+  }
+  return [];
+}
+
 export function isGenericProductHelpRequest(message: string) {
   return /^(?:please\s+)?(?:help me (?:choose|pick)(?: a)? product|recommend(?: me)? a product|product recommendations?)\s*[.!?]*$/i.test(message.trim());
 }

@@ -49,6 +49,7 @@ export async function answerCustomer(
     savedPetNames?: string[];
     updatedPetNames?: string[];
     petProfileOnlyTurn?: boolean;
+    namedProductFactsRequested?: boolean;
   } = {}
 ): Promise<AssistantResult> {
   if (options.petProfileOnlyTurn && options.petProfileProposals?.length) {

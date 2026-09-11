@@ -24,6 +24,8 @@ import {
   wantsCurrentProductAvailability,
   wantsProductSuggestion,
   wantsProductVariantDetails,
+  wantsNamedProductFacts,
+  namedProductIdentityTerms,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -553,6 +555,7 @@ export async function POST(request: NextRequest) {
       && latestHasProductIntent
       && latestDirectTerms.length === 0;
     const stockStatusRequested = wantsProductStockStatus(latestUserMessage);
+    const namedProductFactsRequested = wantsNamedProductFacts(latestUserMessage);
     const stockStatusIndex = userMessages.findLastIndex(wantsProductStockStatus);
     const continuingProductDefinition = !stockStatusRequested
       && stockStatusIndex >= Math.max(0, userMessages.length - 3)
@@ -654,9 +657,12 @@ export async function POST(request: NextRequest) {
         : useBroadCategorySearch
         ? broadCategorySearch
         : latestHasProductIntent ? latestUserMessage : latestProductRequest;
-      const directTerms = productSearchTerms(searchSource).filter((term) => !petNameTerms.has(term));
+      const identityTerms = namedProductIdentityTerms(searchSource);
+      const directTerms = (identityTerms.length > 0 ? identityTerms : productSearchTerms(searchSource))
+        .filter((term) => !petNameTerms.has(term));
       const directAnchorTerms = productSearchAnchors(directTerms);
-      directCatalogueListing = !needsHealthKnowledge(latestUserMessage)
+      directCatalogueListing = !namedProductFactsRequested
+        && !needsHealthKnowledge(latestUserMessage)
         && !orderOnlyTurn
         && directAnchorTerms.length > 0
         && (currentAvailabilityRequested || (!continuingProductDefinition && !wantsProductStockStatus(latestUserMessage)));
@@ -905,6 +911,7 @@ export async function POST(request: NextRequest) {
       savedPetNames,
       updatedPetNames,
       petProfileOnlyTurn,
+      namedProductFactsRequested,
     });
     if (result.mode !== "approved-knowledge") {
       result.content = guardPendingRecommendationCatalogueClaim(

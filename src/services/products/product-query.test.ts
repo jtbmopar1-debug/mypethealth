@@ -14,6 +14,8 @@ import {
   wantsCurrentProductAvailability,
   wantsProductSuggestion,
   wantsProductVariantDetails,
+  wantsNamedProductFacts,
+  namedProductIdentityTerms,
   wantsProductAlternatives,
   wantsRestockEnquiryStatus,
   wantsAddToCart,
@@ -52,6 +54,12 @@ describe("product catalogue query parsing", () => {
     expect(wantsProductSuggestion("Dry dog food salmon bleu!")).toBe(true);
     expect(wantsProductSuggestion("What sizes does Salmon Bleu come in?")).toBe(true);
     expect(wantsProductVariantDetails("What sizes does Salmon Bleu come in?")).toBe(true);
+  });
+
+  it("separates a named product from the facts being asked about", () => {
+    const message = "Hi, what flavor is the Pancrea Care? Is it grain-free and suitable for small breeds";
+    expect(wantsNamedProductFacts(message)).toBe(true);
+    expect(namedProductIdentityTerms(message)).toEqual(["pancrea", "care"]);
   });
 
   it("extracts the query from an All Good Petfood search URL", () => {
