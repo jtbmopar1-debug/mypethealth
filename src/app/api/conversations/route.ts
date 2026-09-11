@@ -18,6 +18,7 @@ const productSchema = z.object({
   image: z.string().max(3000),
   url: z.string().max(3000),
   retailer: z.string().max(200),
+  brand: z.string().max(200).optional(),
   tags: z.array(z.string().max(300)).max(200),
   availability: z.enum(["in_stock", "out_of_stock"]),
 });

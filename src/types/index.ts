@@ -58,6 +58,7 @@ export interface Product {
   image: string;
   url: string;
   retailer: string;
+  brand?: string;
   tags: string[];
   availability: "in_stock" | "out_of_stock";
   /** Live Shopify variants, used when a customer asks about pack sizes or flavours. */

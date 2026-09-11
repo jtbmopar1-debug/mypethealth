@@ -79,7 +79,7 @@ export function wantsProductSuggestion(message: string) {
 
   // A bare category phrase is a catalogue shorthand. Merely mentioning that
   // category inside a health or feeding question is not shopping intent.
-  const categoryPhrase = /\b(?:raw\s+food|treats?|chews?|ears?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i;
+  const categoryPhrase = /\b(?:raw\s+food|treats?|chews?|ears?|sticks?|pizzles?|toys?|collars?|leads?|harness(?:es)?|bowls?|supplements?|litter|grooming|flea|worm)\b/i;
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   if (wordCount <= 5 && categoryPhrase.test(text)) return true;
 

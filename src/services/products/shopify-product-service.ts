@@ -4,7 +4,7 @@ import { serverConfig } from "@/config/env";
 import type { Product, ProductRecommendation, ProductVariant } from "@/types";
 import type { ProductSearchOptions, ProductService } from "./types";
 import { isPrivateCustomOrderProduct, productMatchesSpecies } from "./product-relevance";
-import { expandProductSearchAliases, productTextMatchesRequiredTerm } from "./product-search-aliases";
+import { expandProductSearchAliases, productTextMatchesRequiredTerm, productTextMatchesSearchTerm } from "./product-search-aliases";
 import { productSearchAnchors } from "./product-query";
 
 interface ShopifyProductNode {
@@ -13,6 +13,7 @@ interface ShopifyProductNode {
   description: string;
   handle: string;
   productType: string;
+  vendor: string;
   tags?: string[];
   availableForSale: boolean;
   selectedOrFirstAvailableVariant: {
@@ -73,6 +74,7 @@ interface PublicShopifyProduct {
   handle: string;
   body_html: string;
   product_type: string;
+  vendor?: string;
   tags: string[] | string;
   variants: PublicShopifyVariant[];
   image: { src: string } | null;
@@ -98,6 +100,7 @@ interface ShopifyVariantResponse {
         description: string;
         handle: string;
         productType: string;
+        vendor: string;
         tags: string[];
         onlineStoreUrl: string | null;
         featuredImage: { url: string } | null;
@@ -116,6 +119,7 @@ const PRODUCTS_QUERY = `
         description
         handle
         productType
+        vendor
         availableForSale
         selectedOrFirstAvailableVariant { id availableForSale compareAtPrice { amount currencyCode } }
         variants(first: 50) { nodes { id title availableForSale price { amount } compareAtPrice { amount } } }
@@ -153,6 +157,7 @@ const PRODUCT_VARIANT_QUERY = `
           description
           handle
           productType
+          vendor
           tags
           onlineStoreUrl
           featuredImage { url }
@@ -166,6 +171,20 @@ let sharedAccessTokenCache: { token: string; expiresAt: number } | null = null;
 let sharedAdminTokenCache: { token: string; expiresAt: number } | null = null;
 let sharedPublicProductCache: { products: Product[]; expiresAt: number } | null = null;
 let authenticatedCatalogueRetryAfter = 0;
+
+export function brandFallbackMatches<T extends Pick<Product, "brand" | "title" | "description" | "tags">>(products: T[], terms: string[]) {
+  if (terms.length === 0) return [];
+  const labels = (product: T) => [
+    product.brand?.trim(),
+    ...product.tags.filter((tag) => tag.length >= 3 && new RegExp(`^${tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(product.title)),
+  ].filter((label): label is string => Boolean(label));
+  const brands = [...new Set(products.flatMap(labels))];
+  const matches = brands.flatMap((brand) => products.filter((product) => (
+    labels(product).includes(brand)
+    && terms.every((term) => productTextMatchesSearchTerm(`${product.title} ${product.tags.join(" ")} ${product.description}`, term))
+  )));
+  return [...new Set(matches)];
+}
 
 // Facts transcribed from current product packaging when Shopify's text
 // description omits them. Keep these factual and non-promotional.
@@ -212,6 +231,7 @@ function toPublicProduct(node: PublicShopifyProduct): Product | null {
     image: node.image?.src || node.images?.[0]?.src || "/brand/buddy-paw.png",
     url: `${storeUrl}/products/${node.handle}`,
     retailer: "All Good Petfood",
+    brand: node.vendor?.trim() || undefined,
     tags,
     availability: variant.available ? "in_stock" : "out_of_stock",
     variants: node.variants.map((item): ProductVariant => ({
@@ -246,6 +266,7 @@ function toProduct(node: ShopifyProductNode): Product {
     image: node.featuredImage?.url || "/brand/buddy-paw.png",
     url: node.onlineStoreUrl || `${storeUrl}/products/${node.handle}`,
     retailer: "All Good Petfood",
+    brand: node.vendor?.trim() || undefined,
     tags,
     availability: node.availableForSale ? "in_stock" : "out_of_stock",
     variants: node.variants.nodes.map((variant): ProductVariant => ({
@@ -440,6 +461,7 @@ export class ShopifyProductService implements ProductService {
               image: variant.image?.url || variant.product.featuredImage?.url || "/brand/buddy-paw.png",
               url: variant.product.onlineStoreUrl || `${storeUrl}/products/${variant.product.handle}`,
               retailer: "All Good Petfood",
+              brand: variant.product.vendor?.trim() || undefined,
               tags,
               availability: variant.availableForSale ? "in_stock" as const : "out_of_stock" as const,
             };
@@ -514,9 +536,16 @@ export class ShopifyProductService implements ProductService {
       }))
       .sort((a, b) => b.score - a.score);
     const matching = normalizedTags.length === 0 ? ranked : ranked.filter(({ score }) => score > 0);
-    const wantsTreat = normalizedTags.some((tag) => /\b(?:treat|chew|ear|snack)\b/i.test(tag));
+    const wantsTreat = normalizedTags.some((tag) => /\b(?:treat|chew|ear|snack|stick|bully|bull|pizzle)\b/i.test(tag));
     const primaryLimit = wantsTreat ? limit : Math.max(1, limit - 1);
-    const selected = (matching.length > 0 ? matching : options.allowFallback === false ? [] : ranked).slice(0, primaryLimit);
+    const brandMatches = matching.length === 0 && requiredTerms.length > 0
+      ? brandFallbackMatches(products, requiredTerms)
+      : [];
+    const selected = (matching.length > 0
+      ? matching
+      : brandMatches.length > 0
+        ? brandMatches.map((product) => ({ product, score: 1 }))
+        : options.allowFallback === false ? [] : ranked).slice(0, primaryLimit);
     const recommendations = selected.map(({ product }) => ({ product, reason: "" }));
 
     if (options.includeTreatAddon && !wantsTreat && recommendations.length < limit) {

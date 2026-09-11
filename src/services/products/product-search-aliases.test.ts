@@ -27,6 +27,9 @@ describe("expandProductSearchAliases", () => {
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "treat")).toBe(true);
     expect(productTextMatchesSearchTerm("Smokey Venison Chews NEW Bulk Bag 1KG", "salmon")).toBe(false);
     expect(productTextMatchesSearchTerm("Scream Xtreme Treat Tyre", "cream")).toBe(false);
+    expect(productTextMatchesRequiredTerm("Pizzle Stick - Hard Chewers", "bully")).toBe(true);
+    expect(productTextMatchesRequiredTerm("Natura Bully Stick", "bull")).toBe(true);
+    expect(productTextMatchesRequiredTerm("Pizzle Stick - Hard Chewers", "stick")).toBe(true);
   });
 
   it("does not satisfy a required ear format with an unrelated pig treat", () => {

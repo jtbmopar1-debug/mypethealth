@@ -1,5 +1,6 @@
 const aliasGroups = [
   ["treat", "chew", "ear", "bite", "snack", "jerky", "reward", "marshmallow"],
+  ["bully", "bull", "pizzle"],
   ["lead", "leash"],
   ["food", "feed", "kibble", "diet", "meal"],
   ["wet", "canned", "can", "pouch"],
@@ -33,7 +34,7 @@ export function productTextMatchesSearchTerm(searchableText: string, term: strin
 
 export function productTextMatchesRequiredTerm(searchableText: string, term: string) {
   const normalizedTerm = term.trim().toLowerCase();
-  const broadAliases = new Set(["treat", "food", "wet", "parasite", "lead", "leash"]);
+  const broadAliases = new Set(["treat", "food", "wet", "parasite", "lead", "leash", "bully", "bull", "pizzle"]);
   const candidates = broadAliases.has(normalizedTerm) ? expandProductSearchAliases([normalizedTerm]) : [normalizedTerm];
   return candidates.some((candidate) => {
     const escapedCandidate = candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -42,6 +42,7 @@ describe("product catalogue query parsing", () => {
 
   it("recognises a natural looking-for request", () => {
     expect(wantsProductSuggestion("i looking for bully sticks")).toBe(true);
+    expect(wantsProductSuggestion("got bully sticks?")).toBe(true);
     expect(productSearchTerms("i looking for bully sticks")).toEqual(["bully", "stick"]);
   });
 

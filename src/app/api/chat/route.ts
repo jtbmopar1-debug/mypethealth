@@ -758,7 +758,7 @@ export async function POST(request: NextRequest) {
         ? [...new Set(broadCategoryMessages.flatMap(productSearchTerms).filter((term) => term !== "food"))]
         : [];
       const discoveryOnly = broadCategoryQuestion;
-      const limit = directCatalogueListing ? 20
+      const limit = directCatalogueListing ? 6
         : effectiveStockStatusRequested ? 12
         : discoveryOnly ? 6
         : refiningBroadCategory || genericBroadContinuation || recommendationContextReady ? 3 : 1;
